@@ -1,7 +1,7 @@
 local tools = {}
 tools.registry = {}
 
-local PROJECT_ROOT = "/data/data/com.termux/files/home/.TermAI"
+local PROJECT_ROOT = (os.getenv("HOME") or "/data/data/com.termux/files/home") .. "/.TermAI"
 
 local editor = require("editor")
 
@@ -56,7 +56,7 @@ tools.register("substituir_texto", "Edita texto com correspondência 100% exata.
 end)
 
 tools.register("buscar_arquivo", "Busca arquivos no workspace. Arg: nome", function(arg)
-    local h = io.popen('find /data/data/com.termux/files/home/.TermAI -iname "*' .. arg .. '*" 2>/dev/null')
+    local h = io.popen('find ' .. PROJECT_ROOT .. ' -iname "*' .. arg .. '*" 2>/dev/null')
     local res = h and h:read("*a") or ""
     if h then h:close() end
     return res == "" and "❌ Nada encontrado." or "✅ Encontrados:\n" .. res

@@ -30,7 +30,14 @@ end
 
 local function pensar_sync(txt, role)
   table.insert(msgs, {role = role or "user", content = txt})
-  local pl = json.encode({model = config.modelo, messages = msgs, temperature = 0.5, max_tokens = config.max_tokens})
+  local payload = {model = config.modelo, messages = msgs, temperature = 0.5, max_tokens = config.max_tokens}
+  if config.reasoning then
+    payload.include_reasoning = true
+    if config.reasoning_effort then
+      payload.reasoning = { effort = config.reasoning_effort }
+    end
+  end
+  local pl = json.encode(payload)
   for i = 1, 10 do
     local r = api_raw(pl); local ok, rep = pcall(json.decode, r)
     if ok and rep.choices and rep.choices[1] then
@@ -46,7 +53,14 @@ end
 
 local function pensar_stream(txt, role)
   table.insert(msgs, {role = role or "user", content = txt})
-  local pl = json.encode({model = config.modelo, messages = msgs, temperature = 0.5, max_tokens = config.max_tokens, stream = true})
+  local payload = {model = config.modelo, messages = msgs, temperature = 0.5, max_tokens = config.max_tokens, stream = true}
+  if config.reasoning then
+    payload.include_reasoning = true
+    if config.reasoning_effort then
+      payload.reasoning = { effort = config.reasoning_effort }
+    end
+  end
+  local pl = json.encode(payload)
   local t = os.tmpname(); local f = io.open(t, "w"); f:write(pl); f:close()
   local cmd = string.format('curl -s -N -X POST "%s" -H "Authorization: Bearer %s" -H "Content-Type: application/json" -d @%s', config.endpoint, config.api_key, t)
   ui.stream_start()
@@ -59,7 +73,11 @@ local function pensar_stream(txt, role)
       if ok and chunk then
         if chunk.usage then tokens = chunk.usage.total_tokens end
         local delta = chunk.choices and chunk.choices[1] and chunk.choices[1].delta
-        if delta and delta.content then ui.stream_token(delta.content) end
+        if delta then
+          local r_text = delta.reasoning or delta.reasoning_content
+          if r_text and r_text ~= "" then ui.stream_reasoning(r_text) end
+          if delta.content and delta.content ~= "" then ui.stream_token(delta.content) end
+        end
       end
     end
   end
