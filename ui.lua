@@ -257,10 +257,26 @@ end
 -- ── Streaming — acumula tudo, exibe depois ────────────────────────────────
 
 function ui.stream_start()
-  _s = { full="", started=false }
+  _s = { full="", started=false, reasoning_started=false }
+end
+
+function ui.stream_reasoning(tok)
+  if not _s.started then ui.kill_spinner(); _s.started = true end
+  if not _s.reasoning_started then
+    io.write("\r\27[K\n" .. c.dim .. c.gray .. " ╭─ Pensando..." .. c.reset .. "\n")
+    io.write(c.dim .. c.gray .. " │ ")
+    _s.reasoning_started = true
+  end
+  local processed = tok:gsub("\n", "\n" .. c.dim .. c.gray .. " │ ")
+  io.write(c.dim .. c.gray .. processed)
+  io.flush()
 end
 
 function ui.stream_token(tok)
+  if _s.reasoning_started then
+    io.write("\n" .. c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
+    _s.reasoning_started = false
+  end
   _s.full = _s.full.. tok
   if not _s.started then
     ui.kill_spinner()
@@ -269,6 +285,10 @@ function ui.stream_token(tok)
 end
 
 function ui.stream_end()
+  if _s.reasoning_started then
+    io.write("\n" .. c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
+    _s.reasoning_started = false
+  end
   return _s.full
 end
 
