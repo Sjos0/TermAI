@@ -1,38 +1,58 @@
-# TermAI
+# 🦇 TermAI — Harness de Engenharia para Agentes Inteligentes
 
-**Engenharia de Harness para Agentes Inteligentes**
+<p align="center">
+  <a href="https://github.com/Sjos0/TermAI/actions"><img src="https://img.shields.io/github/actions/workflow/status/Sjos0/TermAI/main?style=for-the-badge&label=CI" alt="CI status"></a>
+  <a href="https://github.com/Sjos0/TermAI/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
+  <a href="https://github.com/Sjos0/TermAI"><img src="https://img.shields.io/github/stars/Sjos0/TermAI?style=for-the-badge" alt="GitHub stars"></a>
+  <a href="https://www.instagram.com/sjos.22_?igsh=OHkzbnhjcG91bDBr"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+</p>
 
-TermAI é um agente autônomo open-source projetado para rodar diretamente em celulares Android via [Termux](https://termux.dev). Diferente de soluções que dependem de servidores ou desktops, o TermAI foi construído do zero para operar em hardware limitado — oferecendo uma experiência completa de agente de IA sem precisar de nada além do seu celular.
+**TermAI** é um _harness de engenharia_ para agentes inteligentes, construído do zero para rodar em celulares Android via [Termux](https://termux.dev). Arquitetura similar aos harnesses de mercado (OpenClaw, Claude Code, Aider), adaptada para hardware mínimo: compactação de contexto, Memory Flush, sessões persistentes, permissões granulares de comandos, streaming em tempo real, suporte a múltiplos provedores, hooks extensíveis e sistema de skills.
 
----
-
-## O que é o TermAI?
-
-TermAI é um **harness de engenharia** — uma infraestrutura completa que permite a um modelo de linguagem (LLM) interagir com o mundo real: executar comandos, editar arquivos, navegar na web, gerenciar memória de longo prazo e manter conversas coesas ao longo de sessões inteiras.
-
-Ele não é apenas um chatbot. É um **sistema operacional para agentes** que roda no bolso.
-
----
-
-## Por que existe?
-
-Modelos de linguagem têm janelas de contexto limitadas. Sessões longas estouram essas janelas. A maioria das soluções assume um desktop com recursos abundantes. O TermAI foi criado para resolver esse problema em **celulares** — onde memória, CPU e conexão são escassos.
+Se você quer um agente de IA que roda no bolso, é sempre ativo e funciona sem servidor — este é o projeto.
 
 ---
 
-## Características
+## Highlights
 
-Arquitetura similar aos harnesses de agentes de mercado (OpenClaw, Claude Code, Aider), adaptada para rodar em hardware mínimo: compactação de contexto, Memory Flush, sessões persistentes, permissões granulares de comandos, streaming em tempo real, suporte a múltiplos provedores, hooks extensíveis e sistema de skills. Tudo otimizado para Termux no Android.
+- **[Compactação de Contexto v7](#)** — corte por tokens, merge iterativo, split-turn, poda mecânica, anti-thrashing
+- **[Memory Flush](#)** — arquivamento periódico com GraphRAG para memória de longo prazo
+- **[Sessões Persistentes](#)** — JSONL atômico com restore automático
+- **[Permissões Granulares](#)** — auto-approve para comandos seguros, aprovação manual para perigosos
+- **[Streaming em Tempo Real](#)** — respostas aparecem na TUI enquanto são geradas
+- **[Multi-Provedor](#)** — OpenRouter, Google, Anthropic e provedores customizados
+- **[Hooks Extensíveis](#)** — PreToolUse, PostToolUse, OnMemoryFlush, scripts do usuário
+- **[Skills](#)** — módulos carregáveis para testes, debugging, planejamento
 
 ---
 
-## Stack Técnica
+## Install (recommended)
 
-- **Linguagem:** Lua 5.4 (PUC-Rio)
-- **Runtime:** Termux no Android (Linux ARM)
-- **API HTTP:** curl via shell (streaming SSE)
-- **Persistência:** JSONL + Lua tables
-- **Dependências:** Zero (todas as bibliotecas são internas)
+Runtime: **Lua 5.4+** via [Termux](https://termux.dev) no Android.
+
+```bash
+# Instalar Termux (F-Droid ou termux.dev)
+pkg install lua5.4 git
+
+# Clonar
+git clone https://github.com/Sjos0/TermAI.git ~/TermAI
+cd ~/TermAI
+
+# Executar
+lua5.4 main.lua
+```
+
+---
+
+## Quick Start (TL;DR)
+
+```bash
+# Clone + execute em 2 comandos
+git clone https://github.com/Sjos0/TermAI.git ~/TermAI && lua5.4 ~/TermAI/main.lua
+```
+
+Configure seu modelo em `~/.TermAI/config.json` com provider e API key.
+Veja `config/migrate.lua` para exemplos de configuração.
 
 ---
 
@@ -41,13 +61,13 @@ Arquitetura similar aos harnesses de agentes de mercado (OpenClaw, Claude Code, 
 ```
 TermAI/
 ├── agent/              # Loop principal, API, compactação, flush
-├── tools/              # Definição e execução de ferramentas
+├── tools/              # Ferramentas e execução de comandos
 ├── ui/                 # Interface TUI, streaming, renderização
 ├── session/            # Persistência de sessões (JSONL)
 ├── config/             # Configuração e migração
 ├── commands/           # Comandos do usuário (/compact, /config, etc.)
-├── memoryflush/        # Sistema de Memory Flush (GraphRAG)
-├── hooks/              # Sistema de eventos (PreToolUse, PostToolUse)
+├── memoryflush/        # Memory Flush (GraphRAG)
+├── hooks/              # Sistema de eventos
 ├── tests/              # Testes automatizados
 ├── main.lua            # Entry point
 └── config.lua          # Fachada de configuração
@@ -55,29 +75,46 @@ TermAI/
 
 ---
 
-## Início Rápido
+## Security Model
 
-```bash
-# Instalar Termux
-# https://termux.dev
-
-# Clonar
-git clone https://github.com/Sjos0/TermAI.git ~/TermAI
-cd ~/TermAI
-
-# Executar
-lua main.lua
-```
+- Comandos **seguros** (echo, cat, find, grep, lua) → auto-approve sem dialog
+- Comandos **perigosos** (rm, mv, dd) → SEMPRE pede permissão
+- Outros comandos → pede permissão uma vez, padrão pode ser salvo
+- Heredocs (`<<`) → reconhecidos e ignorados pelo parser de segurança
+- `curl` disponível para chamadas HTTP quando necessário
 
 ---
 
-## Licença
+## Operator Quick Refs
 
-Open Source — use, modifique e distribua livremente.
+- `/compact` — compactação manual (com foco opcional: `/compact foque em X`)
+- `/config` — reconfiguração de modelos
+- `/models` — seleção de modelo
+- `/clear` — limpar contexto da sessão
+- `/status` — ver status do TermAI
 
 ---
 
-## Autor
+## Stack Técnica
+
+| Componente | Tecnologia |
+|---|---|
+| Linguagem | Lua 5.4 (PUC-Rio) |
+| Runtime | Termux no Android (Linux ARM) |
+| HTTP | curl via shell (streaming SSE) |
+| Persistência | JSONL + Lua tables |
+| Dependências | Zero (tudo interno) |
+
+---
+
+## Community
+
+- [GitHub Issues](https://github.com/Sjos0/TermAI/issues) — bugs e feature requests
+- [Instagram](https://www.instagram.com/sjos.22_?igsh=OHkzbnhjcG91bDBr) — @[sjos.22_](https://www.instagram.com/sjos.22_?igsh=OHkzbnhjcG91bDBr)
+
+---
+
+## Author
 
 Samuel — [@Sjos0](https://github.com/Sjos0)
 
