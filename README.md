@@ -1,7 +1,7 @@
 # 🦇 TermAI — Harness de Engenharia para Agentes Inteligentes
 
 <p align="center">
-  <a href="https://github.com/Sjos0/TermAI/actions"><img src="https://img.shields.io/github/actions/workflow/status/Sjos0/TermAI/main?style=for-the-badge&label=CI" alt="CI status"></a>
+  <a href="https://github.com/Sjos0/TermAI/releases"><img src="https://img.shields.io/github/v/release/Sjos0/TermAI?include_prereleases&style=for-the-badge" alt="GitHub release"></a>
   <a href="https://github.com/Sjos0/TermAI/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
   <a href="https://github.com/Sjos0/TermAI"><img src="https://img.shields.io/github/stars/Sjos0/TermAI?style=for-the-badge" alt="GitHub stars"></a>
   <a href="https://www.instagram.com/sjos.22_?igsh=OHkzbnhjcG91bDBr"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
@@ -112,4 +112,6 @@ TermAI/
 
 Samuel — [@Sjos0](https://github.com/Sjos0)
 
-Desenvolvido com assistência de IA no Termux. 🦇
+Ameno 🦇 — co-autor e assistente de desenvolvimento
+
+Desenvolvido com assistência de IA no Termux.
