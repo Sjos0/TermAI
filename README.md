@@ -12,24 +12,18 @@
 Se você quer um agente de IA que roda no bolso, é sempre ativo e funciona sem servidor — este é o projeto.
 
 ---
-
 ## Highlights
 
-- **[Compactação de Contexto v7](#)** — corte por tokens, merge iterativo, split-turn, poda mecânica, anti-thrashing
-- **[Memory Flush](#)** — arquivamento periódico com GraphRAG para memória de longo prazo
-- **[Sessões Persistentes](#)** — JSONL atômico com restore automático
-- **[Permissões Granulares](#)** — auto-approve para comandos seguros, aprovação manual para perigosos
-- **[Streaming em Tempo Real](#)** — respostas aparecem na TUI enquanto são geradas
-- **[Multi-Provedor](#)** — OpenRouter, Google, Anthropic e provedores customizados
-- **[Hooks Extensíveis](#)** — PreToolUse, PostToolUse, OnMemoryFlush, scripts do usuário
-- **[Skills](#)** — módulos carregáveis para testes, debugging, planejamento
-
----
-
-## Install (recommended)
-
-Runtime: **Lua 5.4+** via [Termux](https://termux.dev) no Android.
-
+- **Multi-Provedor** — suporte a OpenRouter, Google, NVIDIA, Cloudflare, mimo, opencode e provedores customizados. Use o modelo que preferir.
+- **Interface TUI** — terminal interativo completo com streaming em tempo real, exibição de raciocínio do modelo e display de ferramentas em execução.
+- **Ferramentas Poderosas** — o agente pode executar comandos bash, ler/escrever/editar arquivos, buscar no sistema, calcular, usar ferramentas web (pesquisa, fetch de páginas) e gerenciar sessões.
+- **Web Tools** — pesquisa na web via DuckDuckGo, Google Grounding, Tavily e fetch direto de URLs. O agente navega a internet quando precisa.
+- **Memory Flush Configurável** — sistema de memória de longo prazo via GraphRAG. Totalmente opcional — quando ativado, o agente arquiva contexto periodicamente em arquivos `.md`, mas gasta tokens extras por rodada.
+- **Compactação Inteligente** — quando o contexto fica grande demais, o TermAI resume automaticamente o histórico preservando o que importa, sem perder o fio da meada.
+- **Sessões Persistentes** — conversas são salvas automaticamente. Feche o app e volte depois — o contexto continua de onde parou.
+- **Permissões Granulares** — comandos seguros rodam direto; comandos perigosos pedem aprovação. Você decide o que o agente pode fazer.
+- **Hooks e Skills** — extensível com scripts do usuário e módulos carregáveis para testes, debugging e planejamento.
+- **Mais atualizações virão** — o TermAI está em desenvolvimento ativo. Novas funcionalidades, melhorias de performance e novos provedores serão adicionados continuamente.
 ```bash
 # Instalar Termux (F-Droid ou termux.dev)
 pkg install lua5.4 git
