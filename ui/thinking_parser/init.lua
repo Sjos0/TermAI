@@ -41,6 +41,7 @@ function M.feed(tok, stream_reasoning, stream_token)
         state.buf = state.buf:sub(e + 1)
         if which == "tool" then
           stream_token(OPEN_TOOL)
+          depth_tracker.reset()
           state.mode = "tool"
         else
           state.mode   = "thinking"

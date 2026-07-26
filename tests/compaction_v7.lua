@@ -1,6 +1,6 @@
 -- test_compaction_v7.lua — Fase 1+5 (unitários + adversariais)
 -- Executar: lua5.4 ~/test_compaction_v7.lua
-package.path = os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua"
+package.path = "./?.lua;./?/init.lua;" .. package.path
 local pass, fail = 0, 0
 local function T(name, ok)
   if ok then pass = pass + 1 else fail = fail + 1; print("  FAIL: " .. name) end
@@ -142,19 +142,23 @@ do local xml = ft.accumulate(nil, nil); T("ft: vazio=nil", xml == "") end
 
 -- ═══════ 7. BANNERS ═══════
 sec("7. banners")
-local bc = io.open(os.getenv("HOME") .. "/TermAI/agent/banners.lua"):read("*a")
+local f_banners = io.open("./agent/banners.lua") or io.open(os.getenv("HOME") .. "/TermAI/agent/banners.lua")
+local bc = f_banners:read("*a")
 T("banners: compactacao s/ mf.estado", bc:find("compactacao", 1, true) and not bc:find("M.compactacao", 1, true) or true)
 -- Verificação direta: a função compactacao não chama mf.estado
 T("banners: compactacao sem mf", not bc:match("function M%.compactacao.-%f[^%w]mf%.estado"))
 
 -- ═══════ 8-10. PAYLOAD/CONFIRM/INIT ═══════
 sec("8. payload + confirm + init")
-local pc = io.open(os.getenv("HOME") .. "/TermAI/agent/api/payload.lua"):read("*a")
+local f_payload = io.open("./agent/api/payload.lua") or io.open(os.getenv("HOME") .. "/TermAI/agent/api/payload.lua")
+local pc = f_payload:read("*a")
 T("payload: no_tools", pc:match("ctx%.no_tools") ~= nil)
-local cc = io.open(os.getenv("HOME") .. "/TermAI/agent/compaction/confirm.lua"):read("*a")
+local f_confirm = io.open("./agent/compaction/confirm.lua") or io.open(os.getenv("HOME") .. "/TermAI/agent/compaction/confirm.lua")
+local cc = f_confirm:read("*a")
 T("confirm: gerar_e_confirmar", cc:match("M%.gerar_e_confirmar") ~= nil)
 T("confirm: no_tools", cc:match("no_tools = true") ~= nil)
-local ic = io.open(os.getenv("HOME") .. "/TermAI/agent/compaction/init.lua"):read("*a")
+local f_init = io.open("./agent/compaction/init.lua") or io.open(os.getenv("HOME") .. "/TermAI/agent/compaction/init.lua")
+local ic = f_init:read("*a")
 T("init: confirm", ic:match("confirm") ~= nil)
 T("init: splitturn", ic:match("splitturn") ~= nil)
 T("init: guarded", ic:match("do_compaction_guarded") ~= nil)
