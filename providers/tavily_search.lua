@@ -2,6 +2,7 @@
 -- v1: Retorna resultados estruturados e limpos para agentes de IA.
 -- Baseado no contrato da API do OpenClaw (api.tavily.com/search).
 local json = require("json")
+local security = require("agent.security")
 local M = {}
 M.id = "tavily_search"
 M.name = "Tavily Search (API)"
@@ -23,6 +24,11 @@ function M.search(query)
   local api_key = web.tavily_key
   if not api_key or api_key == "" then
     return "❌ Chave do Tavily não configurada. Vá em Config › Pesquisa Web."
+  end
+
+  local safe, char = security.is_safe(api_key)
+  if not safe then
+    return "❌ Erro de segurança: chave de API contém caractere inválido '" .. char .. "'"
   end
 
   local url = "https://api.tavily.com/search"

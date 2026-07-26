@@ -1,0 +1,4 @@
+## 2026-05-30 - [Command Injection via Endpoint and API Key Interpolation]
+**Vulnerability:** User-defined model endpoints and API keys were interpolated directly into `curl` commands and executed via `io.popen` in `models/validate.lua` and search providers. This allowed shell command execution if they contained characters like semicolons, backticks, or subshell expansions.
+**Learning:** Initial validation only ran on application startup and exited using `os.exit(1)`, leaving connection-testing and search endpoints unvalidated at runtime.
+**Prevention:** Isolate the character validation logic into a domain module `agent/security/validator.lua` under a facade `agent/security.lua`, and expose a non-destructive `is_safe` function. Always call `is_safe` before shell-interpolating user configurations in connection tests or search providers.

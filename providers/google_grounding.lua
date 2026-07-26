@@ -4,6 +4,7 @@
 -- gemini-2.5-flash       → até 500 req/dia grátis no free tier
 
 local json = require("json")
+local security = require("agent.security")
 local M = {}
 M.id = "google_grounding"
 M.name = "Google Search Grounding (Gemini)"
@@ -63,6 +64,11 @@ function M.search(query)
   local api_key = web.google_grounding_key
   if not api_key or api_key == "" then
     return "❌ Chave de Grounding não configurada. Vá em Config › Web Tools."
+  end
+
+  local safe, char = security.is_safe(api_key)
+  if not safe then
+    return "❌ Erro de segurança: chave de API contém caractere inválido '" .. char .. "'"
   end
 
   local url = "https://generativelanguage.googleapis.com/v1beta/models/"
