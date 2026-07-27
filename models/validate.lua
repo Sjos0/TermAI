@@ -1,7 +1,22 @@
 local json = require("json")
+local security = require("agent.security")
 local M = {}
 
 function M.test_connection(active)
+  -- Validação de segurança prévia para mitigar injeção de comandos
+  if active.endpoint then
+    local safe, char = security.is_safe(active.endpoint)
+    if not safe then
+      return false, "Erro de segurança: endpoint contém caractere inválido '" .. char .. "'"
+    end
+  end
+  if active.api_key and active.api_key ~= "" then
+    local safe, char = security.is_safe(active.api_key)
+    if not safe then
+      return false, "Erro de segurança: API key contém caractere inválido '" .. char .. "'"
+    end
+  end
+
   local payload = {
     model    = active.model_id,
     messages = {{role = "user", content = "hi"}},
