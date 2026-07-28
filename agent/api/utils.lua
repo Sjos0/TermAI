@@ -54,6 +54,11 @@ end
 
 local function strip_thinking_tags(text)
   if not text then return text end
+  -- Optimization (Bolt): Check if '<' exists first. Since most messages do not
+  -- contain thinking tags, we avoid alocating strings via complex gsubs.
+  if not text:find("<", 1, true) then
+    return text
+  end
   text = text:gsub("<[Tt]hink[^>]*>.-</[Tt]hink>", "")
   text = text:gsub("<[Tt]hought[^>]*>.-</[Tt]hought>", "")
   return text
