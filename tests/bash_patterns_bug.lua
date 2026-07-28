@@ -1,6 +1,6 @@
 -- bash_patterns_bug.lua — Testes para bug de persistência de permissões
 -- Executar: lua5.4 ~/TermAI/tests/bash_patterns_bug.lua
-package.path = os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua"
+package.path = "./?.lua;./?/init.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
 
 local pass, fail = 0, 0
 local function T(n, ok, d) if ok then pass=pass+1 else fail=fail+1; print("  FAIL: "..n..(d and (" — "..d) or "")) end end
