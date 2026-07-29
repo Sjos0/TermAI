@@ -1,8 +1,19 @@
 -- tests/google_grounding_pr5_spec.lua
 -- Teste de isolamento: google_grounding com Interactions API + fallback chain
-package.path = os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
 
-package.loaded["json"] = package.loaded["json"] or dofile(os.getenv("HOME") .. "/TermAI/json.lua")
+local function load_json()
+  local path = os.getenv("HOME") .. "/TermAI/json.lua"
+  local f = io.open(path, "r")
+  if f then
+    f:close()
+    return dofile(path)
+  else
+    return dofile("json.lua")
+  end
+end
+
+package.loaded["json"] = package.loaded["json"] or load_json()
 local json = require("json")
 
 local pass, fail = 0, 0

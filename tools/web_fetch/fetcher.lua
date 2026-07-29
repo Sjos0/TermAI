@@ -47,6 +47,15 @@ function M.run(arg)
     return "❌ [SEGURANÇA] Bloqueio SSRF: requisições para a rede local privada são proibidas."
   end
 
+  -- [SEGURANÇA] Defesa em Profundidade contra Command Injection.
+  -- Como a URL é interpolada diretamente em comandos shell delimitados por aspas duplas ("%s")
+  -- executados via io.popen, devemos rejeitar qualquer caractere que permita escapar do
+  -- escopo de aspas duplas ou executar comandos em subshell:
+  -- aspas duplas ("), cifrão ($), crase (`), barra invertida (\), nova linha (\n) e carriage return (\r).
+  if url:find('"') or url:find('%$') or url:find('`') or url:find('\\') or url:find('\n') or url:find('\r') then
+    return "❌ [SEGURANÇA] URL inválida: a URL contém caracteres potencialmente inseguros para o shell."
+  end
+
   local has_lynx = check_lynx()
   local output = ""
 
