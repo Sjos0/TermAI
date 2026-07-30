@@ -130,6 +130,9 @@ function M.check(tool_name, command)
   end
 
   -- 6. Lógica de correspondência de regras de comandos bash (bashRules) para exec
+  if not command or command == "" or command:match("^%s*$") then
+    return { allowed = true, reason = "comando vazio ou nil" }
+  end
   local subcommands = parser.extract_subcommands(command)
   if #subcommands == 0 then
     return { allowed = true, reason = "sem subcomandos executáveis" }
