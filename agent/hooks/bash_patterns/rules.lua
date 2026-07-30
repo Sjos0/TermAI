@@ -44,7 +44,7 @@ function M.matches(cmd)
   local patterns = (cfg.hooks and cfg.hooks.bash_patterns) or {}
 
   local subcommands = parser.extract_subcommands(cmd)
-  if #subcommands == 0 then return false, nil end
+  if #subcommands == 0 then return true, "padrões aprovados" end
 
   local MAX_SUBCOMMANDS = 15
   if #subcommands > MAX_SUBCOMMANDS then

@@ -2,11 +2,11 @@
 local M = {}
 
 function M.get_suggested_pattern(cmd)
+  local parser = require("agent.hooks.bash_patterns.parser")
+  local clean = parser.strip_leading_assignments(cmd)
   local tokens = {}
-  for t in cmd:gmatch("%S+") do
-    if not t:match("^[%w_]+=") then
-      tokens[#tokens + 1] = t
-    end
+  for t in clean:gmatch("%S+") do
+    tokens[#tokens + 1] = t
   end
   if #tokens == 0 then return "" end
 
