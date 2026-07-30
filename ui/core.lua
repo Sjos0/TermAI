@@ -47,7 +47,12 @@ end
 
 -- ── Helpers de texto ───────────────────────────────────────────────────────
 
-function core.strip(s) return (s:gsub("\27%[[0-9;]*m", "")) end
+-- Optimization (Bolt): Add a fast, non-allocating check for ESC character (\27)
+-- to skip expensive gsub matching on clean strings (which is true for 99.9% of inputs).
+function core.strip(s)
+  if not s:find("\27", 1, true) then return s end
+  return (s:gsub("\27%[[0-9;]*m", ""))
+end
 
 function core.cp_width(cp)
   return ((cp >= 0x1100 and cp <= 0x115f) or cp >= 0x2e80 or cp > 0x1f000) and 2 or 1
