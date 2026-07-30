@@ -89,6 +89,7 @@ sec("5. integração (parser→match)")
 
 local function fluxo(cmd, saved)
   local subcmds = parser.extract_subcommands(cmd)
+  if #subcmds == 0 then return true, nil end
   for _, sub in ipairs(subcmds) do
     local trim = sub:match("^%s*(.-)%s*$") or sub
     local primary = trim:match("^%s*(%S+)") or ""
@@ -138,6 +139,49 @@ T("heredoc: mixed", fluxo("cat << 'EOF' > /tmp/t.txt\nconteudo\nEOF; echo OK", {
 T("espaços extras", matches_rule("  rm -f file  ", "rm *"))
 T("comando gigante", pcall(parser.extract_subcommands, "echo " .. string.rep("a", 10000)))
 T("aspas duplas com simples", #parser.extract_subcommands([[echo "hello 'world'" ]]) == 1)
+
+-- ═══════ 8. HUNTER BUGFIXES (Bugs 1-4) ═══════
+sec("8. hunter bugfixes")
+
+-- Bug 1: Variable assignments trigger permission prompts (variable assignments are NOT commands)
+local single_assignment = "JULES_KEY=\"AQ.Ab8...\" GH_KEY=\"ghp_7Nc...\" BASE=\"https://jules.googleapi...\""
+T("Bug 1: extract_subcommands on pure variable assignment should be empty", #parser.extract_subcommands(single_assignment) == 0)
+T("Bug 1: fluxo on pure variable assignment should auto-approve", fluxo(single_assignment, {}))
+
+-- Bug 2: Comments trigger permission prompts (comments should be completely ignored)
+local comment_cmd = "# This is a comment\necho \"hello\""
+local comment_subcmds = parser.extract_subcommands(comment_cmd)
+T("Bug 2: extract_subcommands should ignore comments completely", #comment_subcmds == 1 and comment_subcmds[1] == 'echo "hello"')
+T("Bug 2: fluxo with comment followed by safe command should auto-approve", fluxo(comment_cmd, {}))
+
+local pure_comment = "# This is a comment only"
+T("Bug 2: extract_subcommands should be empty for pure comment", #parser.extract_subcommands(pure_comment) == 0)
+T("Bug 2: fluxo on pure comment should auto-approve", fluxo(pure_comment, {}))
+
+local comment_after_semicolon = "echo hello; # some comment"
+local comment_after_semi_subcmds = parser.extract_subcommands(comment_after_semicolon)
+T("Bug 2: extract_subcommands should ignore comment after semicolon", #comment_after_semi_subcmds == 1 and comment_after_semi_subcmds[1] == 'echo hello')
+
+-- Bug 3: Multiple variable assignments on one line
+local multi_assignment = "JULES_KEY=\"...\" GH_KEY=\"...\" BASE=\"...\" curl -s ..."
+local multi_subcmds = parser.extract_subcommands(multi_assignment)
+T("Bug 3: extract_subcommands strips all leading assignments", #multi_subcmds == 1 and multi_subcmds[1] == "curl -s ...")
+
+-- Bug 4: Safe commands like echo combined with variable assignments or other syntax
+local mixed_cmd_echo = "VAR=value echo hello"
+local mixed_subcmds = parser.extract_subcommands(mixed_cmd_echo)
+T("Bug 4: extract_subcommands on mixed command strips assignment", #mixed_subcmds == 1 and mixed_subcmds[1] == "echo hello")
+T("Bug 4: fluxo with assignment + safe command should auto-approve", fluxo(mixed_cmd_echo, {}))
+
+-- Complex and edge case assignments
+local quoted_var = "VAR='a b c' echo 'hello'"
+local quoted_var_subcmds = parser.extract_subcommands(quoted_var)
+T("Complex: quoted var assignment is stripped", #quoted_var_subcmds == 1 and quoted_var_subcmds[1] == "echo 'hello'")
+
+local double_quoted_var = "A=\"1 2 3\" B='4 5' C=6 echo hello"
+local double_quoted_subcmds = parser.extract_subcommands(double_quoted_var)
+T("Complex: multiple quoted and unquoted vars are stripped", #double_quoted_subcmds == 1 and double_quoted_subcmds[1] == "echo hello")
+
 
 -- ═══════ RELATÓRIO ═══════
 print("\n" .. string.rep("═", 60))

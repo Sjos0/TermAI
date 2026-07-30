@@ -19,6 +19,49 @@ local function find_heredoc_delim(str)
   return nil, 0
 end
 
+-- Encontra o fim do valor de uma atribuição de variável considerando aspas
+local function find_assignment_value_end(str, start_pos)
+  local len = #str
+  local i = start_pos
+  local in_single = false
+  local in_double = false
+  while i <= len do
+    local char = str:sub(i, i)
+    local next_char = str:sub(i+1, i+1)
+    if char == "\\" then
+      if next_char ~= "" then
+        i = i + 1
+      end
+    elseif char == "'" and not in_double then
+      in_single = not in_single
+    elseif char == '"' and not in_single then
+      in_double = not in_double
+    elseif not in_single and not in_double then
+      -- Caractere não citado: verifica se é um terminador (espaço ou controle do shell)
+      if char:match("%s") or char == ";" or char == "&" or char == "|" or char == "<" or char == ">" or char == "(" or char == ")" then
+        return i - 1
+      end
+    end
+    i = i + 1
+  end
+  return len
+end
+
+-- Remove atribuições de variáveis no início de um subcomando (ex: VAR=value)
+function M.strip_leading_assignments(subcmd)
+  local s = subcmd:match("^%s*(.-)%s*$") or ""
+  while true do
+    local var_name = s:match("^([a-zA-Z_][a-zA-Z0-9_]*)=")
+    if not var_name then
+      break
+    end
+    local start_pos = #var_name + 2 -- tamanho da variável + '=' + 1
+    local end_pos = find_assignment_value_end(s, start_pos)
+    s = s:sub(end_pos + 1):match("^%s*(.-)%s*$") or ""
+  end
+  return s
+end
+
 -- Extrai subcomandos com lexer consciente de aspas e heredocs
 -- (Quote-Aware State Machine + Heredoc-Aware)
 function M.extract_subcommands(cmd)
@@ -26,10 +69,20 @@ function M.extract_subcommands(cmd)
 
   -- 1. Captura conteúdo de subshells $(...) ou `...`
   for sub in cmd:gmatch("%$%((.-)%)") do
-    if sub ~= "" then subcmds[#subcmds+1] = sub end
+    if sub ~= "" then
+      local stripped = M.strip_leading_assignments(sub)
+      if stripped ~= "" then
+        subcmds[#subcmds+1] = stripped
+      end
+    end
   end
   for sub in cmd:gmatch("`(.-)`") do
-    if sub ~= "" then subcmds[#subcmds+1] = sub end
+    if sub ~= "" then
+      local stripped = M.strip_leading_assignments(sub)
+      if stripped ~= "" then
+        subcmds[#subcmds+1] = stripped
+      end
+    end
   end
 
   -- Remove subshells do comando principal para evitar dupla análise
@@ -52,7 +105,10 @@ function M.extract_subcommands(cmd)
       -- Não remove << (heredoc) — só redirecionamentos simples
       local clean = trimmed:gsub("[>]+.*$", ""):match("^%s*(.-)%s*$")
       if clean and clean ~= "" then
-        subcmds[#subcmds+1] = clean
+        local stripped = M.strip_leading_assignments(clean)
+        if stripped ~= "" then
+          subcmds[#subcmds+1] = stripped
+        end
       end
     end
     current_part = {}
@@ -91,6 +147,25 @@ function M.extract_subcommands(cmd)
     elseif not in_single and not in_double then
       if char == ";" or char == "\n" then
         flush_part()
+      elseif char == "#" then
+        -- Verifica se o caractere '#' inicia um comentário real (no começo da linha ou precedido por espaço/separador)
+        local is_comment_start = true
+        if i > 1 then
+          local prev = main_cmd:sub(i-1, i-1)
+          if not (prev:match("%s") or prev == ";" or prev == "&" or prev == "|" or prev == "`" or prev == "(" or prev == ")") then
+            is_comment_start = false
+          end
+        end
+        if is_comment_start then
+          flush_part()
+          -- Pula tudo até o final do comando ou até o próximo \n
+          while i <= len and main_cmd:sub(i, i) ~= "\n" do
+            i = i + 1
+          end
+          i = i - 1 -- ajusta para o incremento do loop principal
+        else
+          current_part[#current_part+1] = char
+        end
       elseif char == "|" then
         if next_char == "|" then
           flush_part()
