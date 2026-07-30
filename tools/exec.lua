@@ -11,9 +11,12 @@ local M = {}
 function M.register(tools)
   tools.register("exec",
     "Execute bash/shell commands on the system. "
-    .. "ABSOLUTE RULE: ONLY run real system commands. Never use 'echo' to mock outputs—this is hallucination. "
-    .. "WARNING: DO NOT use 'exec' with 'find', 'grep', or 'cat' commands to search or read files. You MUST use 'Find', 'Read', and 'List' tools for those actions as they are highly optimized and prevent context blowouts. "
-    .. "Outputs exceeding 2000 lines or 100KB are automatically truncated. Use 'timeout' parameter for blocking commands (like curl, ssh).",
+    .. "ABSOLUTE RULE: ONLY run real system commands. Never use 'echo' to mock outputs — this is hallucination. "
+    .. "IMPORTANT: Avoid using this tool for file operations when dedicated tools exist. Use the appropriate tool instead: "
+    .. "Find (NOT find/ls), Grep (NOT grep/rg), Read (NOT cat/head/tail), Edit (NOT sed/awk), Write (NOT echo/cat <<EOF). "
+    .. "Multiple commands: For independent commands, make separate exec calls. For dependent commands, chain with '&&'. Use ';' only when earlier failures don't matter. "
+    .. "Paths: Prefer absolute paths over 'cd'. Always quote paths containing spaces. Before creating files, verify the parent directory exists with 'ls'. "
+    .. "Outputs exceeding 2000 lines or 100KB are automatically truncated. Use 'timeout' parameter for blocking commands (curl, ssh).",
     function(arg)
       -- Passo 1: parsing e normalização (responsabilidade de interface)
       local cmd     = type(arg) == "table" and (arg.command or arg.arg or "") or arg
@@ -48,9 +51,9 @@ function M.register(tools)
       properties = {
         command = {
           type        = "string",
-          description = "Comando bash completo para executar no Termux. "
-                      .. "Exemplos: 'ls -la ~/TermAI/', 'cat arquivo.lua', "
-                      .. "'grep -rn padrao dir/'"
+          description = "Full bash command to execute in Termux. "
+                      .. "Examples: 'ls -la ~/TermAI/', 'luac -p arquivo.lua', "
+                      .. "'git status', 'mkdir -p ~/TermAI/backup && cp *.lua ~/TermAI/backup/'"
         },
         timeout = {
           type        = "number",
