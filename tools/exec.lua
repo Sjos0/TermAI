@@ -2,6 +2,8 @@
 -- v4: refatoração para facade + 3 submódulos (constants, truncator, executor).
 --     Comportamento idêntico ao v3 — zero mudança de retorno para o modelo.
 --     Descriptions permanecem aqui (responsabilidade de interface).
+-- Integrado com a nova camada de segurança e gerenciador de permissões
+-- (tools.exec.security e tools.exec.permissions chamados no hook central PreToolUse).
 local executor = require("tools.exec.executor")
 
 local M = {}

@@ -31,35 +31,92 @@ end
 
 -- ── PreToolUse ─────────────────────────────────────────────────────────────
 function M._pre_tool_use(tool_name, tool_arg)
-  -- YOLO Mode: bypass total de segurança (estilo OpenClaude fullAccess)
   local config_mod = require("config")
   local cfg = config_mod.load()
-  if cfg.hooks and cfg.hooks.yolo_mode then
+
+  -- YOLO Mode ou bypass total
+  local perms = require("tools.exec.permissions")
+  if (cfg.hooks and cfg.hooks.yolo_mode) or perms.get_mode() == "bypass" then
     return true, nil
   end
 
-  local perms  = require("agent.hooks.permissions")
-  local status = perms.get(tool_name)
+  -- Primeiro, rodamos a análise de segurança para exec
+  local warnings = {}
+  local is_safe = true
+  if tool_name == "exec" then
+    local security = require("tools.exec.security")
+    local analysis = security.analyze(tool_arg)
+    warnings = analysis.warnings
+    is_safe = analysis.safe
 
-  if status == "always" then
-    return true, nil
-
-  elseif status == "blocked" then
-    return false, "Ferramenta '" .. tool_name
-      .. "' está bloqueada nas configurações de Hooks."
-
-  else  -- "ask" — padrão para tools ainda não configuradas
-    -- exec: sistema de padrões hierárquico (estilo Kilo Code)
-    if tool_name == "exec" then
-      local bp      = require("agent.hooks.bash_patterns")
-      local matched, failed_sub = bp.matches(tool_arg)
-      if matched then return true, nil end
-      local allowed = bp.ask_user(tool_arg, failed_sub)
-      return allowed, allowed and nil or "Bloqueado pelo usuário."
+    -- Se strict e não seguro, ou se severidade for high, podemos bloquear e reportar erro
+    if not is_safe and analysis.severity == "high" then
+      for _, w in ipairs(warnings) do
+        if w.type == "traversal" then
+          return false, "Bloqueio de segurança (Path Traversal): " .. w.message
+        end
+      end
     end
-    -- Outras tools: prompt simples de permissão
-    local allowed = perms.ask_user(tool_name, tool_arg)
-    return allowed, allowed and nil or "Bloqueado pelo usuário."
+  end
+
+  -- Verifica permissões usando o novo módulo de permissões
+  local check = perms.check(tool_name, tool_arg)
+  if check.allowed then
+    return true, nil
+  end
+
+  -- Se for bloqueado, recusamos imediatamente sem diálogo
+  if check.reason == "blocked" or check.reason == "deny" then
+    return false, "Ferramenta '" .. tool_name .. "' ou comando está bloqueado por regra de segurança."
+  end
+
+  -- Caso contrário, precisamos de diálogo de permissão (check.reason == "ask")
+  local ui = require("tools.exec.permissions_ui")
+  local choice, suggested_pattern = ui.show_dialog(tool_name, tool_arg, check.failed_sub, warnings)
+
+  if choice == "once" then
+    return true, nil
+  elseif choice == "always" then
+    if tool_name == "exec" and suggested_pattern ~= "" then
+      perms.add_rule(suggested_pattern, "allow", true) -- persistente
+    else
+      -- Configura ferramenta inteira como "always" na sessão e configurações
+      perms.set_session_status(tool_name, "always")
+      local compat_perms = require("agent.hooks.permissions")
+      compat_perms.set(tool_name, "always")
+    end
+    return true, nil
+  elseif choice == "block" then
+    if tool_name == "exec" and suggested_pattern ~= "" then
+      perms.add_rule(suggested_pattern, "deny", true) -- persistente
+    else
+      perms.set_session_status(tool_name, "blocked")
+      local compat_perms = require("agent.hooks.permissions")
+      compat_perms.set(tool_name, "blocked")
+    end
+    return false, "Bloqueado pelo usuário."
+  else
+    -- cancel ou deny: Denial tracking
+    local target = (tool_name == "exec" and suggested_pattern ~= "") and suggested_pattern or tool_name
+    local threshold_reached = perms.increment_denial(target)
+    if threshold_reached then
+      io.write("\n\27[38;5;220m⚠️  Você recusou '" .. target .. "' consecutivamente.\n")
+      io.write("Deseja BLOQUEAR permanentemente para evitar novas perguntas? (s/N): \27[0m")
+      io.flush()
+      local block_ans = (io.read("*l") or ""):lower():match("^%s*(.-)%s*$")
+      if block_ans == "s" or block_ans == "sim" then
+        if tool_name == "exec" and suggested_pattern ~= "" then
+          perms.add_rule(suggested_pattern, "deny", true)
+        else
+          perms.set_session_status(tool_name, "blocked")
+          local compat_perms = require("agent.hooks.permissions")
+          compat_perms.set(tool_name, "blocked")
+        end
+        io.write("\27[38;5;203m🚫 Bloqueado permanentemente.\n\n\27[0m")
+        io.flush()
+      end
+    end
+    return false, "Cancelado/Negado pelo usuário."
   end
 end
 
