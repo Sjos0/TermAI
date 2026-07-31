@@ -12,7 +12,7 @@ local generate     = require("session.generate")
 local store        = require("session.store")
 local M = {}
 
-local function save_message(role, content, tokens, skip_counters, reasoning, tool_calls, tool_call_id, pasted_texts)
+local function save_message(role, content, tokens, skip_counters, reasoning, tool_calls, tool_call_id, pasted_texts, incomplete)
   local entry = {
     id        = generate.entry_id(),
     role      = role,
@@ -20,6 +20,9 @@ local function save_message(role, content, tokens, skip_counters, reasoning, too
     tokens    = tokens or 0,
     timestamp = date_utils.now_iso(),
   }
+  if incomplete then
+    entry.incomplete = true
+  end
   if pasted_texts and type(pasted_texts) == "table" then
     entry.pasted_texts = pasted_texts
   end
