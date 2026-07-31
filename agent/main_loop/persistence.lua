@@ -7,7 +7,7 @@
 local session = require("session")
 local M = {}
 
-local function save_exchange(ctx, msgs_before, reasoning, original_input, fresh, pasted_texts)
+local function save_exchange(ctx, msgs_before, reasoning, original_input, fresh, pasted_texts, stream_complete)
   local total = #ctx.msgs
   for i = msgs_before + 1, total do
     local m = ctx.msgs[i]
@@ -19,7 +19,8 @@ local function save_exchange(ctx, msgs_before, reasoning, original_input, fresh,
       local r        = m.reasoning or ((is_last and m.role == "assistant") and reasoning or nil)
       local content  = (is_first and m.role == "user" and original_input) or m.content
       local p_texts  = (is_first and m.role == "user") and pasted_texts or nil
-      session.save_message(m.role, content, tok, skip, r, m.tool_calls, m.tool_call_id, p_texts)
+      local incomplete = is_last and m.role == "assistant" and stream_complete == false
+      session.save_message(m.role, content, tok, skip, r, m.tool_calls, m.tool_call_id, p_texts, incomplete)
     end
   end
   -- v4: persiste ctx.tokens com flag fresh em registro meta dedicado.
