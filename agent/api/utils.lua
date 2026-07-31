@@ -53,12 +53,8 @@ local function is_overflow_error(reason)
 end
 
 local function strip_thinking_tags(text)
-  if not text then return text end
-  -- Optimization (Bolt): Check if '<' exists first. Since most messages do not
-  -- contain thinking tags, we avoid alocating strings via complex gsubs.
-  if not text:find("<", 1, true) then
-    return text
-  end
+  -- Optimization (Bolt): Non-allocating fast check. If there's no '<' character, there can be no think/thought XML tags, so we can return early and avoid expensive regex matches.
+  if not text or not text:find("<", 1, true) then return text end
   text = text:gsub("<[Tt]hink[^>]*>.-</[Tt]hink>", "")
   text = text:gsub("<[Tt]hought[^>]*>.-</[Tt]hought>", "")
   return text
@@ -74,9 +70,13 @@ end
 
 local function estimate_tokens(msgs)
   local total_chars, msg_count = 0, 0
-  for _, msg in ipairs(msgs) do
-    total_chars = total_chars + #(msg.content or "")
-    msg_count   = msg_count + 1
+  -- Optimization (Bolt): Standard numeric loop is faster than ipairs iterator in standard Lua
+  for i = 1, #msgs do
+    local msg = msgs[i]
+    if msg then
+      total_chars = total_chars + #(msg.content or "")
+      msg_count   = msg_count + 1
+    end
   end
   return math.ceil(total_chars / 3.5) + (msg_count * 4)
 end
