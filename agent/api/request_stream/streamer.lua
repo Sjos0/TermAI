@@ -59,6 +59,7 @@ function M.pensar_stream(ctx, txt, role)
         local ok, chunk = pcall(json.decode, data)
         if ok and chunk then
           if chunk.error then error_reason = chunk.error.message or "API error"; break end
+          if not got_data then ui.stream_confirm() end
           got_data = true
 
           local tok_ok, fresh = tokens_mod.process_tokens(ctx, chunk)
