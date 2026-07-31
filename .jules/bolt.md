@@ -7,3 +7,7 @@
 ## 2025-07-25 - [Redundant sequential gsub overhead on high-frequency streaming paths]
 **Learning:** `decode_entities` was called for every single stream chunk, performing three sequential pattern matches and replacements (`&lt;`, `&gt;`, `&amp;`) regardless of whether the chunk contained any entities. In real-time streaming, 99.9% of incoming tokens are plain text and contain no ampersands. Scans over entire strings with `gsub` were highly redundant.
 **Action:** Always add an extremely fast, non-allocating early return check like `if not s:find("&", 1, true) then return s end` for entity-decoding or similar sanitization functions on hot paths. This avoids running any regular expression patterns on clean strings, achieving a 250% speedup.
+
+## 2026-07-28 - [Lua character caching and lazy-init in multi-candidate Levenshtein distance]
+**Learning:** Re-creating a character cache table via `string.sub` inside Levenshtein distance for every single candidate is highly inefficient in Lua, as it creates garbage collector pressure and repetitive CPU work. By passing a lazily-initialized character cache of the query string and combining loops to invoke `string.lower` exactly once per candidate, we avoid redundant string conversions and allocations.
+**Action:** When performing distance or similarity calculations over multiple candidates, lazily initialize and cache any character tables or transformed representations of the query string. Combine loops to guarantee each candidate is processed or transformed at most once.
