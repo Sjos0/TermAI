@@ -14,17 +14,22 @@ function M.poda_mecanica(msgs, keep_recent_tokens, max_chars, estimate_fn)
   if total == 0 then return false end
   max_chars = max_chars or 500
 
+  -- Optimization (Bolt): Reusable scratch table to avoid GC thrashing/table allocations in the high-frequency loop
+  local scratch = {}
+
   -- Mesma lógica de "janela recente" do REQ-1: tudo daqui pra trás fica
   -- intocado; só o que já ficou "velho" é candidato à poda.
   local acc = 0
   local recent_from = 1
   for i = total, 1, -1 do
-    acc = acc + estimate_fn({ msgs[i] })
+    scratch[1] = msgs[i]
+    acc = acc + estimate_fn(scratch)
     if acc >= keep_recent_tokens then
       recent_from = i
       break
     end
   end
+  scratch[1] = nil
 
   local podou = false
   for i = 1, recent_from - 1 do
