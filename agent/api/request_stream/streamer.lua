@@ -145,7 +145,9 @@ function M.pensar_stream(ctx, txt, role)
     end
   end
 
-  if txt ~= nil then table.remove(ctx.msgs) end
+  -- Não removemos a mensagem do usuário aqui: falha de rede não pode apagar
+  -- o que ela digitou. Fica em ctx.msgs e é salva normalmente pelo
+  -- persistence.save_exchange no final do turno em main_loop.lua.
   recovery.recover_tool_seq(ctx.msgs)
   return "[ERRO] Falha apos " .. rcfg.max_retries .. " tentativas - " .. last_error, false, false, ""
 end
