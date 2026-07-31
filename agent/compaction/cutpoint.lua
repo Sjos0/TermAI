@@ -67,16 +67,22 @@ function M.find_compaction_bounds(msgs, opts, estimate_fn)
   end
   local safe_start = M.find_safe_keep_from(msgs, anchor_end + 1) - 1
 
+  -- Optimization (Bolt): Reusable scratch table to avoid GC thrashing/table allocations in the high-frequency loop
+  local scratch = {}
+
   -- Foco: anda de trás pra frente acumulando tokens até keep_recent
   local acc = 0
   local cut_candidate = nil
   for i = total, safe_start + 1, -1 do
-    acc = acc + estimate_fn({ msgs[i] })
+    scratch[1] = msgs[i]
+    acc = acc + estimate_fn(scratch)
     if acc >= keep_recent then
       cut_candidate = i
       break
     end
   end
+  scratch[1] = nil
+
   if not cut_candidate then
     -- Tudo depois da âncora cabe na janela recente — nada de relevante a
     -- descartar. Evita compactação inútil (miolo vazio ou quase vazio).
