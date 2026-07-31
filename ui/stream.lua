@@ -12,11 +12,19 @@ function M.stream_start()
   state.reset()
 end
 
+-- Chamado pelo streamer no instante em que o primeiro chunk válido da
+-- tentativa chega (reasoning, content OU tool_call — não importa o tipo).
+-- É o único ponto que sabe, de fato, que a fase de retry/spinner acabou.
+function M.stream_confirm()
+  local s = state._s
+  if s.started then return end
+  spinner.kill_spinner()
+  spinner.clear_retry_lines()
+  s.started = true
+end
+
 function M.stream_reasoning(tok)
   local s = state._s
-  if not s.started then
-    spinner.kill_spinner(); spinner.clear_retry_lines(); s.started = true
-  end
 
   if not s.reasoning_started then
     io.write("\r\27[K")
@@ -109,11 +117,6 @@ function M.stream_token(tok)
     s.reasoning_started = false
   end
   s.full = s.full .. tok
-  if not s.started then
-    spinner.kill_spinner()
-    spinner.clear_retry_lines()
-    s.started = true
-  end
 end
 
 -- MUDANÇA: retorna full E reasoning.
