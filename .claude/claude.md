@@ -39,7 +39,7 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
-## 2026-07-30 - [Session Persistence Loses User Message on Total Network Failure]
+## 2026-07-31 - [Session Persistence Loses User Message on Total Network Failure]
 **Bug:** When all API retry attempts failed on the first call of a turn, `streamer.lua` rolled back the just-appended user message via `table.remove(ctx.msgs)`. Since `main_loop.lua` only persists to the JSONL session file once, at the end of the whole turn, the removed message was never written to disk — lost from memory and from the session file with zero trace. On reopening TermAI, the session reverted to the agent's last message before the user's (now vanished) input.
 **Files Modified:**
 - `agent/api/request_stream/streamer.lua` — Removed the `table.remove(ctx.msgs)` rollback on total retry failure (kept for the unrelated local-overflow path)
