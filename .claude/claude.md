@@ -36,6 +36,19 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 - UI dialog (`permissions_ui.lua`): ANSI colors, 4 options + cancel, anti-false-submit — functional
 - **Bug Found:** `check("exec", nil)` crashed because `parser.extract_subcommands(nil)` indexed nil. Fixed with nil/empty guard before parser call.
 - **Tool Description Updated:** Added bash best practices from OpenClaude (prefer dedicated tools, chain with `&&`, absolute paths, verify parent dir)
+
+---
+
+## 2026-07-30 - [Session Persistence Loses User Message on Total Network Failure]
+**Bug:** When all API retry attempts failed on the first call of a turn, `streamer.lua` rolled back the just-appended user message via `table.remove(ctx.msgs)`. Since `main_loop.lua` only persists to the JSONL session file once, at the end of the whole turn, the removed message was never written to disk — lost from memory and from the session file with zero trace. On reopening TermAI, the session reverted to the agent's last message before the user's (now vanished) input.
+**Files Modified:**
+- `agent/api/request_stream/streamer.lua` — Removed the `table.remove(ctx.msgs)` rollback on total retry failure (kept for the unrelated local-overflow path)
+- `session/manager/messages.lua` — `save_message` accepts optional `incomplete` param
+- `agent/main_loop/persistence.lua` — `save_exchange` accepts optional `stream_complete` param, flags the last assistant message as incomplete when the stream was cut short
+- `agent/main_loop.lua` — passes `stream_complete` through to `save_exchange`
+**Learning:** Persistence happening only once, at the end of a potentially multi-iteration turn, turns any in-memory-only rollback inside that turn into permanent silent data loss.
+**Prevention:** Rollback (`table.remove`) should only be used for validation failures the caller itself recovers from in the same call stack (e.g. context overflow, which triggers compaction). Never use it as error-cleanup for something the user typed.
+**Note:** True per-sub-turn incremental persistence (saving after every API call inside the ReAct loop, not just once at the end) was proposed as a separate follow-up, not implemented in this pass.
 **Test Coverage:** 71 tests (36 original + 35 extended) — 100% passing
 **Files Modified:**
 - `tools/exec/permissions.lua` — Added nil/empty check (bug fix)
