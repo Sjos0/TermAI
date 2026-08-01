@@ -44,7 +44,6 @@ local function update_key(models_mod)
   else
     io.write(c.red .. "  Erro: " .. tostring(err) .. "\n" .. c.reset)
   end
-  ui.pause()
 end
 
 M.update_key = update_key
