@@ -8,6 +8,7 @@ local _spin_pid    = TMPDIR .. "/ta_pid"
 local _inject_flag = TMPDIR .. "/ta_inject.flag"
 local _stream_flag = TMPDIR .. "/termai_stream.flag"
 local _anim_start  = nil
+local _start_ms    = nil
 local _retry_lines = 0
 
 local SPINNER_SCRIPT = [[
@@ -67,12 +68,121 @@ do
 done
 ]]
 
+local function get_thinking_mode()
+  local ok, config_mod = pcall(require, "config")
+  if ok and config_mod then
+    local ok_val, val = pcall(config_mod.get, "agents.defaults.thinking_mode")
+    if ok_val and val then
+      return val
+    end
+  end
+  return "expanded"
+end
+
+local function get_ms_time()
+  local f = io.popen("date +%s%3N")
+  if f then
+    local s = f:read("*l")
+    f:close()
+    local val = tonumber(s)
+    if val then return val end
+  end
+  return os.time() * 1000
+end
+
+local function format_duration(ms)
+  if ms < 1000 then
+    return string.format("%dms", ms)
+  elseif ms < 60000 then
+    local sec = ms / 1000
+    local integer, fractional = math.modf(sec)
+    if fractional >= 0.1 then
+      return string.format("%.1fseg", sec)
+    else
+      return string.format("%dseg", integer)
+    end
+  else
+    local total_sec = math.floor(ms / 1000)
+    local min = math.floor(total_sec / 60)
+    local sec = total_sec % 60
+    if sec > 0 then
+      return string.format("%dmin %dseg", min, sec)
+    else
+      return string.format("%dmin", min)
+    end
+  end
+end
+
 local function _launch()
   local f = io.open(_spin_sh, "w")
   if not f then return end
   f:write(SPINNER_SCRIPT)
   f:close()
-  -- 2>/dev/null no sh captura erros de sintaxe do script sem vazarem pro terminal
+  os.execute("sh " .. _spin_sh .. " 2>/dev/null & echo $! > " .. _spin_pid)
+  io.flush()
+end
+
+local function _launch_compact()
+  local COMPACT_SCRIPT = [[
+#!/bin/sh
+trap 'exit 0' TERM
+ESC=$(printf '\033')
+R="${ESC}[0m"
+B="${ESC}[1m"
+D="${ESC}[2m"
+C1="${ESC}[38;2;25;60;180m"
+C2="${ESC}[38;2;45;110;225m"
+C3="${ESC}[38;2;75;155;245m"
+C4="${ESC}[38;2;115;200;255m"
+F0="${D}[${R}${C1}=${R}${D}   ]${R}"
+F1="${D}[${R}${C1}=${C2}=${R}${D}  ]${R}"
+F2="${D}[${R}${C1}=${C2}=${C3}=${R}${D} ]${R}"
+F3="${D}[${R}${D} ${R}${C2}=${C3}=${C4}=${R}${D}]${R}"
+F4="${D}[${R}${D}  ${R}${C3}=${C4}=${R}${D}]${R}"
+F5="${D}[${R}${D}   ${R}${C4}=${R}${D}]${R}"
+
+LBLUE="${ESC}[38;5;117m"
+YELLOW="${ESC}[38;5;220m"
+
+c=0
+while true
+do
+  case $((c % 6)) in
+    0) f="$F0" ;;
+    1) f="$F1" ;;
+    2) f="$F2" ;;
+    3) f="$F3" ;;
+    4) f="$F4" ;;
+    5) f="$F5" ;;
+  esac
+
+  ms_val=$((c * 100))
+  if [ "$ms_val" -lt 1000 ]; then
+    TIMER="${ms_val}ms"
+  elif [ "$ms_val" -lt 60000 ]; then
+    sec_val=$((ms_val / 1000))
+    dec_val=$(((ms_val % 1000) / 100))
+    if [ "$dec_val" -eq 0 ]; then
+      TIMER="${sec_val}seg"
+    else
+      TIMER="${sec_val}.${dec_val}seg"
+    fi
+  else
+    min_val=$((ms_val / 60000))
+    sec_val=$(((ms_val % 60000) / 1000))
+    TIMER="${min_val}min ${sec_val}seg"
+  fi
+
+  printf '\r%s %sPensando%s %s(%s)%s\033[K' "$f" "${LBLUE}" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+  sleep 0.1
+  c=$((c + 1))
+done
+]]
+
+  local f = io.open(_spin_sh, "w")
+  if not f then return end
+  f:write(COMPACT_SCRIPT)
+  f:close()
   os.execute("sh " .. _spin_sh .. " 2>/dev/null & echo $! > " .. _spin_pid)
   io.flush()
 end
@@ -91,38 +201,84 @@ function M.kill_spinner()
   io.flush()
 end
 
--- label: "Injetando" para pre-flight ativo; nil ou outro valor = "Requisitando" direto
 function M.start_thinking(label)
   M.kill_spinner()
   M.clear_retry_lines()
   _anim_start  = os.time()
+  _start_ms    = get_ms_time()
   _retry_lines = 0
-  if label ~= "Injetando" then
+
+  local ok_state, state = pcall(require, "ui.stream.state")
+  if ok_state and state and state._s then
+    state._s.compact_thinking_stopped = false
+  end
+
+  local tmode = get_thinking_mode()
+  if tmode == "compact" then
+    _launch_compact()
+  else
+    if label ~= "Injetando" then
+      local f = io.open(_inject_flag, "w")
+      if f then f:write("1"); f:close() end
+    end
+    _launch()
+  end
+end
+
+function M.update_label()
+  local tmode = get_thinking_mode()
+  if tmode ~= "compact" then
     local f = io.open(_inject_flag, "w")
     if f then f:write("1"); f:close() end
   end
-  _launch()
-end
-
--- Sinaliza ao spinner para transicionar de "Injetando" para "Requisitando"
-function M.update_label()
-  local f = io.open(_inject_flag, "w")
-  if f then f:write("1"); f:close() end
 end
 
 function M.restart_spinner()
   M.kill_spinner()
-  -- restart ocorre em ciclos de tool call: sempre "Requisitando"
-  local f = io.open(_inject_flag, "w")
-  if f then f:write("1"); f:close() end
-  _launch()
+  local tmode = get_thinking_mode()
+  if tmode == "compact" then
+    _launch_compact()
+  else
+    local f = io.open(_inject_flag, "w")
+    if f then f:write("1"); f:close() end
+    _launch()
+  end
+end
+
+function M.stop_thinking_and_print_compact()
+  if not _anim_start then return end
+  local elapsed_ms = get_ms_time() - (_start_ms or get_ms_time())
+  M.kill_spinner()
+  _anim_start = nil
+
+  local LBLUE = "\27[38;5;117m"
+  local YELLOW = "\27[38;5;220m"
+  local RESET = "\27[0m"
+  io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET .. YELLOW .. "(" .. format_duration(elapsed_ms) .. ")" .. RESET .. "\n")
+  io.flush()
 end
 
 function M.stop_thinking()
-  local elapsed = os.time() - (_anim_start or os.time())
-  M.kill_spinner()
-  _anim_start = nil
-  return elapsed
+  local tmode = get_thinking_mode()
+  if tmode == "compact" then
+    local ok_state, state = pcall(require, "ui.stream.state")
+    if ok_state and state and state._s then
+      if not state._s.compact_thinking_stopped then
+        state._s.compact_thinking_stopped = true
+        M.stop_thinking_and_print_compact()
+      end
+    else
+      M.stop_thinking_and_print_compact()
+    end
+    local elapsed = os.time() - (_anim_start or os.time())
+    _anim_start = nil
+    return elapsed
+  else
+    local elapsed = os.time() - (_anim_start or os.time())
+    M.kill_spinner()
+    _anim_start = nil
+    return elapsed
+  end
 end
 
 function M.show_retry(attempt, max, reason, wait)

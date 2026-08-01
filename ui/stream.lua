@@ -8,6 +8,17 @@ local box     = require("ui.stream.reasoning_box")
 local c = core.c
 local M = {}
 
+local function get_thinking_mode()
+  local ok, config_mod = pcall(require, "config")
+  if ok and config_mod then
+    local ok_val, val = pcall(config_mod.get, "agents.defaults.thinking_mode")
+    if ok_val and val then
+      return val
+    end
+  end
+  return "expanded"
+end
+
 function M.stream_start()
   state.reset()
 end
@@ -18,13 +29,26 @@ end
 function M.stream_confirm()
   local s = state._s
   if s.started then return end
-  spinner.kill_spinner()
+  local tmode = get_thinking_mode()
+  if tmode ~= "compact" then
+    spinner.kill_spinner()
+  end
   spinner.clear_retry_lines()
   s.started = true
 end
 
 function M.stream_reasoning(tok)
   local s = state._s
+  local tmode = get_thinking_mode()
+
+  if tmode == "compact" then
+    if not s.reasoning_started then
+      s.reasoning_started = true
+      s.reasoning         = ""
+    end
+    s.reasoning = s.reasoning .. tok
+    return
+  end
 
   if not s.reasoning_started then
     io.write("\r\27[K")
@@ -112,9 +136,17 @@ end
 
 function M.stream_token(tok)
   local s = state._s
-  if s.reasoning_started then
-    box.close_reasoning_box()
-    s.reasoning_started = false
+  local tmode = get_thinking_mode()
+  if tmode == "compact" then
+    if not s.compact_thinking_stopped then
+      s.compact_thinking_stopped = true
+      spinner.stop_thinking_and_print_compact()
+    end
+  else
+    if s.reasoning_started then
+      box.close_reasoning_box()
+      s.reasoning_started = false
+    end
   end
   s.full = s.full .. tok
 end
@@ -124,9 +156,17 @@ end
 -- Não entra em ctx.msgs — a API rejeitaria.
 function M.stream_end()
   local s = state._s
-  if s.reasoning_started then
-    box.close_reasoning_box()
-    s.reasoning_started = false
+  local tmode = get_thinking_mode()
+  if tmode == "compact" then
+    if not s.compact_thinking_stopped then
+      s.compact_thinking_stopped = true
+      spinner.stop_thinking_and_print_compact()
+    end
+  else
+    if s.reasoning_started then
+      box.close_reasoning_box()
+      s.reasoning_started = false
+    end
   end
   return s.full, s.reasoning or ""
 end

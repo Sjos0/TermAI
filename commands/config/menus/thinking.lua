@@ -28,6 +28,8 @@ function M.run(ctx)
     local tp      = ctx.cfg.agents.defaults.thinking_protocol or {}
     local enabled = tp.enabled == true
     local effort  = tp.effort or "medium"
+    local tmode   = ctx.cfg.agents.defaults.thinking_mode or "expanded"
+
     io.write("\n"..c.bold..c.cyan.."  Configurações › Raciocínio Estimulado"..c.reset.."\n")
     io.write(c.gray.."  "..SEP..c.reset.."\n\n")
     io.write(c.dim..[[  Injeta um protocolo de raciocínio no System Prompt.
@@ -38,9 +40,11 @@ function M.run(ctx)
     io.write(c.gray.."  ── Status "..SEP2..c.reset.."\n")
     row("Protocolo:", enabled and (c.green.."✅ Ativo") or (c.red.."❌ Desativado"), "")
     row("Nível:", effort)
+    row("Modo de Exibição:", tmode == "compact" and "compacto ⚡" or "expandido 📖")
     io.write("\n"..c.gray.."  ── Opções "..SEP2..c.reset.."\n")
     io.write("  "..c.white.."1."..c.reset.."  "..(enabled and (c.red.."Desativar") or (c.green.."Ativar"))..c.reset.." Protocolo\n")
     io.write("  "..c.white.."2."..c.reset.."  Alterar nível  "..c.dim.."(low / medium / high)"..c.reset.."\n")
+    io.write("  "..c.white.."3."..c.reset.."  Alterar Modo de Exibição  "..c.dim.."(expanded / compact)"..c.reset.."\n")
     io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
     local ch = ui.prompt_read("Escolha")
     if ui.is_cancel(ch) then break end
@@ -60,6 +64,15 @@ function M.run(ctx)
         save_tp(ctx, "effort", levels[lch])
         io.write(c.green.."\n  ✅ Nível: "..levels[lch]..". Reinicie a TUI.\n"..c.reset)
       else io.write(c.red.."\n  ❌ Inválido.\n"..c.reset) end
+      ui.pause()
+    elseif ch == "3" then
+      local new_mode = tmode == "compact" and "expanded" or "compact"
+      if not ctx.cfg.agents.defaults then
+        ctx.cfg.agents.defaults = {}
+      end
+      ctx.cfg.agents.defaults.thinking_mode = new_mode
+      config_mod.set("agents.defaults.thinking_mode", new_mode)
+      io.write(c.green.."\n  ✅ Modo de Exibição alterado para: " .. new_mode .. "\n" .. c.reset)
       ui.pause()
     end
   end
