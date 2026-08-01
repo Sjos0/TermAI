@@ -28,17 +28,26 @@ PROTOCOLO:
    - Se retornar erro "Arquivo não existe": o arquivo é NOVO. CONTEUDO_EXISTENTE = vazio. Continue para o passo 3.
    Nunca use `Find` para esta verificação — use APENAS `Read` diretamente.
    `Find` busca arquivos por nome e não funciona para verificar existência por caminho com subpastas.
-3. Analise o contexto da sessão e identifique APENAS:
+3. Analise o contexto da sessão e identifique:
    - Decisões técnicas importantes tomadas
    - Bugs encontrados e suas soluções
    - Aprendizados e fatos novos relevantes
-   Ignore: conversas triviais, testes sem conclusão e mensagens sem valor de longo prazo.
+   - Informações pessoais do usuário (aniversários, encontros, família, amigos)
+   - Eventos sociais e compromissos mencionados
+   Ignore apenas: testes sem conclusão e mensagens repetidas.
 4. Compare cada item identificado com o CONTEUDO_EXISTENTE. Não repita informações que já estão no arquivo.
 5. Para cada nova entrada, use obrigatoriamente este formato:
    ## Título breve do tópico
    Texto objetivo com [[Tag1]] e [[Tag2]] inline ao lado dos conceitos.
    Decisão/Bug/Aprendizado: [[Conceito]] — explicação concisa.
    (Mínimo 3 tags [[Obsidian]] por entrada)
+   REGRAS DE TAGS:
+   - Tags devem ser descritivas: [[bolo]] não [[comida]], [[encontro amigos]] não [[reunião]]
+   - Para pessoas: use o NOME PRÓPRIO que apareceu na conversa
+   - Para eventos: [[aniversário]], [[festa]], [[encontro]], [[viagem]]
+   - Para contextos: [[casa de]], [[parque]], [[escola]], [[trabalho]]
+   - Cada frase deve ter pelo menos 1 tag que descreva o CONTEXTO, não apenas o sujeito
+   - Exemplo bom: "[[Maria]] vai comer [[bolo]] na [[casa de Pedro]] às 20h. [[aniversário]] [[festa]]"
 6. Se não houver nenhuma informação nova relevante, pule o passo 7 e vá direto ao passo 8.
 7. Salve o arquivo:
    - Se o arquivo era NOVO (CONTEUDO_EXISTENTE = vazio):
