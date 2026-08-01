@@ -57,9 +57,3 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Learning:** Quando um modo de exibição novo é implementado como script paralelo em vez de estender a máquina de estados existente, é fácil reimplementar só o estado final ("Pensando") e perder os estados intermediários que o script original já resolvia via flags.
 **Prevention:** Modo de exibição novo pra uma state machine existente deve reusar os mesmos flags/sinais do original, não hardcodar o estado terminal. Confirmar rodando grep pelos rótulos do script original e checando se cada um tem caminho de código alcançável no modo novo.
 **Validation:** `luac5.4 -p` nos dois arquivos + teste isolado do script extraído com `sh` (flags criados em intervalos) confirmou a sequência Injetando(0-300ms) → Requisitando(400-600ms) → Pensando(700ms+) com o timer rodando contínuo e sem alteração.
-**Note:** True per-sub-turn incremental persistence (saving after every API call inside the ReAct loop, not just once at the end) was proposed as a separate follow-up, not implemented in this pass.
-**Test Coverage:** 71 tests (36 original + 35 extended) — 100% passing
-**Files Modified:**
-- `tools/exec/permissions.lua` — Added nil/empty check (bug fix)
-- `tools/exec.lua` — Updated tool description with bash best practices
-- `tests/exec_permissions_extended.lua` — Created 35 additional tests
