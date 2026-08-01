@@ -1,5 +1,5 @@
 -- commands/config_cli/menus/thinking.lua
--- Menu de Raciocinio Estimulado: ativar/desativar, alterar nivel.
+-- Menu de Raciocinio Estimulado: ativar/desativar, alterar nivel, modo de exibicao.
 local M = {}
 
 function M.run(config_mod, ui)
@@ -8,6 +8,7 @@ function M.run(config_mod, ui)
     local tp      = cfg.agents.defaults.thinking_protocol or {}
     local enabled = tp.enabled == true
     local effort  = tp.effort or "medium"
+    local tmode   = cfg.agents.defaults.thinking_mode or "expanded"
 
     ui.hdr("TermAI Config › Raciocínio Estimulado")
     io.write(ui.DM..[[  Injeta protocolo de pensamento no System Prompt.
@@ -18,9 +19,11 @@ function M.run(config_mod, ui)
     io.write(ui.GR.."  ── Status "..ui.SEP2..ui.R.."\n")
     ui.row("Protocolo:", enabled and (ui.G.."✅ Ativo"..ui.R) or (ui.RE.."❌ Desativado"..ui.R))
     ui.row("Nível:", effort)
+    ui.row("Modo de Exibição:", tmode == "compact" and "compact" or "expanded")
     io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  "..(enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Protocolo\n")
     io.write("  "..ui.B.."2."..ui.R.."  Alterar nível  "..ui.DM.."(low / medium / high)"..ui.R.."\n")
+    io.write("  "..ui.B.."3."..ui.R.."  Alterar Modo de Exibição  "..ui.DM.."(expanded / compact)"..ui.R.."\n")
 
     io.write("  "..ui.B.."0."..ui.R.."  Voltar\n\n")
 
@@ -44,6 +47,12 @@ function M.run(config_mod, ui)
         config_mod.set("agents.defaults.thinking_protocol.effort", lvls[lch])
         io.write(ui.G.."\n  ✅ Nível: "..lvls[lch]..". Reinicie a TUI.\n"..ui.R)
       else io.write(ui.RE.."\n  ❌ Inválido.\n"..ui.R) end
+      ui.pause()
+
+    elseif ch == "3" then
+      local new_mode = tmode == "compact" and "expanded" or "compact"
+      config_mod.set("agents.defaults.thinking_mode", new_mode)
+      io.write(ui.G.."\n  ✅ Modo de Exibição alterado para: " .. new_mode .. "\n" .. ui.R)
       ui.pause()
     end
   end
