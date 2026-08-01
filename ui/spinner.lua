@@ -2,14 +2,15 @@ local core = require("ui.core")
 local c = core.c
 local M = {}
 
-local TMPDIR       = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
-local _spin_sh     = TMPDIR .. "/ta_spin.sh"
-local _spin_pid    = TMPDIR .. "/ta_pid"
-local _inject_flag = TMPDIR .. "/ta_inject.flag"
-local _stream_flag = TMPDIR .. "/termai_stream.flag"
-local _anim_start  = nil
-local _start_ms    = nil
-local _retry_lines = 0
+local TMPDIR          = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+local _spin_sh        = TMPDIR .. "/ta_spin.sh"
+local _spin_pid       = TMPDIR .. "/ta_pid"
+local _inject_flag    = TMPDIR .. "/ta_inject.flag"
+local _reasoning_flag = TMPDIR .. "/ta_reasoning.flag"
+local _stream_flag    = TMPDIR .. "/termai_stream.flag"
+local _anim_start     = nil
+local _start_ms       = nil
+local _retry_lines    = 0
 
 local SPINNER_SCRIPT = [[
 #!/bin/sh
@@ -144,9 +145,29 @@ F5="${D}[${R}${D}   ${R}${C4}=${R}${D}]${R}"
 LBLUE="${ESC}[38;5;117m"
 YELLOW="${ESC}[38;5;220m"
 
+INJECT_FLAG="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/ta_inject.flag"
+REASONING_FLAG="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/ta_reasoning.flag"
+if [ -f "$INJECT_FLAG" ]; then
+  LABEL="Requisitando"
+  INJECT_DONE=1
+else
+  LABEL="Injetando"
+  INJECT_DONE=0
+fi
+REASONING_DONE=0
+
 c=0
 while true
 do
+  if [ "$INJECT_DONE" -eq 0 ] && [ -f "$INJECT_FLAG" ]; then
+    INJECT_DONE=1
+    LABEL="Requisitando"
+  fi
+  if [ "$REASONING_DONE" -eq 0 ] && [ -f "$REASONING_FLAG" ]; then
+    REASONING_DONE=1
+    LABEL="Pensando"
+  fi
+
   case $((c % 6)) in
     0) f="$F0" ;;
     1) f="$F1" ;;
@@ -173,7 +194,7 @@ do
     TIMER="${min_val}min ${sec_val}seg"
   fi
 
-  printf '\r%s %sPensando%s %s(%s)%s\033[K' "$f" "${LBLUE}" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+  printf '\r%s %s%s%s %s(%s)%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
   sleep 0.1
   c=$((c + 1))
 done
@@ -196,7 +217,7 @@ function M.kill_spinner()
     os.execute("kill " .. pid .. " 2>/dev/null")
   end
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
-    .. " " .. _inject_flag .. " " .. _stream_flag .. " 2>/dev/null")
+    .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag .. " 2>/dev/null")
   io.write("\r\27[K")
   io.flush()
 end
@@ -213,34 +234,40 @@ function M.start_thinking(label)
     state._s.compact_thinking_stopped = false
   end
 
+  if label ~= "Injetando" then
+    local f = io.open(_inject_flag, "w")
+    if f then f:write("1"); f:close() end
+  end
+
   local tmode = get_thinking_mode()
   if tmode == "compact" then
     _launch_compact()
   else
-    if label ~= "Injetando" then
-      local f = io.open(_inject_flag, "w")
-      if f then f:write("1"); f:close() end
-    end
     _launch()
   end
 end
 
 function M.update_label()
-  local tmode = get_thinking_mode()
-  if tmode ~= "compact" then
-    local f = io.open(_inject_flag, "w")
-    if f then f:write("1"); f:close() end
-  end
+  local f = io.open(_inject_flag, "w")
+  if f then f:write("1"); f:close() end
+end
+
+-- Sinaliza ao spinner compacto que o primeiro token de reasoning chegou,
+-- disparando a troca de rótulo "Requisitando" -> "Pensando" no script sh.
+function M.mark_reasoning_started()
+  local f = io.open(_reasoning_flag, "w")
+  if f then f:write("1"); f:close() end
 end
 
 function M.restart_spinner()
   M.kill_spinner()
+  local f = io.open(_inject_flag, "w")
+  if f then f:write("1"); f:close() end
+
   local tmode = get_thinking_mode()
   if tmode == "compact" then
     _launch_compact()
   else
-    local f = io.open(_inject_flag, "w")
-    if f then f:write("1"); f:close() end
     _launch()
   end
 end
