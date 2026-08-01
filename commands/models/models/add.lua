@@ -85,7 +85,6 @@ local function add(models_mod)
       end
     end
   end
-  ui.pause()
 end
 M.add = add
 return M

@@ -107,7 +107,6 @@ local function add(models_mod)
     io.write(c.green .. "  ✅ Provedor '" .. (pname or pid)
       .. "' adicionado. Use 'Adicionar modelo' para inserir modelos.\n" .. c.reset)
   end
-  ui.pause()
 end
 
 M.add = add
