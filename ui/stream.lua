@@ -45,6 +45,7 @@ function M.stream_reasoning(tok)
     if not s.reasoning_started then
       s.reasoning_started = true
       s.reasoning         = ""
+      spinner.mark_reasoning_started()
     end
     s.reasoning = s.reasoning .. tok
     return
