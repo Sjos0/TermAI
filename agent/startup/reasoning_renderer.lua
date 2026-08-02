@@ -9,6 +9,30 @@ local M = {}
 
 local MAX_REASONING_LINES = 6
 
+-- Lê o thinking_mode ATUAL da config — não o modo que estava ativo quando
+-- a mensagem foi originalmente gerada. Por decisão do Samuel, o replay é
+-- dinâmico: reflete sempre o setting vigente agora, pro histórico inteiro.
+local function get_thinking_mode()
+  local ok, config_mod = pcall(require, "config")
+  if ok and config_mod then
+    local ok_val, val = pcall(config_mod.get, "agents.defaults.thinking_mode")
+    if ok_val and val then
+      return val
+    end
+  end
+  return "expanded"
+end
+
+-- Variante compacta do replay: mesma filosofia do modo compacto ao vivo
+-- (ui/spinner.lua) — não reexibe o texto do raciocínio, só sinaliza que
+-- houve pensamento. Sem duração porque o elapsed não é persistido no JSONL.
+local function show_reasoning_compact()
+  local LBLUE = "\27[38;5;117m"
+  local RESET = "\27[0m"
+  io.write(LBLUE .. "⬤ " .. "Pensamento" .. RESET .. "\n\n")
+  io.flush()
+end
+
 local function show_reasoning_box(reasoning)
   if not reasoning or reasoning:match("^%s*$") then return end
   local DARK_GREEN = "\27[38;5;71m"
@@ -48,5 +72,18 @@ local function show_reasoning_box(reasoning)
   io.write(c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
   io.flush()
 end
-M.show_reasoning_box = show_reasoning_box
+M.show_reasoning_box     = show_reasoning_box
+M.show_reasoning_compact = show_reasoning_compact
+
+-- Ponto de entrada público único: os 4 call-sites em agent/startup.lua devem
+-- usar este, não show_reasoning_box direto — é ele que decide o estilo.
+function M.show_reasoning(reasoning)
+  if not reasoning or reasoning:match("^%s*$") then return end
+  if get_thinking_mode() == "compact" then
+    show_reasoning_compact()
+  else
+    show_reasoning_box(reasoning)
+  end
+end
+
 return M
