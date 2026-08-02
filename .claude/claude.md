@@ -57,3 +57,23 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Learning:** Quando um modo de exibição novo é implementado como script paralelo em vez de estender a máquina de estados existente, é fácil reimplementar só o estado final ("Pensando") e perder os estados intermediários que o script original já resolvia via flags.
 **Prevention:** Modo de exibição novo pra uma state machine existente deve reusar os mesmos flags/sinais do original, não hardcodar o estado terminal. Confirmar rodando grep pelos rótulos do script original e checando se cada um tem caminho de código alcançável no modo novo.
 **Validation:** `luac5.4 -p` nos dois arquivos + teste isolado do script extraído com `sh` (flags criados em intervalos) confirmou a sequência Injetando(0-300ms) → Requisitando(400-600ms) → Pensando(700ms+) com o timer rodando contínuo e sem alteração.
+
+## 2026-08-01 - [Compact Spinner Timer Ran Through Injetando/Requisitando + Missing Blank Line After "Pensou"]
+**Bug:** Duas falhas remanescentes no `thinking_mode = "compact"`, na mesma área do fix anterior (ver entrada acima):
+1. O `(Xs)` no script embutido de `_launch_compact()` vinha de um contador que rodava desde o lançamento do spinner (fase "Injetando"), aparecendo colado a TODOS os rótulos em vez de nascer só em "Pensando". A entrada anterior corrigiu a troca de rótulos mas deixou o timer intocado de propósito — esse era o gap.
+2. `stop_thinking_and_print_compact()` fechava a bolha "⬤ Pensou (Xs)" com um único `"\n"`, grudando a resposta do agente (impressa em seguida via `ui.ai_msg_stream`) verticalmente nela.
+**Files Modified:**
+- `ui/spinner.lua` — `_launch_compact()` ganhou contador próprio `pc` que só existe/imprime o `(Xs)` quando `REASONING_DONE=1`, zerado na transição; nova var de módulo `_reasoning_start_ms` (setada em `mark_reasoning_started()`, resetada em `start_thinking()`); `stop_thinking_and_print_compact()` calcula `elapsed_ms` a partir dela (fallback pro início do ciclo se não houve reasoning) e fecha com `"\n\n"`.
+**Learning:** "Não alterar o timer" foi escopo válido na correção anterior, mas ficou como dívida silenciosa — só ficou visível depois que os rótulos passaram a mudar de verdade.
+**Prevention:** Ao corrigir só parte de uma state machine, registrar explicitamente qual parte ficou de fora e por quê, não só o que foi corrigido.
+**Validation:** `luac5.4 -p` + teste do script `_launch_compact()` extraído simulando os 3 flags via `touch` em intervalos (~350ms/~750ms): confirmado que o timer só aparece a partir de "Pensando", nascendo em `(0ms)`.
+
+## 2026-08-01 - [Replay Ignorava thinking_mode — Sempre Mostrava Box Expandido]
+**Bug/Gap:** `agent/startup/reasoning_renderer.lua` nunca consultava `thinking_mode`. Os 4 call-sites em `agent/startup.lua` chamavam `rr.show_reasoning_box()` direto, então o replay sempre desenhava a caixa "Pensamento Concluído ✓" (estilo expandido), mesmo com `thinking_mode = "compact"` ativo, e independente do modo que estava ativo quando a mensagem foi gerada. Não existia variante compacta pro replay.
+**Decisão (Samuel):** replay dinâmico — reflete sempre o `thinking_mode` ATUAL da config pro histórico inteiro (não persiste o modo por mensagem no JSONL).
+**Files Modified:**
+- `agent/startup/reasoning_renderer.lua` — nova `show_reasoning_compact()` (bolha "⬤ Pensamento", sem duração — elapsed não é persistido) e novo dispatcher público `M.show_reasoning(reasoning)` que lê `thinking_mode` e escolhe entre `show_reasoning_box` (existente, intocada) e `show_reasoning_compact`.
+- `agent/startup.lua` — as 4 chamadas trocaram de `rr.show_reasoning_box(` pra `rr.show_reasoning(`.
+**Learning:** Uma função "pura" que renderiza uma coisa só tende a virar ponto cego quando o produto ganha um segundo modo de exibição em outro lugar do sistema (o spinner) — ninguém "esqueceu" o replay, ele só nunca foi conectado ao novo conceito de `thinking_mode` quando ele nasceu.
+**Prevention:** Toda vez que uma config nova tipo `thinking_mode` for introduzida, dar `grep -rn` por TODOS os pontos que renderizam o conceito que ela afeta (aqui: reasoning/thinking em qualquer lugar da TUI), não só o caminho ao vivo — replay/histórico é code path separado e fácil de esquecer.
+**Validation:** `luac5.4 -p` nos dois arquivos.
