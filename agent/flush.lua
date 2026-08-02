@@ -7,6 +7,7 @@
 local api         = require("agent.api")
 local tool_runner = require("agent.loop.tool_runner")
 local tools       = require("tools")
+local ui          = require("ui")
 
 local M = {}
 
@@ -45,6 +46,11 @@ end
 -- ctx: contexto principal (para active/cfg — não é modificado!)
 -- new_msgs: apenas as mensagens recentes
 function M.run(ctx, new_msgs, flush_prompt)
+  -- Spinner adaptativo: reaproveita a MESMA state machine do ReAct loop
+  -- principal (ui/spinner.lua), sem reimplementar nada. "Injetando" cobre
+  -- a montagem do contexto isolado do flush — equivalente, em custo e
+  -- posição no fluxo, à injeção de memória do loop normal (agent/loop.lua).
+  ui.start_thinking("Injetando")
   local context_text = format_context(new_msgs)
 
   -- System prompt mínimo: apenas tools + regra de confidencialidade
@@ -127,15 +133,22 @@ function M.run(ctx, new_msgs, flush_prompt)
       fs.exec and x or o, fs.read and x or o, fs.edit and x or o, fs.done and x or o)
   end
 
-  -- FlushLoop próprio (FPM) — loop ReAct headless com monitoramento de estado.
-  -- NÃO chama ag_loop.rodar: evitamos ui.*, _mem.search, boot injection.
+  -- FlushLoop próprio (FPM) — loop ReAct headless, mas com o MESMO spinner
+  -- adaptativo do loop principal (Injetando → Requisitando → Pensando em
+  -- modo compacto; box de reasoning normal em modo expandido).
+  -- NÃO chama ag_loop.rodar: evitamos ui.ai_msg_stream, _mem.search, boot injection.
   local iter = 0
   local cur_text = flush_prompt
   local cur_role = "user"
   local limit = flush_ctx.MAX_ITER or 10
 
+  ui.update_label() -- transição Injetando -> Requisitando (contexto já montado)
+  local spinner_started = true -- spinner já rodando (fase acima)
+
   while iter < limit do
     iter = iter + 1
+    if not spinner_started then ui.start_thinking() end
+    spinner_started = false
 
     -- Injeta o checklist no prompt (FPM: ChecklistRenderer)
     local checklist = render_checklist(flush_ctx.flush_state)
@@ -157,9 +170,11 @@ function M.run(ctx, new_msgs, flush_prompt)
     end
 
 
-    -- Chama a API sem UI (headless)
+    -- Chama a API — o streaming aciona ui.stream_* internamente (mesmo
+    -- pipeline usado pelo loop principal), o que acende o spinner.
     local resp, is_overflow, _, _, tool_calls =
       api.pensar_stream(flush_ctx, prompt_com_checklist, cur_role)
+    ui.stop_thinking()
 
     if is_overflow then
       return false  -- overflow do provedor = desiste graciosamente
