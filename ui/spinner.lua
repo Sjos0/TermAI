@@ -8,9 +8,10 @@ local _spin_pid       = TMPDIR .. "/ta_pid"
 local _inject_flag    = TMPDIR .. "/ta_inject.flag"
 local _reasoning_flag = TMPDIR .. "/ta_reasoning.flag"
 local _stream_flag    = TMPDIR .. "/termai_stream.flag"
-local _anim_start     = nil
-local _start_ms       = nil
-local _retry_lines    = 0
+local _anim_start         = nil
+local _start_ms           = nil
+local _reasoning_start_ms = nil
+local _retry_lines        = 0
 
 local SPINNER_SCRIPT = [[
 #!/bin/sh
@@ -166,6 +167,7 @@ do
   if [ "$REASONING_DONE" -eq 0 ] && [ -f "$REASONING_FLAG" ]; then
     REASONING_DONE=1
     LABEL="Pensando"
+    pc=0
   fi
 
   case $((c % 6)) in
@@ -177,24 +179,28 @@ do
     5) f="$F5" ;;
   esac
 
-  ms_val=$((c * 100))
-  if [ "$ms_val" -lt 1000 ]; then
-    TIMER="${ms_val}ms"
-  elif [ "$ms_val" -lt 60000 ]; then
-    sec_val=$((ms_val / 1000))
-    dec_val=$(((ms_val % 1000) / 100))
-    if [ "$dec_val" -eq 0 ]; then
-      TIMER="${sec_val}seg"
+  if [ "$REASONING_DONE" -eq 1 ]; then
+    ms_val=$((pc * 100))
+    if [ "$ms_val" -lt 1000 ]; then
+      TIMER="${ms_val}ms"
+    elif [ "$ms_val" -lt 60000 ]; then
+      sec_val=$((ms_val / 1000))
+      dec_val=$(((ms_val % 1000) / 100))
+      if [ "$dec_val" -eq 0 ]; then
+        TIMER="${sec_val}seg"
+      else
+        TIMER="${sec_val}.${dec_val}seg"
+      fi
     else
-      TIMER="${sec_val}.${dec_val}seg"
+      min_val=$((ms_val / 60000))
+      sec_val=$(((ms_val % 60000) / 1000))
+      TIMER="${min_val}min ${sec_val}seg"
     fi
+    printf '\r%s %s%s%s %s(%s)%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+    pc=$((pc + 1))
   else
-    min_val=$((ms_val / 60000))
-    sec_val=$(((ms_val % 60000) / 1000))
-    TIMER="${min_val}min ${sec_val}seg"
+    printf '\r%s %s%s%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}"
   fi
-
-  printf '\r%s %s%s%s %s(%s)%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
   sleep 0.1
   c=$((c + 1))
 done
@@ -225,9 +231,10 @@ end
 function M.start_thinking(label)
   M.kill_spinner()
   M.clear_retry_lines()
-  _anim_start  = os.time()
-  _start_ms    = get_ms_time()
-  _retry_lines = 0
+  _anim_start         = os.time()
+  _start_ms           = get_ms_time()
+  _reasoning_start_ms = nil
+  _retry_lines        = 0
 
   local ok_state, state = pcall(require, "ui.stream.state")
   if ok_state and state and state._s then
@@ -255,6 +262,7 @@ end
 -- Sinaliza ao spinner compacto que o primeiro token de reasoning chegou,
 -- disparando a troca de rótulo "Requisitando" -> "Pensando" no script sh.
 function M.mark_reasoning_started()
+  _reasoning_start_ms = get_ms_time()
   local f = io.open(_reasoning_flag, "w")
   if f then f:write("1"); f:close() end
 end
@@ -274,14 +282,19 @@ end
 
 function M.stop_thinking_and_print_compact()
   if not _anim_start then return end
-  local elapsed_ms = get_ms_time() - (_start_ms or get_ms_time())
+  -- Base do cálculo: início do reasoning (o que o usuário viu contar na tela).
+  -- Se não houve reasoning nesta resposta, cai pro início do ciclo (Injetando).
+  local base_ms = _reasoning_start_ms or _start_ms or get_ms_time()
+  local elapsed_ms = get_ms_time() - base_ms
   M.kill_spinner()
   _anim_start = nil
 
   local LBLUE = "\27[38;5;117m"
   local YELLOW = "\27[38;5;220m"
   local RESET = "\27[0m"
-  io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET .. YELLOW .. "(" .. format_duration(elapsed_ms) .. ")" .. RESET .. "\n")
+  -- "\n\n" (não só "\n"): deixa uma linha em branco separando a bolha
+  -- "Pensou" da resposta do agente que vem logo em seguida via ai_msg_stream.
+  io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET .. YELLOW .. "(" .. format_duration(elapsed_ms) .. ")" .. RESET .. "\n\n")
   io.flush()
 end
 
