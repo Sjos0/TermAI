@@ -96,7 +96,7 @@ function M.run(ctx, reset_info)
     elseif msg.role == "assistant" and msg.tool_calls then
       -- v2.4/2.5: NÃO chama tool_start aqui — replay não anima "em progresso",
       -- só mapeia (individual ou agrupado) pro que vem depois usar.
-      if msg._reasoning then rr.show_reasoning_box(msg._reasoning) end
+      if msg._reasoning then rr.show_reasoning(msg._reasoning) end
       if msg.content and msg.content ~= "" then ui.ai_msg(msg.content) end
       last_tool_cmd = tcm.map_tool_calls(msg.tool_calls, tc_id_map, tc_group_map) or last_tool_cmd
     elseif msg.role == "tool" then
@@ -124,20 +124,20 @@ function M.run(ctx, reset_info)
         -- mas continha raciocínio (reasoning), ainda exibe o box de pensamento.
         if msg._reasoning then
           last_tool_cmd, tc_id_map, tc_group_map, pending_groups = nil, {}, {}, {}
-          rr.show_reasoning_box(msg._reasoning)
+          rr.show_reasoning(msg._reasoning)
         end
       elseif kind == "user" then
         last_tool_cmd, tc_id_map, tc_group_map, pending_groups = nil, {}, {}, {}
         ui.user_msg(a, msg.pasted_texts)
       elseif kind == "assistant" then
         last_tool_cmd, tc_id_map, tc_group_map, pending_groups = nil, {}, {}, {}
-        if msg._reasoning then rr.show_reasoning_box(msg._reasoning) end
+        if msg._reasoning then rr.show_reasoning(msg._reasoning) end
         ui.ai_msg(a)
       elseif kind == "tool_call" then
         last_tool_cmd = a
       elseif kind == "tool_call_with_text" then
         last_tool_cmd = nil
-        if msg._reasoning then rr.show_reasoning_box(msg._reasoning) end
+        if msg._reasoning then rr.show_reasoning(msg._reasoning) end
         ui.ai_msg(b); last_tool_cmd = a
       elseif kind == "tool_result" then
         ui.tool_replay(last_tool_cmd or a, d, (b == "ok")); last_tool_cmd = nil
