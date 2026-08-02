@@ -8,6 +8,7 @@ local sync_mod        = require("agent.api.request_sync")
 local tool_parser     = require("agent.api.request_stream.tool_parser")
 local recovery        = require("agent.api.request_stream.recovery")
 local tokens_mod      = require("agent.api.request_stream.tokens")
+local error_log       = require("agent.api.request_stream.error_log")
 
 local M = {}
 
@@ -119,15 +120,18 @@ function M.pensar_stream(ctx, txt, role)
         local ok, ed = pcall(json.decode, body)
         if ok and ed then
           if type(ed) == "table" and ed.error then
-            error_reason = ed.error.message or tostring(ed.error)
+            error_reason = error_log.describe(ed.error)
           elseif type(ed) == "table" and ed[1] and ed[1].error then
-            error_reason = ed[1].error.message or tostring(ed[1].error)
+            error_reason = error_log.describe(ed[1].error)
           end
         end
       end
     end
 
     last_error = error_reason or "Sem resposta do servidor"
+    -- Persiste o corpo bruto em disco: o terminal rola e perde o erro, e a
+    -- mensagem exibida na TUI (last_error) é só um resumo de uma linha.
+    error_log.record(attempt, rcfg.max_retries, ctx.active and ctx.active.endpoint, last_error, body)
     if utils.is_overflow_error(last_error) then
       if txt ~= nil then table.remove(ctx.msgs) end
       return "[ERRO_OVERFLOW] " .. last_error, true, false, ""
@@ -149,7 +153,11 @@ function M.pensar_stream(ctx, txt, role)
   -- o que ela digitou. Fica em ctx.msgs e é salva normalmente pelo
   -- persistence.save_exchange no final do turno em main_loop.lua.
   recovery.recover_tool_seq(ctx.msgs)
-  return "[ERRO] Falha apos " .. rcfg.max_retries .. " tentativas - " .. last_error, false, false, ""
+  -- done_flag = nil (não false): não houve stream nenhum pra ficar
+  -- incompleto — a requisição inteira falhou. Retornar false aqui fazia
+  -- main_loop.lua mostrar "Resposta incompleta — stream cortado", que é
+  -- enganoso quando não existe resposta nenhuma pra truncar.
+  return "[ERRO] Falha apos " .. rcfg.max_retries .. " tentativas - " .. last_error, false, nil, ""
 end
 
 return M
