@@ -73,9 +73,9 @@ TermAI/
 
 O Termai aplica políticas de aprovação baseadas em segurança e risco do comando:
 
-- Comandos de **baixo risco** (echo, cat, find, grep, lua) → auto-approve sem dialog
-- Comandos de **alto risco** (rm, mv, dd) → sempre pede permissão
-- Outros comandos → pede permissão uma vez, padrão pode ser salvo
+- Comandos de **baixo risco** (echo, cat, find, grep, lua) → aprovados automaticamente
+- Comandos de **alto risco** (rm, mv, dd) → requerem aprovação explícita
+- Outros comandos → o sistema avalia o contexto e histórico de aprovações
 - Validações de segurança incluem detecção de command injection, proteção contra path traversal e parsing de heredocs
 - `curl` disponível para chamadas HTTP quando necessário
 
