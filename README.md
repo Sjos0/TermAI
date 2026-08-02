@@ -7,21 +7,21 @@
   <a href="https://www.instagram.com/sjos.22_?igsh=OHkzbnhjcG91bDBr"><img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
 </p>
 
-**TermAI** é um _harness de engenharia_ para agentes inteligentes, construído do zero para rodar em celulares Android via [Termux](https://termux.dev). Arquitetura similar aos harnesses de mercado (OpenClaw, Claude Code, Aider), adaptada para hardware mínimo: compactação de contexto, Memory Flush, sessões persistentes, permissões granulares de comandos, streaming em tempo real, suporte a múltiplos provedores, hooks extensíveis e sistema de skills.
+**TermAI** é um _agente de IA local_ construído para rodar em celulares Android via [Termux](https://termux.dev). Funciona como um assistente de terminal com ferramentas de shell, compactação de contexto, memória de longo prazo, sessões persistentes, permissões de comandos, streaming em tempo real, suporte a múltiplos provedores, hooks extensíveis e sistema de skills.
 
-Se você quer um agente de IA que roda no bolso, é sempre ativo e funciona sem servidor — este é o projeto.
+Um agente que roda no bolso — sem daemon permanente, sem servidor próprio — conectando-se a provedores de IA sob demanda.
 
 ---
 ## Highlights
 
 - **Multi-Provedor** — suporte a OpenRouter, Google, NVIDIA, Cloudflare, mimo, opencode e provedores customizados. Use o modelo que preferir.
 - **Interface TUI** — terminal interativo completo com streaming em tempo real, exibição de raciocínio do modelo e display de ferramentas em execução.
-- **Ferramentas Poderosas** — o agente pode executar comandos bash, ler/escrever/editar arquivos, buscar no sistema, calcular, usar ferramentas web (pesquisa, fetch de páginas) e gerenciar sessões.
+- **Ferramentas de Shell** — execução de comandos bash, leitura/escrita/edição de arquivos, busca no sistema e cálculos. O agente interage diretamente com o terminal quando necessário.
 - **Web Tools** — pesquisa na web via DuckDuckGo, Google Grounding, Tavily e fetch direto de URLs. O agente navega a internet quando precisa.
-- **Memory Flush Configurável** — sistema de memória de longo prazo via GraphRAG. Totalmente opcional — quando ativado, o agente arquiva contexto periodicamente em arquivos `.md`, mas gasta tokens extras por rodada.
-- **Compactação Inteligente** — quando o contexto fica grande demais, o TermAI resume automaticamente o histórico preservando o que importa, sem perder o fio da meada.
+- **Memória de Longo Prazo** — sistema de flush/arquivamento de contexto em arquivos Markdown. Totalmente opcional — quando ativado, o agente salva contexto periodicamente, mas gasta tokens extras por rodada.
+- **Compactação de Contexto** — quando o contexto fica grande demais, o TermAI resume automaticamente o histórico preservando o que importa, sem perder o fio da meada.
 - **Sessões Persistentes** — conversas são salvas automaticamente. Feche o app e volte depois — o contexto continua de onde parou.
-- **Permissões Granulares** — comandos seguros rodam direto; comandos perigosos pedem aprovação. Você decide o que o agente pode fazer.
+- **Políticas de Permissão** — o agente aplica políticas de aprovação baseadas em segurança e risco do comando. Comandos de baixo risco rodam direto; comandos de alto risco pedem aprovação. Você decide o que o agente pode fazer.
 - **Hooks e Skills** — extensível com scripts do usuário e módulos carregáveis para testes, debugging e planejamento.
 - **Mais atualizações virão** — o TermAI está em desenvolvimento ativo. Novas funcionalidades, melhorias de performance e novos provedores serão adicionados continuamente.
 ```bash
@@ -60,7 +60,7 @@ TermAI/
 ├── session/            # Persistência de sessões (JSONL)
 ├── config/             # Configuração e migração
 ├── commands/           # Comandos do usuário (/compact, /config, etc.)
-├── memoryflush/        # Memory Flush (GraphRAG)
+├── memoryflush/        # Memória de longo prazo (flush/arquivamento)
 ├── hooks/              # Sistema de eventos
 ├── tests/              # Testes automatizados
 ├── main.lua            # Entry point
@@ -71,10 +71,12 @@ TermAI/
 
 ## Security Model
 
-- Comandos **seguros** (echo, cat, find, grep, lua) → auto-approve sem dialog
-- Comandos **perigosos** (rm, mv, dd) → SEMPRE pede permissão
+O Termai aplica políticas de aprovação baseadas em segurança e risco do comando:
+
+- Comandos de **baixo risco** (echo, cat, find, grep, lua) → auto-approve sem dialog
+- Comandos de **alto risco** (rm, mv, dd) → sempre pede permissão
 - Outros comandos → pede permissão uma vez, padrão pode ser salvo
-- Heredocs (`<<`) → reconhecidos e ignorados pelo parser de segurança
+- Validações de segurança incluem detecção de command injection, proteção contra path traversal e parsing de heredocs
 - `curl` disponível para chamadas HTTP quando necessário
 
 ---
@@ -97,7 +99,8 @@ TermAI/
 | Runtime | Termux no Android (Linux ARM) |
 | HTTP | curl via shell (streaming SSE) |
 | Persistência | JSONL + Lua tables |
-| Dependências | Zero (tudo interno) |
+| Dependências Lua | Nenhuma externa (todas internas) |
+| Runtime mínimo | Termux + Lua 5.4 + curl + shell |
 
 ---
 
