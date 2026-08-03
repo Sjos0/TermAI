@@ -1,7 +1,10 @@
 -- agent/api/request_stream/error_log.lua — Diagnóstico de erros de API.
--- Duas responsabilidades pequenas e relacionadas: (1) extrair mais detalhe
--- de um erro estruturado do provider do que só `.message`, e (2) persistir
--- o corpo bruto em disco pra pós-mortem (o terminal rola e perde o erro).
+-- Três responsabilidades pequenas e relacionadas: (1) extrair mais detalhe
+-- de um erro estruturado do provider do que só `.message`, (2) reconhecer
+-- os formatos de corpo de erro usados pelos providers do projeto, e
+-- (3) persistir o corpo bruto em disco pra pós-mortem (o terminal rola e
+-- perde o erro).
+local json = require("json")
 local M = {}
 
 local MAX_LOG_BYTES  = 200 * 1024 -- teto de disco (ver Contexto_Ambiental.md §1)
@@ -46,6 +49,23 @@ function M.record(attempt, max_attempts, endpoint, reason, raw_body)
     os.date("%Y-%m-%d %H:%M:%S"), attempt, max_attempts,
     tostring(endpoint), tostring(reason), snippet))
   f:close()
+end
+
+-- Extrai uma mensagem de erro legível do corpo bruto (não-stream) de uma
+-- resposta HTTP. Reconhece três formatos vistos nos providers do projeto:
+--   OpenAI-style:  {"error": {message, type, code, param}}
+--   Array style:   [{"error": {...}}]
+--   Formato plano: {"message": ..., "type": ..., "code": ...}  (ex: NVIDIA NIM)
+-- Retorna nil se o corpo estiver vazio ou não bater com nenhum formato
+-- conhecido — quem chama decide o fallback (ex: "Sem resposta do servidor").
+function M.extract_from_body(body)
+  if not body or body == "" then return nil end
+  local ok, ed = pcall(json.decode, body)
+  if not ok or type(ed) ~= "table" then return nil end
+  if ed.error then return M.describe(ed.error) end
+  if ed[1] and ed[1].error then return M.describe(ed[1].error) end
+  if ed.message then return M.describe(ed) end
+  return nil
 end
 
 return M
