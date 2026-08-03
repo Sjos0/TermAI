@@ -44,6 +44,7 @@ CONFIRMED=0
 i=0
 s=0
 c=0
+first=1
 while true
 do
     if [ "$INJECT_DONE" -eq 0 ] && [ -f "$INJECT_FLAG" ]; then
@@ -62,7 +63,12 @@ do
     4) f="$F4" ;;
     5) f="$F5" ;;
   esac
-  printf '\r%s %s%s%s %s(%ds)%s\033[K' "$f" "${B}${LB}" "$LABEL" "$R" "$D" "$s" "$R"
+  if [ "$first" -eq 1 ]; then
+    first=0
+  else
+    printf '\033[A'
+  fi
+  printf '\r%s %s%s%s %s(%ds)%s\033[K\n' "$f" "${B}${LB}" "$LABEL" "$R" "$D" "$s" "$R"
   sleep 0.1
   c=$((c + 1))
   if [ $((c % 10)) -eq 0 ]; then s=$((s + 1)); fi
@@ -157,6 +163,7 @@ else
 fi
 REASONING_DONE=0
 
+first=1
 c=0
 while true
 do
@@ -179,6 +186,12 @@ do
     5) f="$F5" ;;
   esac
 
+  if [ "$first" -eq 1 ]; then
+    first=0
+  else
+    printf '\033[A'
+  fi
+
   if [ "$REASONING_DONE" -eq 1 ]; then
     ms_val=$((pc * 100))
     if [ "$ms_val" -lt 1000 ]; then
@@ -196,10 +209,10 @@ do
       sec_val=$(((ms_val % 60000) / 1000))
       TIMER="${min_val}min ${sec_val}seg"
     fi
-    printf '\r%s %s%s%s %s(%s)%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+    printf '\r%s %s%s%s %s(%s)%s\033[K\n' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
     pc=$((pc + 1))
   else
-    printf '\r%s %s%s%s\033[K' "$f" "${LBLUE}" "$LABEL" "${R}"
+    printf '\r%s %s%s%s\033[K\n' "$f" "${LBLUE}" "$LABEL" "${R}"
   fi
   sleep 0.1
   c=$((c + 1))
@@ -224,7 +237,7 @@ function M.kill_spinner()
   end
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
     .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag .. " 2>/dev/null")
-  io.write("\r\27[K")
+  io.write("\27[1A\r\27[K")
   io.flush()
 end
 
