@@ -292,9 +292,14 @@ function M.stop_thinking_and_print_compact()
   local LBLUE = "\27[38;5;117m"
   local YELLOW = "\27[38;5;220m"
   local RESET = "\27[0m"
-  -- "\n\n" (não só "\n"): deixa uma linha em branco separando a bolha
-  -- "Pensou" da resposta do agente que vem logo em seguida via ai_msg_stream.
-  io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET .. YELLOW .. "(" .. format_duration(elapsed_ms) .. ")" .. RESET .. "\n\n")
+  -- Patch GLM 5.2 (2026-08-03): só exibe "Pensou" se houve reasoning real.
+  -- Se _reasoning_start_ms é nil, nenhum token de reasoning chegou — limpa
+  -- spinner silenciosamente e pula pra resposta.
+  if _reasoning_start_ms then
+    io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET .. YELLOW .. "(" .. format_duration(elapsed_ms) .. ")" .. RESET .. "\n\n")
+  else
+    io.write("\r\27[K\n")
+  end
   io.flush()
 end
 
