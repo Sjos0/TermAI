@@ -38,6 +38,16 @@ return {
       maxTokens     = 8192,
     },
     {
+      id            = "minimaxai/minimax-m3",
+      name          = "Minimax M3 (NVIDIA)",
+      reasoning     = true,
+      reasoning_style = "chat_template_kwargs",
+      input         = {"text", "image"},
+      cost          = {input=0, output=0, cacheRead=0, cacheWrite=0},
+      contextWindow = 1000000,
+      maxTokens     = 32000,
+    },
+    {
       id            = "z-ai/glm5",
       name          = "GLM 5 (NVIDIA)",
       reasoning     = true,
