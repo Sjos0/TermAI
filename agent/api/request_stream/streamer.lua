@@ -115,17 +115,7 @@ function M.pensar_stream(ctx, txt, role)
 
     ui.stream_end()
     if not error_reason then
-      body = body:gsub("%s+$", "")
-      if body ~= "" then
-        local ok, ed = pcall(json.decode, body)
-        if ok and ed then
-          if type(ed) == "table" and ed.error then
-            error_reason = error_log.describe(ed.error)
-          elseif type(ed) == "table" and ed[1] and ed[1].error then
-            error_reason = error_log.describe(ed[1].error)
-          end
-        end
-      end
+      error_reason = error_log.extract_from_body(body:gsub("%s+$", ""))
     end
 
     last_error = error_reason or "Sem resposta do servidor"
