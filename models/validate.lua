@@ -1,5 +1,6 @@
 local json = require("json")
 local security = require("agent.security")
+local error_log = require("agent.api.request_stream.error_log")
 local M = {}
 
 function M.test_connection(active)
@@ -22,6 +23,21 @@ function M.test_connection(active)
     messages = {{role = "user", content = "hi"}},
     max_tokens = 5,
   }
+
+  -- Se o modelo tem reasoning, testa com o payload de reasoning de verdade
+  -- (mesmo formato de agent/api/payload.lua) — senão a validação passa,
+  -- mas o reasoning_style errado só quebra depois, no meio de uma conversa.
+  if active.reasoning then
+    local style = active.reasoning_style or "openrouter"
+    if style == "openrouter" then
+      payload.include_reasoning = true
+      payload.reasoning = { effort = "medium" }
+    elseif style == "chat_template_kwargs" then
+      payload.chat_template_kwargs = { thinking = true }
+    elseif style == "reasoning_effort" then
+      payload.reasoning_effort = "high"
+    end
+  end
 
   local auth = ""
   local style = active.auth_style or ""
@@ -56,18 +72,12 @@ function M.test_connection(active)
   http_code = tonumber(http_code)
   if http_code ~= 200 then
     local err_msg = "HTTP " .. tostring(http_code)
-    local ok, err_data = pcall(json.decode, body)
-    if ok and err_data then
-      if err_data.error then
-        local api_err = err_data.error
-        if type(api_err) == "table" then
-          err_msg = err_msg .. ": " .. (api_err.message or tostring(api_err))
-        else
-          err_msg = err_msg .. ": " .. tostring(api_err)
-        end
-      end
+    local detail = error_log.extract_from_body(body)
+    if detail then
+      err_msg = err_msg .. ": " .. detail
     else
-      -- Se o corpo não for JSON, mostra os primeiros 100 caracteres
+      -- Corpo não bateu com nenhum formato conhecido: mostra os primeiros
+      -- 100 caracteres crus em vez de esconder a informação.
       local snippet = body:sub(1, 100)
       if snippet ~= "" then err_msg = err_msg .. " - " .. snippet end
     end
