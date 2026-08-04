@@ -103,3 +103,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Prevention:** Ao adicionar qualquer linha/borda decorativa nova no TUI, `grep -rn "core.tw()"` primeiro pra confirmar que não está reinventando a largura na mão.
 **Nota (decisão pendente):** ❌/✅/📊 nos resultados de exec/Read/Write NÃO são exclusivos do Memory Flush — estão em ~25 arquivos de `tools/` e são parte do texto que o próprio modelo lê como resultado da tool call, não só decoração de UI. O "🔴" visto nos logs é o mesmo "⬤" colorido do spinner (`ui/tools_init/header.lua`), reaproveitado como status (amarelo/verde/vermelho) — não é emoji solto. Nenhuma mudança feita aqui; aguardando decisão do Samuel.
 **Validation:** `luac5.4 -p agent/banners.lua` + inspeção visual do próximo flush disparado.
+
+## 2026-08-04 - [Spinner Orphan Process Bug: restart_spinner() Não Rearmava Guard de Animação]
+**Bug/Contexto:** Em modo `compact`, quando uma tentativa de API falhava, `streamer.lua` chamava `ui.stream_end()` mesmo sem dados — isso disparava `stop_thinking_and_print_compact()`, que zerava `_anim_start`. A função `restart_spinner()` (chamada logo depois pra relançar o spinner na próxima tentativa) **nunca re-armava** essa variável. Resultado: quando a 2ª tentativa dava certo, `stop_thinking_and_print_compact()` via `_anim_start == nil` e retornava imediatamente — o processo `sh` do spinner relançado **nunca era morto** e ficava escrevendo por cima da resposta em stream (o "loop preso" na tela). Só afetava modo `compact` (reproduziu com Minimax M3 sem reasoning).
+**Files Modified:**
+- `ui/spinner.lua` — `M.restart_spinner()`: adicionadas linhas `_anim_start = os.time()` e `_start_ms = get_ms_time()` antes de relançar o processo sh, garantindo que o guard de animação esteja armado para a nova tentativa.
+**Learning:** Quando uma função "re-inicia" um estado (spinner, timer, flag), ela precisa re-armar **todos** os guards que outras funções usam pra decidir se agem. O `restart_spinner()` relançava o processo sh mas esquecia que `_anim_start` era o guard que `stop_thinking_and_print_compact()` usava pra decidir se limpava o spinner.
+**Prevention:** Toda função que relança um componente com guard (flag, variável de estado) deve re-armar todos os guards relevantes. Verificar com `grep` quais funções leem o guard antes de modificar o componente.
+**Author:** Claude Sonnet 5
+**Validation:** `luac -p ui/spinner.lua`
