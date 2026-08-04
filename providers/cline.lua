@@ -74,11 +74,10 @@ function M.fetch_remote_models()
   return all
 end
 
--- Procura um modelo curado (hardcoded acima) a partir do ID puro vindo da API.
+-- Procura um modelo curado (hardcoded acima) a partir do ID vindo da API.
 function M.find_curated(bare_id)
-  local full_id = M.id .. "/" .. bare_id
   for _, m in ipairs(M.models) do
-    if m.id == full_id then return m end
+    if m.id == bare_id then return m end
   end
   return nil
 end
