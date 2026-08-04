@@ -48,6 +48,15 @@ return {
       maxTokens     = 32000,
     },
     {
+      id            = "z-ai/glm-5.2",
+      name          = "GLM 5.2 (NVIDIA)",
+      reasoning     = false,
+      input         = {"text"},
+      cost          = {input=0, output=0, cacheRead=0, cacheWrite=0},
+      contextWindow = 1000000,
+      maxTokens     = 32000,
+    },
+    {
       id            = "z-ai/glm5",
       name          = "GLM 5 (NVIDIA)",
       reasoning     = true,
