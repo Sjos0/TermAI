@@ -93,6 +93,11 @@ function M.test_connection(active)
     return true, "Conexão OK"
   end
 
+  -- Cline API retorna dados dentro de data.data.choices
+  if data.data and data.data.choices and data.data.choices[1] then
+    return true, "Conexão OK"
+  end
+
   return false, "Resposta sem dados válidos"
 end
 
