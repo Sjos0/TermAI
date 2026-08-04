@@ -1,6 +1,7 @@
 -- agent/hooks/bash_patterns/ui.lua — Prompt interativo de autorizações.
-local suggest = require("agent.hooks.bash_patterns.suggest")
-local rules = require("agent.hooks.bash_patterns.rules")
+local suggest          = require("agent.hooks.bash_patterns.suggest")
+local rules            = require("agent.hooks.bash_patterns.rules")
+local approval_backend = require("agent.hooks.approval_backend")
 
 local M = {}
 
@@ -16,6 +17,9 @@ local function get_wall_time()
 end
 
 function M.ask_user(cmd, failed_sub)
+  local backend = approval_backend.bash_backend()
+  if backend then return backend(cmd, failed_sub) end
+
   local y  = "\27[38;5;220m"
   local gr = "\27[38;5;242m"
   local w  = "\27[1;37m"
