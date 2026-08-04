@@ -269,6 +269,13 @@ end
 
 function M.restart_spinner()
   M.kill_spinner()
+  -- Patch Claude Sonnet 5 (2026-08-04): Rearma o guard de animação.
+  -- Sem isso, stop_thinking_and_print_compact() vê _anim_start == nil
+  -- (zerado pelo stream_end() da tentativa que falhou) e não faz nada —
+  -- o processo sh relançado abaixo nunca é morto e fica escrevendo
+  -- por cima da resposta que chega na tentativa seguinte.
+  _anim_start = os.time()
+  _start_ms   = get_ms_time()
   local f = io.open(_inject_flag, "w")
   if f then f:write("1"); f:close() end
 
