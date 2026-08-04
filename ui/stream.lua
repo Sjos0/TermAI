@@ -8,6 +8,11 @@ local box     = require("ui.stream.reasoning_box")
 local c = core.c
 local M = {}
 
+-- Sink plugável: canais sem terminal real (ex: channels/telegram) registram
+-- um sink alternativo via M.set_sink. Sem sink, comportamento inalterado.
+local sink = nil
+function M.set_sink(custom) sink = custom end
+
 local function get_thinking_mode()
   local ok, config_mod = pcall(require, "config")
   if ok and config_mod then
@@ -20,6 +25,7 @@ local function get_thinking_mode()
 end
 
 function M.stream_start()
+  if sink then return sink.start() end
   state.reset()
 end
 
@@ -27,6 +33,7 @@ end
 -- tentativa chega (reasoning, content OU tool_call — não importa o tipo).
 -- É o único ponto que sabe, de fato, que a fase de retry/spinner acabou.
 function M.stream_confirm()
+  if sink then return sink.confirm() end
   local s = state._s
   if s.started then return end
   local tmode = get_thinking_mode()
@@ -38,6 +45,7 @@ function M.stream_confirm()
 end
 
 function M.stream_reasoning(tok)
+  if sink then return sink.reasoning(tok) end
   local s = state._s
   local tmode = get_thinking_mode()
 
@@ -136,6 +144,7 @@ function M.stream_reasoning(tok)
 end
 
 function M.stream_token(tok)
+  if sink then return sink.token(tok) end
   local s = state._s
   local tmode = get_thinking_mode()
   if tmode == "compact" then
@@ -156,6 +165,7 @@ end
 -- reasoning vai para o JSONL (exibição na recuperação).
 -- Não entra em ctx.msgs — a API rejeitaria.
 function M.stream_end()
+  if sink then return sink.finish() end
   local s = state._s
   local tmode = get_thinking_mode()
   if tmode == "compact" then
