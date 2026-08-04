@@ -1,5 +1,6 @@
 -- tools/exec/permissions_ui.lua — Interface TUI de diálogo para permissões
-local suggest = require("agent.hooks.bash_patterns.suggest")
+local suggest         = require("agent.hooks.bash_patterns.suggest")
+local approval_backend = require("agent.hooks.approval_backend")
 
 local M = {}
 
@@ -13,6 +14,11 @@ end
 
 -- Mostra o diálogo interativo e retorna a decisão ("once", "always", "deny", "block", "cancel")
 function M.show_dialog(tool_name, command, failed_sub, warnings)
+  -- Canais sem TTY (ex: channels/telegram) registram um backend alternativo.
+  -- Sem backend registrado, o comportamento de terminal abaixo é inalterado.
+  local backend = approval_backend.tool_backend()
+  if backend then return backend(tool_name, command, failed_sub, warnings) end
+
   local y  = "\27[38;5;220m" -- Amarelo/Dourado
   local gr = "\27[38;5;242m" -- Cinza Escuro
   local r  = "\27[38;5;203m" -- Vermelho
