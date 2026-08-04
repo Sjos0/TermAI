@@ -39,9 +39,8 @@ local M = {
   },
 }
 
--- Busca a lista de modelos disponíveis no ClinePass via endpoint público de
--- "recommended models" da Cline. Retorna array de {id, name, description}
--- (ID já vem sem prefixo de lab, ex. "glm-5.2") ou nil, erro.
+-- Busca a lista de modelos disponíveis na API da Cline via endpoint público.
+-- Retorna array de modelos (recommended + free + clinePass) ou nil, erro.
 function M.fetch_remote_models()
   local cmd = 'curl -s -w "\\n%{http_code}" --max-time 10 '
     .. '"https://api.cline.bot/api/v1/ai/cline/recommended-models" 2>/dev/null'
@@ -54,10 +53,25 @@ function M.fetch_remote_models()
   http_code = tonumber(http_code)
   if http_code ~= 200 then return nil, "HTTP " .. tostring(http_code) end
   local ok, data = pcall(json.decode, body)
-  if not ok or not data or not data.clinePass then
+  if not ok or type(data) ~= "table" then
     return nil, "JSON inválido na resposta"
   end
-  return data.clinePass
+  -- Merge recommended + free + clinePass em uma lista só
+  local all = {}
+  for _, m in ipairs(data.recommended or {}) do
+    m.source = "recommended"
+    all[#all + 1] = m
+  end
+  for _, m in ipairs(data.free or {}) do
+    m.source = "free"
+    all[#all + 1] = m
+  end
+  for _, m in ipairs(data.clinePass or {}) do
+    m.source = "clinePass"
+    all[#all + 1] = m
+  end
+  if #all == 0 then return nil, "Nenhum modelo encontrado" end
+  return all
 end
 
 -- Procura um modelo curado (hardcoded acima) a partir do ID puro vindo da API.
