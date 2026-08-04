@@ -112,3 +112,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Prevention:** Toda função que relança um componente com guard (flag, variável de estado) deve re-armar todos os guards relevantes. Verificar com `grep` quais funções leem o guard antes de modificar o componente.
 **Author:** Claude Sonnet 5
 **Validation:** `luac -p ui/spinner.lua`
+
+## 2026-08-04 - [Canal Telegram — Poller, Streaming via Edição e Aprovação via Chat]
+**Contexto:** Novo domínio `channels/`, paralelo a `ui/`. Objetivo: operar o TermAI remotamente via Telegram (Termux headless), reusando 100% do núcleo (`agent.loop.rodar`, `agent/main_loop/*`, `session/store`) sem duplicar lógica.
+**Descoberta chave:** `startup.run(ctx)` não é só visual — carrega `ctx.msgs`/tokens da sessão. O entry point do Telegram chama normalmente; o ruído ANSI num processo sem TTY é inofensivo.
+**Bloqueio identificado:** `tools/exec/permissions_ui.lua` e `agent/hooks/bash_patterns/ui.lua` usam `io.read` bloqueante — travaria para sempre num processo sem TTY. Resolvido com um backend plugável (`agent/hooks/approval_backend.lua`) registrado só quando o canal Telegram está ativo; comportamento de terminal inalterado por padrão.
+**Streaming:** em vez de tocar em `agent/api/request_stream/streamer.lua` (arquivo sensível), `ui/stream.lua` ganhou um sink plugável (`M.set_sink`) — o streamer continua chamando `ui.stream_token`/`ui.stream_reasoning` normalmente, sem saber que existe um canal alternativo.
+**Arquivos criados:** `agent/hooks/approval_backend.lua`, `channels/telegram.lua`, `channels/telegram/{api,offset_store,allow_from,stream_sink,approval,bridge}.lua`, `agente_telegram.lua`.
+**Arquivos modificados (gancho mínimo, comportamento padrão inalterado):** `tools/exec/permissions_ui.lua`, `agent/hooks/bash_patterns/ui.lua`, `ui/stream.lua`.
+**Fora do escopo desta v1:** comandos de terminal via chat, botões inline, `/restart` via Telegram, silenciar spinner em modo headless.
+**Author:** Claude (claude.ai)
+**Validation:** `luac -p` nos 12 arquivos
