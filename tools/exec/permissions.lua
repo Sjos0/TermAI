@@ -99,9 +99,9 @@ function M.check(tool_name, command)
     return { allowed = true, reason = "Bypass de permissões ativo" }
   end
 
-  -- 2. Se o modo for acceptEdits, auto-aceitamos edições/leituras, mas não exec (bash)
+  -- 2. Se o modo for acceptEdits, auto-aceitamos edições/leituras, mas não Exec (bash)
   if mode == "acceptedits" then
-    if tool_name ~= "exec" then
+    if tool_name ~= "Exec" then
       return { allowed = true, reason = "Modo acceptEdits auto-aprovou ferramenta não-bash" }
     end
   end
@@ -124,12 +124,12 @@ function M.check(tool_name, command)
     return { allowed = true, reason = "sempre permitido nas configurações" }
   end
 
-  -- 5. Se não for exec, e não estiver explicitamente bloqueado/permitido, precisa de diálogo
-  if tool_name ~= "exec" then
+  -- 5. Se não for Exec, e não estiver explicitamente bloqueado/permitido, precisa de diálogo
+  if tool_name ~= "Exec" then
     return { allowed = false, reason = "ask" }
   end
 
-  -- 6. Lógica de correspondência de regras de comandos bash (bashRules) para exec
+  -- 6. Lógica de correspondência de regras de comandos bash (bashRules) para Exec
   if not command or command == "" or command:match("^%s*$") then
     return { allowed = true, reason = "comando vazio ou nil" }
   end
