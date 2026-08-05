@@ -6,7 +6,7 @@ local M = {}
 
 -- ok já vem processado (actual_ok do executor), sem necessidade de revalidar
 function M.render_edit_body(lines, ok, tw)
-  local added, removed = 0, 0
+  local added, removed = nil, nil
   local metrics_idx = nil
 
   -- 1. Varredura de busca de métricas na string
