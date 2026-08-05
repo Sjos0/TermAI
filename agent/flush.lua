@@ -98,7 +98,7 @@ function M.run(ctx, new_msgs, flush_prompt)
         local args_str = type(args) == "string" and args or (type(args) == "table" and (args.file or args.path or "") or "")
 
         if not flush_state.exec then
-          if name == "exec" and (args_str:match("date") or args_str:match("%%Y") or args_str:match("%%A")) then
+          if name == "Exec" and (args_str:match("date") or args_str:match("%%Y") or args_str:match("%%A")) then
             flush_state.exec = true
           end
         end
