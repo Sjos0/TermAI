@@ -3,7 +3,7 @@
 local M = {}
 
 local examples = {
-  exec              = "ls -la ~/TermAI",
+  Exec              = "ls -la ~/TermAI",
   Read              = "~/TermAI/arquivo.lua",
   Write             = "~/TermAI/arquivo.lua|||conteudo",
   Edit              = "~/TermAI/arquivo.lua|||texto antigo|||texto novo",
@@ -44,7 +44,7 @@ function M.generate(errors)
       else
         msg = string.format(
           "❌ Ferramenta '%s' nao existe no sistema.\n"
-          .. "   📋 Disponiveis: exec, Read, Write, Edit, Find, List,\n"
+          .. "   📋 Disponiveis: Exec, Read, Write, Edit, Find, List,\n"
           .. "      calcular, memory_search, pesquisar_web, skill,\n"
           .. "      sessoes_listar, sessao_status, sessoes_historico, restart\n"
           .. "   💡 Formato: <tool><name>NOME</name><arg>ARG</arg></tool>",
