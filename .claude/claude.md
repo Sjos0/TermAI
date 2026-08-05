@@ -123,3 +123,10 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Fora do escopo desta v1:** comandos de terminal via chat, botões inline, `/restart` via Telegram, silenciar spinner em modo headless.
 **Author:** Claude (claude.ai)
 **Validation:** `luac -p` nos 12 arquivos
+
+## 2026-08-04 - [Tool "exec" Renomeada para "Exec" + Filtro de Providers Web na Lista de Modelos]
+**Contexto:** Duas correções. (1) TUI mostrava a tool de shell como "exec" minúsculo, inconsistente com Read/Write/Edit/Grep/List/Find. (2) Catálogo de "Provedor built-in" listava providers de busca web (duckduckgo_search, tavily_search, google_grounding) que não têm `.models`.
+**Files Modified:** tools/exec.lua, tools/exec/permissions_ui.lua, tools/exec/permissions.lua, tools/exec/executor.lua, agent/hooks/engine.lua, agent/hooks/bash_patterns/ui.lua, channels/telegram/approval.lua, agent/startup.lua, agent/flush.lua, memoryflush/prompt.lua, prompt.lua, tools/error_feedback/feedback.lua, commands/available.lua, agent/tools_handler/executor.lua, providers/init.lua, commands/models/providers/add.lua.
+**Learning:** Rename de tool não é cosmético quando o nome é chave de comparação em lógica de segurança. `grep -rn "exec"` achou 14 arquivos.
+**Author:** Claude Sonnet 5 + Ameno
+**Validation:** `luac -p` nos 16 arquivos + grep zero-"exec"
