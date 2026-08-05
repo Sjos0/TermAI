@@ -20,7 +20,7 @@ function M.run(command, timeout)
     if command:match("%f[%w]" .. banned .. "%f[%W]") then
       return {
         output = "❌ [SEGURANÇA] Bloqueio de Comando: O uso do utilitário de rede '" .. banned 
-          .. "' dentro da ferramenta 'exec' é proibido por segurança. Para buscar ou extrair conteúdo de páginas web, você DEVE usar as ferramentas nativas seguras 'pesquisar_web' ou 'web_fetch', que possuem salvaguardas de tokens e escudos de SSRF.",
+          .. "' dentro da ferramenta 'Exec' é proibido por segurança. Para buscar ou extrair conteúdo de páginas web, você DEVE usar as ferramentas nativas seguras 'pesquisar_web' ou 'web_fetch', que possuem salvaguardas de tokens e escudos de SSRF.",
         exit_code = "1",
         timed_out = false
       }
