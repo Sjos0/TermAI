@@ -34,6 +34,20 @@ function M.list()
   return result
 end
 
+-- Retorna apenas provedores de modelos (chat/completions) — exclui provedores
+-- de busca web (duckduckgo_search, tavily_search, google_grounding), que não
+-- têm .models e já são configurados dinamicamente em Config › Pesquisa Web.
+function M.list_models()
+  local all = M.list()
+  local result = {}
+  for _, prov in ipairs(all) do
+    if type(prov.models) == "table" and #prov.models > 0 then
+      result[#result + 1] = prov
+    end
+  end
+  return result
+end
+
 function M.get(id)
   return M.load_all()[id]
 end
