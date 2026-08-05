@@ -62,8 +62,12 @@ function M.tool_replay(cmd, out, ok)
     out = out:gsub("\n?<workspace_attention>.-</workspace_attention>", "")
     out = out:gsub("\n?<todo_status>.-</todo_status>", "")
   end
-  header.write_header(ok and c.green or c.red, name, arg)
-  render_result_body(name, out, ok, tw)
+  local actual_ok = ok
+  if name == "Edit" then
+    actual_ok = parser.is_edit_success(out, ok)
+  end
+  header.write_header(actual_ok and c.green or c.red, name, arg)
+  render_result_body(name, out, actual_ok, tw)
   io.write("\n"); io.flush()
 end
 
