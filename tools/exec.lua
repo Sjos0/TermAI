@@ -1,4 +1,4 @@
--- tools/exec.lua — Fachada da tool "exec".
+-- tools/exec.lua — Fachada da tool "Exec".
 -- v4: refatoração para facade + 3 submódulos (constants, truncator, executor).
 --     Comportamento idêntico ao v3 — zero mudança de retorno para o modelo.
 --     Descriptions permanecem aqui (responsabilidade de interface).
@@ -9,12 +9,12 @@ local executor = require("tools.exec.executor")
 local M = {}
 
 function M.register(tools)
-  tools.register("exec",
+  tools.register("Exec",
     "Execute bash/shell commands on the system. "
     .. "ABSOLUTE RULE: ONLY run real system commands. Never use 'echo' to mock outputs — this is hallucination. "
     .. "IMPORTANT: Avoid using this tool for file operations when dedicated tools exist. Use the appropriate tool instead: "
     .. "Find (NOT find/ls), Grep (NOT grep/rg), Read (NOT cat/head/tail), Edit (NOT sed/awk), Write (NOT echo/cat <<EOF). "
-    .. "Multiple commands: For independent commands, make separate exec calls. For dependent commands, chain with '&&'. Use ';' only when earlier failures don't matter. "
+    .. "Multiple commands: For independent commands, make separate Exec calls. For dependent commands, chain with '&&'. Use ';' only when earlier failures don't matter. "
     .. "Paths: Prefer absolute paths over 'cd'. Always quote paths containing spaces. Before creating files, verify the parent directory exists with 'ls'. "
     .. "Outputs exceeding 2000 lines or 100KB are automatically truncated. Use 'timeout' parameter for blocking commands (curl, ssh).",
     function(arg)
