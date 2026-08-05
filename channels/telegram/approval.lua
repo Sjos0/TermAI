@@ -84,9 +84,9 @@ function M.ask_bash(cmd, failed_sub)
   bash_denials[cmd] = (bash_denials[cmd] or 0) + 1
   if bash_denials[cmd] >= 3 then
     local ok_perms, perms = pcall(require, "agent.hooks.permissions")
-    if ok_perms then perms.set("exec", "blocked") end
+    if ok_perms then perms.set("Exec", "blocked") end
     bash_denials[cmd] = 0
-    api.send_message(cur.token, cur.chat_id, "🚫 Ferramenta 'exec' bloqueada após 3 recusas.")
+    api.send_message(cur.token, cur.chat_id, "🚫 Ferramenta 'Exec' bloqueada após 3 recusas.")
   end
   return false
 end
