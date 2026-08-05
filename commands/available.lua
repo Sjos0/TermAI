@@ -30,11 +30,11 @@ end
 function M.get_docs()
   if #M.agent_commands == 0 then return "" end
   local doc = "### COMANDOS DO SISTEMA\n"
-  doc = doc .. "Além das ferramentas acima, você pode executar estes comandos especiais via exec:\n\n"
+  doc = doc .. "Além das ferramentas acima, você pode executar estes comandos especiais via Exec:\n\n"
   for _, cmd in ipairs(M.agent_commands) do
     doc = doc .. "- " .. cmd.name .. ": " .. cmd.desc .. "\n"
     doc = doc .. "  Quando usar: " .. cmd.when .. "\n"
-    doc = doc .. "  Como chamar: <tool><name>exec</name><arg>" .. cmd.how .. "</arg></tool>\n\n"
+    doc = doc .. "  Como chamar: <tool><name>Exec</name><arg>" .. cmd.how .. "</arg></tool>\n\n"
   end
   return doc
 end
