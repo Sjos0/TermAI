@@ -80,8 +80,8 @@ function M.ask_user(cmd, failed_sub)
       local block_ans = (io.read("*l") or ""):lower():match("^%s*(.-)%s*$")
       if block_ans == "s" or block_ans == "sim" then
         local perms = require("agent.hooks.permissions")
-        perms.set("exec", "blocked")
-        io.write(y .. "🚫 Ferramenta 'exec' configurada como BLOQUEADA permanentemente.\n\n" .. rs)
+        perms.set("Exec", "blocked")
+        io.write(y .. "🚫 Ferramenta 'Exec' configurada como BLOQUEADA permanentemente.\n\n" .. rs)
       end
       session_denials[pattern] = 0
     end
