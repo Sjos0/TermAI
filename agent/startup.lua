@@ -113,7 +113,7 @@ function M.run(ctx, reset_info)
         if #g.names >= g.size then flush_group(ginfo.gid) end
       else
         local cmd = (msg.tool_call_id and tc_id_map[msg.tool_call_id])
-                 or last_tool_cmd or "exec"
+                 or last_tool_cmd or "Exec"
         ui.tool_replay(cmd, msg.content or "", not (msg.content or ""):match("^❌"))
         if not msg.tool_call_id then last_tool_cmd = nil end
       end
