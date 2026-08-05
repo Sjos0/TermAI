@@ -40,10 +40,10 @@ function M._pre_tool_use(tool_name, tool_arg)
     return true, nil
   end
 
-  -- Primeiro, rodamos a análise de segurança para exec
+  -- Primeiro, rodamos a análise de segurança para Exec
   local warnings = {}
   local is_safe = true
-  if tool_name == "exec" then
+  if tool_name == "Exec" then
     local security = require("tools.exec.security")
     local analysis = security.analyze(tool_arg)
     warnings = analysis.warnings
@@ -77,7 +77,7 @@ function M._pre_tool_use(tool_name, tool_arg)
   if choice == "once" then
     return true, nil
   elseif choice == "always" then
-    if tool_name == "exec" and suggested_pattern ~= "" then
+    if tool_name == "Exec" and suggested_pattern ~= "" then
       perms.add_rule(suggested_pattern, "allow", true) -- persistente
     else
       -- Configura ferramenta inteira como "always" na sessão e configurações
@@ -87,7 +87,7 @@ function M._pre_tool_use(tool_name, tool_arg)
     end
     return true, nil
   elseif choice == "block" then
-    if tool_name == "exec" and suggested_pattern ~= "" then
+    if tool_name == "Exec" and suggested_pattern ~= "" then
       perms.add_rule(suggested_pattern, "deny", true) -- persistente
     else
       perms.set_session_status(tool_name, "blocked")
@@ -97,7 +97,7 @@ function M._pre_tool_use(tool_name, tool_arg)
     return false, "Bloqueado pelo usuário."
   else
     -- cancel ou deny: Denial tracking
-    local target = (tool_name == "exec" and suggested_pattern ~= "") and suggested_pattern or tool_name
+    local target = (tool_name == "Exec" and suggested_pattern ~= "") and suggested_pattern or tool_name
     local threshold_reached = perms.increment_denial(target)
     if threshold_reached then
       io.write("\n\27[38;5;220m⚠️  Você recusou '" .. target .. "' consecutivamente.\n")
@@ -105,7 +105,7 @@ function M._pre_tool_use(tool_name, tool_arg)
       io.flush()
       local block_ans = (io.read("*l") or ""):lower():match("^%s*(.-)%s*$")
       if block_ans == "s" or block_ans == "sim" then
-        if tool_name == "exec" and suggested_pattern ~= "" then
+        if tool_name == "Exec" and suggested_pattern ~= "" then
           perms.add_rule(suggested_pattern, "deny", true)
         else
           perms.set_session_status(tool_name, "blocked")
