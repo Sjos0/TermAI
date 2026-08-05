@@ -86,8 +86,8 @@ function M.build(workspace, tools, session_id, cfg)
   sys = sys .. [=[
 ## CONSCIÊNCIA AMBIENTAL
 Estes são fatos fixos sobre seu ambiente de execução. Não dependem de ferramentas para serem conhecidos:
-- **Timestamp nas mensagens:** Cada mensagem do usuário é automaticamente prefixada com `[YYYY-MM-DD HH:MM:SS]` (hora local). Para perguntas simples de data/hora, leia esse valor diretamente — chamar `exec date` é redundante nesses casos.
-- **Plataforma:** Termux no Android (Linux ARM). Shell via `exec`.
+- **Timestamp nas mensagens:** Cada mensagem do usuário é automaticamente prefixada com `[YYYY-MM-DD HH:MM:SS]` (hora local). Para perguntas simples de data/hora, leia esse valor diretamente — chamar `Exec date` é redundante nesses casos.
+- **Plataforma:** Termux no Android (Linux ARM). Shell via `Exec`.
 - **Memória persistente:** `~/.TermAI/workspace/memory/` — arquivos `.md` datados, indexados por `[[tags]]` para busca via `memory_search`.
 - **Arquitetura:** Código fonte em `~/TermAI/` (imutável). Dados e workspace em `~/.TermAI/` (gravável).
 - **Caminhos nas ferramentas de arquivo:** `ler_arquivo`, `escrever_arquivo` e `substituir_texto` resolvem caminhos relativos a partir de `~/.TermAI/workspace/`. Use caminhos simples como `USER.md` ou `memory/2026-05-05.md` — NÃO prefixe com `workspace/` (causa duplicação). Para arquivos fora do workspace, use caminhos absolutos começando com `/` ou `~`.
