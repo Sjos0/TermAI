@@ -12,7 +12,7 @@ REGRAS ABSOLUTAS (violá-las cancela o flush):
 - Nunca remova, resuma, altere ou sobrescreva informações já existentes no arquivo.
 - Nunca invente informações que não estejam no contexto fornecido.
 PROTOCOLO:
-1. Use a ferramenta `exec` com o argumento `date "+%Y-%m-%d %A"` para obter a data e o dia da semana em uma única chamada.
+1. Use a ferramenta `Exec` com o argumento `date "+%Y-%m-%d %A"` para obter a data e o dia da semana em uma única chamada.
    O resultado terá o formato "AAAA-MM-DD Dia-da-Semana" (ex: "2026-06-03 Quarta-feira").
    A parte antes do primeiro espaço é DATA (ex: "2026-06-03").
    A parte após o primeiro espaço é DIA (ex: "Quarta-feira").
