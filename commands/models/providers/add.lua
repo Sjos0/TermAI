@@ -18,7 +18,7 @@ local function add(models_mod)
       io.write(c.red .. "  Erro ao carregar catálogo de provedores.\n" .. c.reset)
       return
     end
-    local catalog = pmod.list()
+    local catalog = pmod.list_models()
     if #catalog == 0 then
       io.write(c.gray .. "  Nenhum provedor built-in disponível.\n" .. c.reset)
       return
