@@ -31,7 +31,7 @@ function M.show_dialog(tool_name, command, failed_sub, warnings)
   display_cmd = display_cmd:gsub("[\1-\31]", "·")
 
   local suggested_pattern = ""
-  if tool_name == "exec" then
+  if tool_name == "Exec" then
     local target = failed_sub or command
     suggested_pattern = suggest.get_suggested_pattern(target)
   end
@@ -58,7 +58,7 @@ function M.show_dialog(tool_name, command, failed_sub, warnings)
   io.write("\n" .. w .. "  Escolha como prosseguir:" .. rs .. "\n")
   io.write(y .. "  [1] Permitir uma vez" .. rs .. "\n")
 
-  if tool_name == "exec" and suggested_pattern ~= "" then
+  if tool_name == "Exec" and suggested_pattern ~= "" then
     io.write(y .. "  [2] Permitir sempre para o padrão: " .. g .. suggested_pattern .. rs .. "\n")
   else
     io.write(y .. "  [2] Permitir sempre para esta ferramenta" .. rs .. "\n")
