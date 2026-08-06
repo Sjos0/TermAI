@@ -14,12 +14,12 @@ local function extract_tags(content)
   return tags
 end
 
-local function get_snippet(content, tag, radius)
+local function get_snippet(content, tag, radius, lower_content)
   radius = radius or 250
   -- Escapa o tag para uso no padrão Lua
   local escaped = tag:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1")
   local pattern  = "%[%[" .. escaped .. "%]%]"
-  local pos      = content:lower():find(pattern)
+  local pos      = (lower_content or content:lower()):find(pattern)
 
   if not pos then
     -- fallback: primeiros N chars do arquivo

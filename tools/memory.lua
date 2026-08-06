@@ -2,6 +2,7 @@
 -- v2: schema JSON para native tool calling + arg backward compat.
 local io_utils      = require("tools.memory.io_utils")
 local graph_builder = require("tools.memory.graph_builder")
+local graph_cache   = require("tools.memory.graph_cache")
 local search_engine = require("tools.memory.search_engine")
 
 local memory = {}
@@ -10,7 +11,11 @@ local _cache = {graph = nil, file_count = 0}
 local function get_graph()
   local files = io_utils.list_md_files(io_utils.MEMORY_DIR)
   if _cache.graph == nil or _cache.file_count ~= #files then
-    _cache.graph      = graph_builder.build_graph(files)
+    local disk_entries = graph_cache.load()
+    local graph, entries_out = graph_builder.build_graph(files, disk_entries)
+    graph_cache.save(entries_out)
+
+    _cache.graph      = graph
     _cache.file_count = #files
   end
   return _cache.graph, files
