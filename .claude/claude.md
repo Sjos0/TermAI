@@ -130,3 +130,22 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Learning:** Rename de tool não é cosmético quando o nome é chave de comparação em lógica de segurança. `grep -rn "exec"` achou 14 arquivos.
 **Author:** Claude Sonnet 5 + Ameno
 **Validation:** `luac -p` nos 16 arquivos + grep zero-"exec"
+
+---
+
+## 2026-08-05 - [Permissão Exec: Subcomando Fantasma "(", Overflow na TUI, Caixa Presa no Live e Texto do Agente Confundido com Comando]
+**Bug/Contexto:** Quatro falhas relacionadas no fluxo de permissão do Exec, achadas investigando um caso real onde apareceu "Subcomando pendente: (" num script multi-linha:
+1. `parser.extract_subcommands` tratava `\n` como separador idêntico a `;`, sem rastrear profundidade de parênteses — um subshell `(\n cmd\n)` vazava `"("`/`")"` como "subcomandos" próprios.
+2. `permissions_ui.lua` truncava `display_cmd` em 150 chars mas nunca truncava `failed_sub` — fragmento grande estourava a TUI.
+3. O diálogo escreve ANSI cru via `io.write`/`io.read`, fora do modelo de mensagens/sessão — nunca é persistido (por isso some no replay) e ao vivo fica preso no scrollback até reiniciar (nada nunca limpa aquela região).
+4. Texto solto do agente sem aspas (ex: "Vou trazer os arquivos...") é sintaticamente válido pro parser e virava "subcomando" pendente como se fosse ação real.
+**Files Modified:**
+- `agent/hooks/bash_patterns/parser.lua` — nova `is_real_subcommand(s)` (exige ≥1 char alfanumérico), aplicada nas 3 capturas.
+- `tools/exec/permissions.lua` — nova `M.command_exists(name)` (via `command -v` no mesmo `sh` do executor real, `shell_quote` anti-injeção); `check()` retorna `unknown_cmd` no reason "ask" — puramente informativo, não bypassa decisão.
+- `tools/exec/permissions_ui.lua` — `display_text()` unificado trunca comando e subcomando; `show_dialog` conta linhas (`wl()`) e colapsa a caixa via `\27[1A\27[K` (idioma já usado em `ui/stream.lua`) numa linha de status resolvida; nova linha de aviso pra `unknown_cmd`.
+- `agent/hooks/engine.lua` — propaga `check.unknown_cmd`.
+**Learning:** Bugs 1 e 4 tinham a mesma causa raiz — parser nunca validava a FORMA do fragmento extraído, só se não era vazio. UI com `io.write` cru fora do pipeline de sessão sempre diverge entre live e replay.
+**Prevention:** Parser de "unidades executáveis" precisa validar forma, não só não-vazio. UI fora do `ui.*` module precisa tratar seu próprio ciclo de vida (aparecer→resolver→colapsar), não depender de restart.
+**Validation:** `luac -p` nos 4 arquivos + `tests/bash_patterns_bug.lua` (64/64, zero regressão) + 3 testes de falsificação direcionados.
+**Author:** Claude Sonnet 5 + Ameno (aplicação + auditoria)
+**Debt Nota:** `parser.lua` já estava com 210 linhas antes deste patch — acima do limite de 150. Fica registrado como dívida técnica pra refactor futuro em `bash_patterns/parser/`.

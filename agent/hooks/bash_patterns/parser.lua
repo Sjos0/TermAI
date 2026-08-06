@@ -9,6 +9,10 @@ function M.wildcard_to_pattern(wildcard)
   return "^" .. p .. "$"
 end
 
+local function is_real_subcommand(s)
+  return s ~= "" and s:match("%w") ~= nil
+end
+
 -- Detecta delimitador de heredoc em uma string que começa logo após "<<".
 -- Retorna o delimitador e seu comprimento, ou nil se não encontrar.
 local function find_heredoc_delim(str)
@@ -71,7 +75,7 @@ function M.extract_subcommands(cmd)
   for sub in cmd:gmatch("%$%((.-)%)") do
     if sub ~= "" then
       local stripped = M.strip_leading_assignments(sub)
-      if stripped ~= "" then
+      if is_real_subcommand(stripped) then
         subcmds[#subcmds+1] = stripped
       end
     end
@@ -79,7 +83,7 @@ function M.extract_subcommands(cmd)
   for sub in cmd:gmatch("`(.-)`") do
     if sub ~= "" then
       local stripped = M.strip_leading_assignments(sub)
-      if stripped ~= "" then
+      if is_real_subcommand(stripped) then
         subcmds[#subcmds+1] = stripped
       end
     end
@@ -106,7 +110,7 @@ function M.extract_subcommands(cmd)
       local clean = trimmed:gsub("[>]+.*$", ""):match("^%s*(.-)%s*$")
       if clean and clean ~= "" then
         local stripped = M.strip_leading_assignments(clean)
-        if stripped ~= "" then
+        if is_real_subcommand(stripped) then
           subcmds[#subcmds+1] = stripped
         end
       end

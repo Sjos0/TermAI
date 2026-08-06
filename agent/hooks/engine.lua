@@ -72,7 +72,7 @@ function M._pre_tool_use(tool_name, tool_arg)
 
   -- Caso contrário, precisamos de diálogo de permissão (check.reason == "ask")
   local ui = require("tools.exec.permissions_ui")
-  local choice, suggested_pattern = ui.show_dialog(tool_name, tool_arg, check.failed_sub, warnings)
+  local choice, suggested_pattern = ui.show_dialog(tool_name, tool_arg, check.failed_sub, warnings, check.unknown_cmd)
 
   if choice == "once" then
     return true, nil

@@ -79,6 +79,23 @@ function M.set_mode(mode)
   pcall(function() config_mod.save(cfg) end)
 end
 
+-- Escapa uma string para uso seguro entre aspas simples em shell (evita injeção)
+local function shell_quote(s)
+  return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- Verifica se um nome de comando existe de fato no PATH (mesmo 'sh' usado pelo executor real).
+-- Puramente informativo: nunca bloqueia nem auto-aprova, só evita que texto solto do
+-- agente (ex: "Vou trazer os arquivos...") pareça uma ação legítima no diálogo de permissão.
+function M.command_exists(name)
+  if not name or name == "" then return true end
+  local h = io.popen("command -v -- " .. shell_quote(name) .. " >/dev/null 2>&1; echo $?")
+  if not h then return true end -- indisponível: não muda o comportamento atual
+  local res = h:read("*l")
+  h:close()
+  return res == "0"
+end
+
 -- Verifica se uma ferramenta específica está bloqueada ou sempre permitida na sessão
 function M.get_session_status(tool_name)
   return session_perms[tool_name]
@@ -189,7 +206,12 @@ function M.check(tool_name, command)
 
     -- Se não for seguro e não bater com allow rule, requer confirmação/diálogo
     if not is_safe and not is_allowed then
-      return { allowed = false, reason = "ask", failed_sub = sub }
+      return {
+        allowed = false,
+        reason = "ask",
+        failed_sub = sub,
+        unknown_cmd = not M.command_exists(primary),
+      }
     end
   end
 
