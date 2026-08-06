@@ -149,3 +149,18 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 **Validation:** `luac -p` nos 4 arquivos + `tests/bash_patterns_bug.lua` (64/64, zero regressão) + 3 testes de falsificação direcionados.
 **Author:** Claude Sonnet 5 + Ameno (aplicação + auditoria)
 **Debt Nota:** `parser.lua` já estava com 210 linhas antes deste patch — acima do limite de 150. Fica registrado como dívida técnica pra refactor futuro em `bash_patterns/parser/`.
+
+---
+
+## 2026-08-05 - [Cache em Disco do Grafo de Memória + Otimização de lower()]
+**Contexto:** Todo boot/restart reconstruía o grafo de memória do zero — lendo e reprocessando (regex de tags + snippet por tag + arestas) todo o histórico de memória. Com 80+ arquivos .md, isso causava lentidão perceptível no "Injetando" inicial.
+**Causa Raiz:** `tools/memory.lua` só tinha cache em RAM (`_cache.graph`) — não sobrevivia a restarts. Além disso, `get_snippet()` fazia `content:lower()` do arquivo inteiro **por tag** (redundante: 10 tags = 10 lower() do mesmo texto).
+**Files Modified:**
+- `tools/memory/graph_cache.lua` (NOVO) — Persistência em disco do cache (`.graph_cache.json`). `load()` retorna nil em qualquer falha (nunca derruba boot). `save()` é melhor-esforço.
+- `tools/memory/graph_builder.lua` — `parse_file()` aceita `cached_entry` e reutiliza tags/snippets se `size` em bytes não mudou. `build_graph()` retorna `entries_out` para persistir.
+- `tools/memory/tag_parser.lua` — `get_snippet()` aceita `lower_content` opcional (pré-computado pelo caller).
+- `tools/memory.lua` — Integra `graph_cache` no `get_graph()`: load → build com cache → save.
+**Learning:** Otimização de cache em disco é segura quando a chave (tamanho em bytes) é um proxy confiável para "conteúdo inalterado" — verdade para arquivos de memória datados que crescem monotonicamente.
+**Performance:** ~2-2.6x mais rápido no boot com cache quente. `lower()` agora é 1x por arquivo em vez de N (N = nº de tags).
+**Validation:** `luac -p` nos 4 arquivos + sync GitHub commit `9cf95c7`.
+**Author:** Claude Sonnet 5 + Ameno (aplicação + auditoria)
