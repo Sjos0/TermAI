@@ -1,15 +1,14 @@
--- graph_cache.lua — Persistência em disco do grafo de memória entre reinícios
--- do processo. O cache em RAM de tools/memory.lua só sobrevive dentro do mesmo
--- processo; este módulo evita que CADA boot/restart reprocesse (regex de tags +
--- snippets) o histórico inteiro de memória — só o que mudou desde o último save.
+-- graph_cache.lua — Persistência em disco do GRAFO COMPLETO de memória.
+-- v2: salva nós + arestas + índice invertido + file_hashes (mtime).
+-- No boot com cache quente, zero leitura de .md — só JSON decode.
 local json     = require("json")
 local io_utils = require("tools.memory.io_utils")
 
 local M = {}
 M.CACHE_PATH = io_utils.MEMORY_DIR .. "/.graph_cache.json"
+M.VERSION    = 2
 
--- Carrega as entradas cacheadas (path -> {size, date, file, tags, snippets}).
--- Retorna nil se não existir ou estiver corrompido — nunca derruba o boot.
+-- Carrega o cache completo. Retorna nil em qualquer falha (nunca derruba o boot).
 function M.load()
   local f = io.open(M.CACHE_PATH, "r")
   if not f then return nil end
@@ -19,13 +18,33 @@ function M.load()
 
   local ok, data = pcall(json.decode, raw)
   if not ok or type(data) ~= "table" then return nil end
-  if data.version ~= 1 or type(data.entries) ~= "table" then return nil end
-  return data.entries
+  if data.version ~= M.VERSION then return nil end
+  if type(data.graph) ~= "table" then return nil end
+  if type(data.file_hashes) ~= "table" then return nil end
+
+  -- Integridade mínima do grafo
+  if type(data.graph.index) ~= "table"
+     or type(data.graph.nodes) ~= "table"
+     or type(data.graph.edges) ~= "table" then
+    return nil
+  end
+
+  return data
 end
 
--- Salva as entradas no disco. Melhor-esforço: falha silenciosa, nunca quebra o boot.
-function M.save(entries)
-  local ok, encoded = pcall(json.encode, { version = 1, entries = entries })
+-- Salva o grafo completo + hashes. Melhor-esforço: falha silenciosa.
+function M.save(graph, file_hashes)
+  if type(graph) ~= "table" or type(file_hashes) ~= "table" then
+    return false
+  end
+
+  local payload = {
+    version     = M.VERSION,
+    file_hashes = file_hashes,
+    graph       = graph,
+  }
+
+  local ok, encoded = pcall(json.encode, payload)
   if not ok then return false end
 
   os.execute('mkdir -p "' .. io_utils.MEMORY_DIR .. '" 2>/dev/null')
