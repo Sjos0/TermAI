@@ -1,5 +1,5 @@
 -- tools/exec/permissions_ui.lua — Interface TUI de diálogo para permissões
--- v2: status limpo (só "✅ Permitido uma vez"), colapso completo, sem comando residual
+-- v3: colapso por cursor save/restore (não depende de contar \n — tolera wrap)
 local suggest          = require("agent.hooks.bash_patterns.suggest")
 local approval_backend = require("agent.hooks.approval_backend")
 
@@ -46,11 +46,13 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
     end
   end
 
-  local lines_written = 0
+  -- Marca a posição ANTES de qualquer linha do diálogo.
+  -- No resolve: volta aqui e apaga tudo abaixo — independente de wrap visual.
+  io.write("\27[s")
+  io.flush()
+
   local function wl(str)
     io.write(str)
-    local _, n = str:gsub("\n", "\n")
-    lines_written = lines_written + n
   end
 
   wl("\n")
@@ -91,10 +93,8 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   wl(gr .. "  [Ctrl+C] cancelar · [Enter] aprovar uma vez" .. rs .. "\n")
 
   local function collapse_and_resolve(color, icon, label)
-    local total = lines_written + 2
-    for _ = 1, total do
-      io.write("\27[1A\27[K")
-    end
+    -- Volta ao ponto salvo e apaga tudo até o fim da tela
+    io.write("\27[u\27[0J")
     io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
     io.flush()
   end
@@ -102,7 +102,6 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   while true do
     io.write(y .. "  Escolha (1/2/3/4/c): " .. rs)
     io.flush()
-    lines_written = lines_written + 1
 
     local start_t = get_wall_time()
     local choice = (io.read("*l") or "c"):match("^%s*(.-)%s*$")
