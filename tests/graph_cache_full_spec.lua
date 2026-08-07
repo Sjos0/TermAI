@@ -50,7 +50,7 @@ do
 
   local data = graph_cache.load()
   assert_true("load ok", data ~= nil)
-  assert_eq("version 2", data.version, 2)
+  assert_eq("version 3", data.version, 3)
   local node = data.graph.nodes[f1]
   assert_true("node existe no cache", node ~= nil)
   assert_eq("content NÃO está no cache", node.content, nil)
