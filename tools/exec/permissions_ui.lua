@@ -1,7 +1,9 @@
 -- tools/exec/permissions_ui.lua — Interface TUI de diálogo para permissões
--- v3: colapso por cursor save/restore (não depende de contar \n — tolera wrap)
+-- v4: colapso por linhas VISUAIS (core.wlen + core.tw).
+--     ESC[s/u falha no Termux quando o diálogo rola a tela — abandonado.
 local suggest          = require("agent.hooks.bash_patterns.suggest")
 local approval_backend = require("agent.hooks.approval_backend")
+local core             = require("ui.core")
 
 local M = {}
 
@@ -11,6 +13,28 @@ local function get_wall_time()
   local val = f:read("*n")
   f:close()
   return val or os.time()
+end
+
+-- Quantas linhas na tela uma string ocupa (ANSI ignorado, wrap por tw).
+local function visual_line_count(str, tw)
+  local plain = core.strip(str or "")
+  local total = 0
+  -- Cada segmento terminado em \n é uma linha lógica (pode wrapar)
+  for line in (plain .. "\n"):gmatch("([^\n]*)\n") do
+    local w = core.wlen(line)
+    if w == 0 then
+      total = total + 1
+    else
+      total = total + math.max(1, math.ceil(w / tw))
+    end
+  end
+  -- Se a string original NÃO termina em \n, o último gmatch adicionou
+  -- um segmento vazio extra — desconta.
+  if str and #str > 0 and str:sub(-1) ~= "\n" then
+    total = total - 1
+  end
+  if not str or str == "" then return 0 end
+  return math.max(0, total)
 end
 
 function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
@@ -46,13 +70,12 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
     end
   end
 
-  -- Marca a posição ANTES de qualquer linha do diálogo.
-  -- No resolve: volta aqui e apaga tudo abaixo — independente de wrap visual.
-  io.write("\27[s")
-  io.flush()
+  local tw = core.tw()
+  local lines_visual = 0
 
   local function wl(str)
     io.write(str)
+    lines_visual = lines_visual + visual_line_count(str, tw)
   end
 
   wl("\n")
@@ -93,13 +116,18 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   wl(gr .. "  [Ctrl+C] cancelar · [Enter] aprovar uma vez" .. rs .. "\n")
 
   local function collapse_and_resolve(color, icon, label)
-    -- Volta ao ponto salvo e apaga tudo até o fim da tela
-    io.write("\27[u\27[0J")
+    -- +1 = linha do prompt "Escolha..." + Enter do usuário
+    -- +2 = margem de segurança (subcontagem residual)
+    local total = lines_visual + 1 + 2
+    for _ = 1, total do
+      io.write("\27[1A\27[2K")
+    end
     io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
     io.flush()
   end
 
   while true do
+    -- Prompt sem \n — o Enter do usuário completa a linha visual
     io.write(y .. "  Escolha (1/2/3/4/c): " .. rs)
     io.flush()
 
