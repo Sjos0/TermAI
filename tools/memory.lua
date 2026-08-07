@@ -1,13 +1,14 @@
 -- tools/memory.lua — Fachada + Orquestrador do motor GraphRAG Local.
--- v3.1: cache completo SEM content + hot path sem 83 forks de stat.
--- Spec 2026-08-06 + fixes Ameno (PR #21 review).
+-- v3.2: dirty flag corrige índice stale após Edit/Write (auditoria Ameno).
+-- Spec 2026-08-06 + fixes Ameno (PR #21).
 local io_utils      = require("tools.memory.io_utils")
 local graph_builder = require("tools.memory.graph_builder")
 local graph_cache   = require("tools.memory.graph_cache")
 local search_engine = require("tools.memory.search_engine")
 
 local memory = {}
-local _cache = { graph = nil, file_count = 0, file_hashes = nil }
+-- dirty: true após invalidate_cache → força recheck de mtimes mesmo com file_count igual
+local _cache = { graph = nil, file_count = 0, file_hashes = nil, dirty = false }
 
 -- Hidrata content sob demanda para search_engine (só nos nós que faltam).
 local function ensure_content(graph)
@@ -22,8 +23,8 @@ end
 local function get_graph()
   local files = io_utils.list_md_files(io_utils.MEMORY_DIR)
 
-  -- RAM hit: mesma quantidade de arquivos → assume inalterado
-  if _cache.graph and _cache.file_count == #files then
+  -- RAM hit: mesma quantidade + não dirty → assume inalterado
+  if _cache.graph and _cache.file_count == #files and not _cache.dirty then
     return _cache.graph, files
   end
 
@@ -37,8 +38,8 @@ local function get_graph()
     local disk_count = 0
     for _ in pairs(graph.nodes or {}) do disk_count = disk_count + 1 end
 
-    if disk_count == #files then
-      -- Mesmo número de arquivos: confia no cache de disco sem 83 stats.
+    -- Hot path rápido: count igual E não dirty → confia no disco, zero stat
+    if disk_count == #files and not _cache.dirty then
       ensure_content(graph)
       _cache.graph       = graph
       _cache.file_count  = #files
@@ -46,7 +47,7 @@ local function get_graph()
       return graph, files
     end
 
-    -- Count mudou → verificar quais arquivos são novos/modificados/removidos
+    -- dirty ou count mudou → recheck incremental por mtime
     local current_set = {}
     local changed = {}
 
@@ -75,9 +76,12 @@ local function get_graph()
 
     ensure_content(graph)
     graph_cache.save(graph, file_hashes)
+    _cache.dirty = false
   else
+    -- Cold path: rebuild completo
     graph, file_hashes = graph_builder.build_graph_full(files)
     graph_cache.save(graph, file_hashes)
+    _cache.dirty = false
   end
 
   _cache.graph       = graph
@@ -98,11 +102,17 @@ function memory.search(query)
   return search_engine.search(query, graph, files)
 end
 
--- Só invalida RAM. Disco permanece como fonte de verdade do hot path.
-function memory.invalidate_cache()
+-- Invalida RAM e marca dirty (próximo get_graph recheca mtimes).
+-- also_disk=true também apaga o cache em disco (rebuild completo na próxima vez).
+-- Callers existentes (editor/write/todo) não precisam mudar — dirty cobre o caso.
+function memory.invalidate_cache(also_disk)
   _cache.graph       = nil
   _cache.file_count  = 0
   _cache.file_hashes = nil
+  _cache.dirty       = true
+  if also_disk then
+    pcall(os.remove, graph_cache.CACHE_PATH)
+  end
 end
 
 function memory.register(tools)
