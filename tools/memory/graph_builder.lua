@@ -1,11 +1,10 @@
 -- graph_builder.lua — Construção e atualização incremental do grafo de memória.
--- v2: cache de grafo completo + update/remove de nós individuais.
+-- v2.1: sem content no cache; limpeza completa de arestas; get_mtime batch-friendly.
 local io_utils   = require("tools.memory.io_utils")
 local tag_parser = require("tools.memory.tag_parser")
 
 local M = {}
 
--- mtime via stat (Termux/Android não tem lfs). Retorna string ou "0".
 local function get_mtime(filepath)
   local h = io.popen('stat -c %Y "' .. filepath .. '" 2>/dev/null')
   if not h then return "0" end
@@ -17,7 +16,6 @@ end
 
 M.get_mtime = get_mtime
 
--- Parse de um único arquivo → tags, snippets, date, filename, content
 local function parse_file(filepath, content)
   local filename = filepath:match("([^/]+)$") or filepath
   local date     = filename:match("^(%d%d%d%d%-%d%d%-%d%d)") or filename
@@ -30,13 +28,13 @@ local function parse_file(filepath, content)
   return tags, snippets, date, filename
 end
 
--- Remove todas as referências de um path do grafo (índice + nós + arestas sujas)
 local function remove_graph_node(graph, path)
   local node = graph.nodes[path]
   if not node then return end
 
-  -- Remove entradas do índice invertido
+  local removed_tags = {}
   for _, tag in ipairs(node.tags or {}) do
+    removed_tags[tag] = true
     local entries = graph.index[tag]
     if entries then
       local new_entries = {}
@@ -47,22 +45,25 @@ local function remove_graph_node(graph, path)
       end
       if #new_entries == 0 then
         graph.index[tag] = nil
-        -- Limpa arestas órfãs dessa tag
         graph.edges[tag] = nil
-        for t, rels in pairs(graph.edges) do
-          local cleaned = {}
-          for _, r in ipairs(rels) do
-            if r ~= tag then cleaned[#cleaned + 1] = r end
-          end
-          if #cleaned == 0 then
-            graph.edges[t] = nil
-          else
-            graph.edges[t] = cleaned
-          end
-        end
       else
         graph.index[tag] = new_entries
       end
+    end
+  end
+
+  -- Limpa referências órfãs: só mantém arestas para tags que ainda existem no índice
+  for t, rels in pairs(graph.edges) do
+    local final = {}
+    for _, r in ipairs(rels) do
+      if graph.index[r] then
+        final[#final + 1] = r
+      end
+    end
+    if #final == 0 then
+      graph.edges[t] = nil
+    else
+      graph.edges[t] = final
     end
   end
 
@@ -71,7 +72,6 @@ end
 
 M.remove_graph_node = remove_graph_node
 
--- Adiciona ou atualiza um nó no grafo (incremental)
 local function update_graph_node(graph, filepath)
   local content = io_utils.read_file(filepath)
   if not content or content == "" then
@@ -79,7 +79,6 @@ local function update_graph_node(graph, filepath)
     return false
   end
 
-  -- Se já existia, remove referências antigas primeiro
   if graph.nodes[filepath] then
     remove_graph_node(graph, filepath)
   end
@@ -89,7 +88,7 @@ local function update_graph_node(graph, filepath)
   graph.nodes[filepath] = {
     date    = date,
     tags    = tags,
-    content = content,
+    content = content, -- RAM only; graph_cache.save stripa isso
     file    = filename,
   }
 
@@ -105,7 +104,6 @@ local function update_graph_node(graph, filepath)
     }
   end
 
-  -- Arestas de co-ocorrência
   for i = 1, #tags do
     if not graph.edges[tags[i]] then
       graph.edges[tags[i]] = {}
@@ -128,13 +126,8 @@ end
 
 M.update_graph_node = update_graph_node
 
--- Build completo a partir da lista de arquivos (cold start)
 local function build_graph_full(files)
-  local graph = {
-    index = {},
-    nodes = {},
-    edges = {},
-  }
+  local graph = { index = {}, nodes = {}, edges = {} }
   local file_hashes = {}
 
   for _, filepath in ipairs(files) do
@@ -148,8 +141,6 @@ end
 
 M.build_graph_full = build_graph_full
 
--- Compatibilidade com a assinatura antiga (usada só no cold path)
--- Mantida para não quebrar callers legados; agora delega para full.
 local function build_graph(files, _cached_entries)
   return build_graph_full(files)
 end
