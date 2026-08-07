@@ -7,9 +7,6 @@ local M = {}
 local HOME      = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local HOOKS_DIR = HOME .. "/.TermAI/hooks"
 
--- ── Dispatcher principal ──────────────────────────────────────────────────
--- PreToolUse retorna: allowed (bool), reason (string|nil)
--- Demais eventos: sem retorno significativo.
 function M.run(event, ...)
   if event == "PreToolUse" then
     local tool_name, tool_arg = ...
@@ -29,18 +26,15 @@ function M.run(event, ...)
   end
 end
 
--- ── PreToolUse ─────────────────────────────────────────────────────────────
 function M._pre_tool_use(tool_name, tool_arg)
   local config_mod = require("config")
   local cfg = config_mod.load()
 
-  -- YOLO Mode ou bypass total
   local perms = require("tools.exec.permissions")
   if (cfg.hooks and cfg.hooks.yolo_mode) or perms.get_mode() == "bypass" then
     return true, nil
   end
 
-  -- Primeiro, rodamos a análise de segurança para Exec
   local warnings = {}
   local is_safe = true
   if tool_name == "Exec" then
@@ -49,7 +43,6 @@ function M._pre_tool_use(tool_name, tool_arg)
     warnings = analysis.warnings
     is_safe = analysis.safe
 
-    -- Se strict e não seguro, ou se severidade for high, podemos bloquear e reportar erro
     if not is_safe and analysis.severity == "high" then
       for _, w in ipairs(warnings) do
         if w.type == "traversal" then
@@ -59,18 +52,15 @@ function M._pre_tool_use(tool_name, tool_arg)
     end
   end
 
-  -- Verifica permissões usando o novo módulo de permissões
   local check = perms.check(tool_name, tool_arg)
   if check.allowed then
     return true, nil
   end
 
-  -- Se for bloqueado, recusamos imediatamente sem diálogo
   if check.reason == "blocked" or check.reason == "deny" then
     return false, "Ferramenta '" .. tool_name .. "' ou comando está bloqueado por regra de segurança."
   end
 
-  -- Caso contrário, precisamos de diálogo de permissão (check.reason == "ask")
   local ui = require("tools.exec.permissions_ui")
   local choice, suggested_pattern = ui.show_dialog(tool_name, tool_arg, check.failed_sub, warnings, check.unknown_cmd)
 
@@ -78,9 +68,8 @@ function M._pre_tool_use(tool_name, tool_arg)
     return true, nil
   elseif choice == "always" then
     if tool_name == "Exec" and suggested_pattern ~= "" then
-      perms.add_rule(suggested_pattern, "allow", true) -- persistente
+      perms.add_rule(suggested_pattern, "allow", true)
     else
-      -- Configura ferramenta inteira como "always" na sessão e configurações
       perms.set_session_status(tool_name, "always")
       local compat_perms = require("agent.hooks.permissions")
       compat_perms.set(tool_name, "always")
@@ -88,7 +77,7 @@ function M._pre_tool_use(tool_name, tool_arg)
     return true, nil
   elseif choice == "block" then
     if tool_name == "Exec" and suggested_pattern ~= "" then
-      perms.add_rule(suggested_pattern, "deny", true) -- persistente
+      perms.add_rule(suggested_pattern, "deny", true)
     else
       perms.set_session_status(tool_name, "blocked")
       local compat_perms = require("agent.hooks.permissions")
@@ -96,7 +85,6 @@ function M._pre_tool_use(tool_name, tool_arg)
     end
     return false, "Bloqueado pelo usuário."
   else
-    -- cancel ou deny: Denial tracking
     local target = (tool_name == "Exec" and suggested_pattern ~= "") and suggested_pattern or tool_name
     local threshold_reached = perms.increment_denial(target)
     if threshold_reached then
@@ -116,13 +104,14 @@ function M._pre_tool_use(tool_name, tool_arg)
         io.flush()
       end
     end
-    return false, "Cancelado/Negado pelo usuário."
+    local msg = string.format(
+      "Solicitação '%s' negada pelo usuário. Devolva o input ao usuário e faça perguntas complementares para entender o que ele realmente quer antes de tentar novamente.",
+      tostring(target)
+    )
+    return false, msg
   end
 end
 
--- ── Executor de scripts do usuário ────────────────────────────────────────
--- Roda todos os .lua e .sh em ~/.TermAI/hooks/<Evento>/
--- Falhas em scripts de usuário são reportadas mas não interrompem o agente.
 function M._run_user_scripts(event, ...)
   local event_dir = HOOKS_DIR .. "/" .. event
   local h = io.popen('ls "' .. event_dir .. '" 2>/dev/null')
