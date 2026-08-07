@@ -1,18 +1,28 @@
 -- tools/memory.lua — Fachada + Orquestrador do motor GraphRAG Local.
--- v3: cache de grafo completo + atualização incremental (Spec 2026-08-06).
+-- v3.1: cache completo SEM content + hot path sem 83 forks de stat.
+-- Spec 2026-08-06 + fixes Ameno (PR #21 review).
 local io_utils      = require("tools.memory.io_utils")
 local graph_builder = require("tools.memory.graph_builder")
 local graph_cache   = require("tools.memory.graph_cache")
 local search_engine = require("tools.memory.search_engine")
 
 local memory = {}
-local _cache = { graph = nil, file_count = 0 }
+local _cache = { graph = nil, file_count = 0, file_hashes = nil }
 
--- Retorna o grafo (com atualização incremental se necessário).
+-- Hidrata content sob demanda para search_engine (só nos nós que faltam).
+local function ensure_content(graph)
+  for path, node in pairs(graph.nodes) do
+    if not node.content then
+      local content = io_utils.read_file(path)
+      node.content = content or ""
+    end
+  end
+end
+
 local function get_graph()
   local files = io_utils.list_md_files(io_utils.MEMORY_DIR)
 
-  -- Cache em RAM ainda válido e mesma quantidade de arquivos?
+  -- RAM hit: mesma quantidade de arquivos → assume inalterado
   if _cache.graph and _cache.file_count == #files then
     return _cache.graph, files
   end
@@ -21,10 +31,22 @@ local function get_graph()
   local graph, file_hashes
 
   if disk and disk.version == graph_cache.VERSION then
-    -- ── Caminho quente: verificar mudanças por mtime ──────────────────────
     graph       = disk.graph
     file_hashes = disk.file_hashes or {}
 
+    local disk_count = 0
+    for _ in pairs(graph.nodes or {}) do disk_count = disk_count + 1 end
+
+    if disk_count == #files then
+      -- Mesmo número de arquivos: confia no cache de disco sem 83 stats.
+      ensure_content(graph)
+      _cache.graph       = graph
+      _cache.file_count  = #files
+      _cache.file_hashes = file_hashes
+      return graph, files
+    end
+
+    -- Count mudou → verificar quais arquivos são novos/modificados/removidos
     local current_set = {}
     local changed = {}
 
@@ -36,7 +58,6 @@ local function get_graph()
       end
     end
 
-    -- Arquivos removidos
     for path in pairs(graph.nodes) do
       if not current_set[path] then
         graph_builder.remove_graph_node(graph, path)
@@ -44,7 +65,6 @@ local function get_graph()
       end
     end
 
-    -- Arquivos novos ou modificados
     for _, f in ipairs(changed) do
       if graph_builder.update_graph_node(graph, f) then
         file_hashes[f] = graph_builder.get_mtime(f)
@@ -53,18 +73,16 @@ local function get_graph()
       end
     end
 
-    -- Persistência (melhor-esforço)
-    if #changed > 0 or next(file_hashes) then
-      graph_cache.save(graph, file_hashes)
-    end
+    ensure_content(graph)
+    graph_cache.save(graph, file_hashes)
   else
-    -- ── Caminho frio: rebuild completo ────────────────────────────────────
     graph, file_hashes = graph_builder.build_graph_full(files)
     graph_cache.save(graph, file_hashes)
   end
 
-  _cache.graph      = graph
-  _cache.file_count = #files
+  _cache.graph       = graph
+  _cache.file_count  = #files
+  _cache.file_hashes = file_hashes
   return graph, files
 end
 
@@ -80,11 +98,11 @@ function memory.search(query)
   return search_engine.search(query, graph, files)
 end
 
+-- Só invalida RAM. Disco permanece como fonte de verdade do hot path.
 function memory.invalidate_cache()
-  _cache.graph      = nil
-  _cache.file_count = 0
-  -- Também remove o cache em disco para forçar rebuild no próximo acesso
-  pcall(os.remove, graph_cache.CACHE_PATH)
+  _cache.graph       = nil
+  _cache.file_count  = 0
+  _cache.file_hashes = nil
 end
 
 function memory.register(tools)

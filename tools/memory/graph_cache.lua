@@ -1,6 +1,6 @@
 -- graph_cache.lua — Persistência em disco do GRAFO COMPLETO de memória.
--- v2: salva nós + arestas + índice invertido + file_hashes (mtime).
--- No boot com cache quente, zero leitura de .md — só JSON decode.
+-- v2.1: grafo completo SEM content (só metadata) + file_hashes (mtime).
+-- Boot quente = JSON decode leve + zero leitura de .md.
 local json     = require("json")
 local io_utils = require("tools.memory.io_utils")
 
@@ -22,7 +22,6 @@ function M.load()
   if type(data.graph) ~= "table" then return nil end
   if type(data.file_hashes) ~= "table" then return nil end
 
-  -- Integridade mínima do grafo
   if type(data.graph.index) ~= "table"
      or type(data.graph.nodes) ~= "table"
      or type(data.graph.edges) ~= "table" then
@@ -32,16 +31,31 @@ function M.load()
   return data
 end
 
--- Salva o grafo completo + hashes. Melhor-esforço: falha silenciosa.
+-- Salva o grafo (sem content) + hashes. Melhor-esforço.
 function M.save(graph, file_hashes)
   if type(graph) ~= "table" or type(file_hashes) ~= "table" then
     return false
   end
 
+  -- Strip content before serializing (search_engine lê do disco sob demanda)
+  local slim_nodes = {}
+  for path, node in pairs(graph.nodes or {}) do
+    slim_nodes[path] = {
+      date = node.date,
+      tags = node.tags,
+      file = node.file,
+      -- content propositalmente omitido
+    }
+  end
+
   local payload = {
     version     = M.VERSION,
     file_hashes = file_hashes,
-    graph       = graph,
+    graph       = {
+      index = graph.index,
+      nodes = slim_nodes,
+      edges = graph.edges,
+    },
   }
 
   local ok, encoded = pcall(json.encode, payload)
