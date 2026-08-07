@@ -1,14 +1,14 @@
--- graph_cache.lua — Persistência em disco do GRAFO COMPLETO de memória.
--- v2.1: grafo completo SEM content (só metadata) + file_hashes (mtime).
--- Boot quente = JSON decode leve + zero leitura de .md.
+-- graph_cache.lua — Persistência em disco do grafo de memória.
+-- v3: NÃO salva index (snippets inflavam JSON a 12MB).
+--     Salva só nodes (metadata) + edges + file_hashes.
+--     Index é reconstruído em RAM após ensure_content.
 local json     = require("json")
 local io_utils = require("tools.memory.io_utils")
 
 local M = {}
 M.CACHE_PATH = io_utils.MEMORY_DIR .. "/.graph_cache.json"
-M.VERSION    = 2
+M.VERSION    = 3
 
--- Carrega o cache completo. Retorna nil em qualquer falha (nunca derruba o boot).
 function M.load()
   local f = io.open(M.CACHE_PATH, "r")
   if not f then return nil end
@@ -21,30 +21,25 @@ function M.load()
   if data.version ~= M.VERSION then return nil end
   if type(data.graph) ~= "table" then return nil end
   if type(data.file_hashes) ~= "table" then return nil end
-
-  if type(data.graph.index) ~= "table"
-     or type(data.graph.nodes) ~= "table"
-     or type(data.graph.edges) ~= "table" then
+  if type(data.graph.nodes) ~= "table" or type(data.graph.edges) ~= "table" then
     return nil
   end
 
+  data.graph.index = data.graph.index or {}
   return data
 end
 
--- Salva o grafo (sem content) + hashes. Melhor-esforço.
 function M.save(graph, file_hashes)
   if type(graph) ~= "table" or type(file_hashes) ~= "table" then
     return false
   end
 
-  -- Strip content before serializing (search_engine lê do disco sob demanda)
   local slim_nodes = {}
   for path, node in pairs(graph.nodes or {}) do
     slim_nodes[path] = {
       date = node.date,
       tags = node.tags,
       file = node.file,
-      -- content propositalmente omitido
     }
   end
 
@@ -52,9 +47,8 @@ function M.save(graph, file_hashes)
     version     = M.VERSION,
     file_hashes = file_hashes,
     graph       = {
-      index = graph.index,
       nodes = slim_nodes,
-      edges = graph.edges,
+      edges = graph.edges or {},
     },
   }
 

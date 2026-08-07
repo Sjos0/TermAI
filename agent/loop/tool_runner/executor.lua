@@ -1,4 +1,5 @@
 -- agent/loop/tool_runner/executor.lua — Orquestração de execuções individuais e em lote.
+-- v2: PreToolUse ANTES de tool_start — evita bolinha amarela órfã após diálogo de permissão.
 local ui        = require("ui")
 local tools_mod = require("tools")
 local json      = require("json")
@@ -18,6 +19,23 @@ end
 
 local function is_read_call(tc)
   return tc.name == "Read" and tools_mod.registry[tc.name] ~= nil
+end
+
+local function build_arg_str(name, args)
+  if type(args) ~= "table" then return tostring(args or "") end
+  local primary
+  if name == "Grep" then
+    primary = string.format('"%s" in %s', args.pattern or "", args.path or ".")
+  elseif name == "Read" and args.start_line then
+    primary = string.format('%s:%s-%s', args.path or "", args.start_line, args.end_line or args.start_line)
+  else
+    primary = args.command or args.path or args.query
+           or args.expression or args.name or args.arg
+           or args.session_id
+  end
+  if primary and type(primary) == "string" then return primary end
+  local ok_j, enc = pcall(json.encode, args)
+  return ok_j and enc or tostring(args)
 end
 
 local function executar_individual(ctx, tc)
@@ -46,10 +64,31 @@ local function executar_individual(ctx, tc)
     else
       ctx.last_tool_sig = tc_sig
       local display_str = display.tc_display(tc)
+
+      -- PreToolUse ANTES de tool_start: evita bolinha amarela órfã
+      local hooks_engine = require("agent.hooks.engine")
+      local arg_str = build_arg_str(tc.name, tc.args)
+      local allowed, reason = hooks_engine.run("PreToolUse", tc.name, arg_str)
+
+      if not allowed then
+        ui.tool_start(display_str)
+        result = "❌ [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
+        ui.tool_end(display_str, result, false)
+        ctx.msgs[#ctx.msgs + 1] = {
+          role         = "tool",
+          tool_call_id = tc.id,
+          content      = result .. suffix.build_system_suffix(ctx, nil, "CANCELLED"),
+        }
+        if reason and reason:find("negada pelo usuário") then
+          ctx.tool_cancelled = true
+        end
+        return
+      end
+
       ui.tool_start(display_str)
 
       local start_t = get_wall_time()
-      result = tools_mod.call_structured(tc.name, tc.args)
+      result = tools_mod.call_structured(tc.name, tc.args, { skip_pretool = true })
       local elapsed_ms = math.max(0, math.floor((get_wall_time() - start_t) * 1000))
 
       local bp = require("agent.hooks.bash_patterns")

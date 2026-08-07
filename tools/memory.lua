@@ -1,16 +1,14 @@
 -- tools/memory.lua — Fachada + Orquestrador do motor GraphRAG Local.
--- v3.2: dirty flag corrige índice stale após Edit/Write (auditoria Ameno).
--- Spec 2026-08-06 + fixes Ameno (PR #21).
+-- v3.3: cache v3 sem index no disco (JSON leve) + dirty flag + rebuild_index.
 local io_utils      = require("tools.memory.io_utils")
 local graph_builder = require("tools.memory.graph_builder")
 local graph_cache   = require("tools.memory.graph_cache")
+local tag_parser    = require("tools.memory.tag_parser")
 local search_engine = require("tools.memory.search_engine")
 
 local memory = {}
--- dirty: true após invalidate_cache → força recheck de mtimes mesmo com file_count igual
 local _cache = { graph = nil, file_count = 0, file_hashes = nil, dirty = false }
 
--- Hidrata content sob demanda para search_engine (só nos nós que faltam).
 local function ensure_content(graph)
   for path, node in pairs(graph.nodes) do
     if not node.content then
@@ -20,10 +18,25 @@ local function ensure_content(graph)
   end
 end
 
+-- Reconstrói índice invertido em RAM (cache v3 não serializa index).
+local function rebuild_index(graph)
+  graph.index = {}
+  for path, node in pairs(graph.nodes) do
+    local content = node.content or ""
+    local lower   = content:lower()
+    for _, tag in ipairs(node.tags or {}) do
+      if not graph.index[tag] then graph.index[tag] = {} end
+      local snippet = content ~= "" and tag_parser.get_snippet(content, tag, nil, lower) or ""
+      graph.index[tag][#graph.index[tag] + 1] = {
+        file = node.file, path = path, date = node.date, snippet = snippet,
+      }
+    end
+  end
+end
+
 local function get_graph()
   local files = io_utils.list_md_files(io_utils.MEMORY_DIR)
 
-  -- RAM hit: mesma quantidade + não dirty → assume inalterado
   if _cache.graph and _cache.file_count == #files and not _cache.dirty then
     return _cache.graph, files
   end
@@ -38,19 +51,14 @@ local function get_graph()
     local disk_count = 0
     for _ in pairs(graph.nodes or {}) do disk_count = disk_count + 1 end
 
-    -- Hot path rápido: count igual E não dirty → confia no disco, zero stat
     if disk_count == #files and not _cache.dirty then
       ensure_content(graph)
-      _cache.graph       = graph
-      _cache.file_count  = #files
-      _cache.file_hashes = file_hashes
+      rebuild_index(graph)
+      _cache.graph = graph; _cache.file_count = #files; _cache.file_hashes = file_hashes
       return graph, files
     end
 
-    -- dirty ou count mudou → recheck incremental por mtime
-    local current_set = {}
-    local changed = {}
-
+    local current_set, changed = {}, {}
     for _, f in ipairs(files) do
       current_set[f] = true
       local mtime = graph_builder.get_mtime(f)
@@ -58,14 +66,12 @@ local function get_graph()
         changed[#changed + 1] = f
       end
     end
-
     for path in pairs(graph.nodes) do
       if not current_set[path] then
         graph_builder.remove_graph_node(graph, path)
         file_hashes[path] = nil
       end
     end
-
     for _, f in ipairs(changed) do
       if graph_builder.update_graph_node(graph, f) then
         file_hashes[f] = graph_builder.get_mtime(f)
@@ -73,20 +79,17 @@ local function get_graph()
         file_hashes[f] = nil
       end
     end
-
     ensure_content(graph)
+    rebuild_index(graph)
     graph_cache.save(graph, file_hashes)
     _cache.dirty = false
   else
-    -- Cold path: rebuild completo
     graph, file_hashes = graph_builder.build_graph_full(files)
     graph_cache.save(graph, file_hashes)
     _cache.dirty = false
   end
 
-  _cache.graph       = graph
-  _cache.file_count  = #files
-  _cache.file_hashes = file_hashes
+  _cache.graph = graph; _cache.file_count = #files; _cache.file_hashes = file_hashes
   return graph, files
 end
 
@@ -102,17 +105,9 @@ function memory.search(query)
   return search_engine.search(query, graph, files)
 end
 
--- Invalida RAM e marca dirty (próximo get_graph recheca mtimes).
--- also_disk=true também apaga o cache em disco (rebuild completo na próxima vez).
--- Callers existentes (editor/write/todo) não precisam mudar — dirty cobre o caso.
 function memory.invalidate_cache(also_disk)
-  _cache.graph       = nil
-  _cache.file_count  = 0
-  _cache.file_hashes = nil
-  _cache.dirty       = true
-  if also_disk then
-    pcall(os.remove, graph_cache.CACHE_PATH)
-  end
+  _cache.graph = nil; _cache.file_count = 0; _cache.file_hashes = nil; _cache.dirty = true
+  if also_disk then pcall(os.remove, graph_cache.CACHE_PATH) end
 end
 
 function memory.register(tools)
@@ -131,10 +126,7 @@ function memory.register(tools)
     {
       type = "object",
       properties = {
-        query = {
-          type = "string",
-          description = "Query em linguagem natural. Ex: 'quem é Alice', 'bug no parser X', 'decisão sobre Y em maio'."
-        }
+        query = { type = "string", description = "Query em linguagem natural." }
       },
       required = {"query"}
     }
