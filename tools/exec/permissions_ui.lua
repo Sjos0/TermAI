@@ -1,5 +1,6 @@
 -- tools/exec/permissions_ui.lua — Interface TUI de diálogo para permissões
-local suggest         = require("agent.hooks.bash_patterns.suggest")
+-- v2: status limpo (só "✅ Permitido uma vez"), colapso completo, sem comando residual
+local suggest          = require("agent.hooks.bash_patterns.suggest")
 local approval_backend = require("agent.hooks.approval_backend")
 
 local M = {}
@@ -12,26 +13,22 @@ local function get_wall_time()
   return val or os.time()
 end
 
--- Mostra o diálogo interativo e retorna a decisão ("once", "always", "deny", "block", "cancel")
 function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
-  -- Canais sem TTY (ex: channels/telegram) registram um backend alternativo.
-  -- Sem backend registrado, o comportamento de terminal abaixo é inalterado.
   local backend = approval_backend.tool_backend()
   if backend then return backend(tool_name, command, failed_sub, warnings) end
 
-  local y  = "\27[38;5;220m" -- Amarelo/Dourado
-  local gr = "\27[38;5;242m" -- Cinza Escuro
-  local r  = "\27[38;5;203m" -- Vermelho
-  local g  = "\27[38;5;120m" -- Verde Claro
-  local w  = "\27[1;37m"     -- Branco Negrito
-  local rs = "\27[0m"        -- Reset
+  local y  = "\27[38;5;220m"
+  local gr = "\27[38;5;242m"
+  local r  = "\27[38;5;203m"
+  local g  = "\27[38;5;120m"
+  local w  = "\27[1;37m"
+  local rs = "\27[0m"
 
-  -- Trunca e sanitiza qualquer texto exibido na caixa (comando ou subcomando),
-  -- evitando que um fragmento gigante estoure a TUI (bug: overflow do "subcomando pendente")
   local function display_text(s)
     s = tostring(s or "")
-    if #s > 150 then s = s:sub(1, 147) .. "..." end
-    return s:gsub("[\1-\31]", "·")
+    s = s:gsub("[\r\n]+", "·"):gsub("[\1-\31]", "·")
+    if #s > 120 then s = s:sub(1, 117) .. "..." end
+    return s
   end
 
   local display_cmd = display_text(command)
@@ -41,10 +38,14 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   if tool_name == "Exec" then
     local target = failed_sub or command
     suggested_pattern = suggest.get_suggested_pattern(target)
+    if suggested_pattern == ""
+       or suggested_pattern:match("^%s*%*?%s*$")
+       or suggested_pattern:match("^\\%s*%*")
+       or not suggested_pattern:match("%w") then
+      suggested_pattern = ""
+    end
   end
 
-  -- Conta as linhas escritas para poder colapsar a caixa inteira depois da decisão
-  -- (mesmo idioma de cursor-up + clear já usado em ui/stream.lua: "\27[1A\27[K")
   local lines_written = 0
   local function wl(str)
     io.write(str)
@@ -68,7 +69,6 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
        .. "pode ser texto do agente, não uma ação real." .. rs .. "\n")
   end
 
-  -- Exibe avisos de segurança se houver
   if warnings and #warnings > 0 then
     wl("\n" .. r .. "  ⚠️  AVISOS DE SEGURANÇA DETECTADOS:" .. rs .. "\n")
     for _, warn in ipairs(warnings) do
@@ -90,13 +90,12 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   wl(gr .. "  [c] Cancelar" .. rs .. "\n\n")
   wl(gr .. "  [Ctrl+C] cancelar · [Enter] aprovar uma vez" .. rs .. "\n")
 
-  -- Colapsa a caixa inteira (lines_written linhas) e imprime 1 linha-resumo resolvida no lugar.
-  -- Resolve o bug de "a solicitação nunca some da TUI ao vivo até reiniciar": em vez de deixar
-  -- a caixa interativa presa no scrollback pra sempre, ela vira uma linha de status estática,
-  -- consistente com o que o replay mostraria (nada — já que o evento não é persistido na sessão).
   local function collapse_and_resolve(color, icon, label)
-    for _ = 1, lines_written do io.write("\27[1A\27[K") end
-    io.write(color .. "  " .. icon .. " " .. label .. ": " .. rs .. display_cmd .. "\n\n")
+    local total = lines_written + 2
+    for _ = 1, total do
+      io.write("\27[1A\27[K")
+    end
+    io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
     io.flush()
   end
 
@@ -109,7 +108,6 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
     local choice = (io.read("*l") or "c"):match("^%s*(.-)%s*$")
     local elapsed = get_wall_time() - start_t
 
-    -- Prevenção de falso auto-submit sob certas TTYs/popen
     if choice == "" and elapsed < 0.1 then
       choice = (io.read("*l") or "c"):match("^%s*(.-)%s*$")
     end

@@ -1,24 +1,93 @@
 -- tools/memory.lua — Fachada + Orquestrador do motor GraphRAG Local.
--- v2: schema JSON para native tool calling + arg backward compat.
+-- v3.2: dirty flag corrige índice stale após Edit/Write (auditoria Ameno).
+-- Spec 2026-08-06 + fixes Ameno (PR #21).
 local io_utils      = require("tools.memory.io_utils")
 local graph_builder = require("tools.memory.graph_builder")
 local graph_cache   = require("tools.memory.graph_cache")
 local search_engine = require("tools.memory.search_engine")
 
 local memory = {}
-local _cache = {graph = nil, file_count = 0}
+-- dirty: true após invalidate_cache → força recheck de mtimes mesmo com file_count igual
+local _cache = { graph = nil, file_count = 0, file_hashes = nil, dirty = false }
+
+-- Hidrata content sob demanda para search_engine (só nos nós que faltam).
+local function ensure_content(graph)
+  for path, node in pairs(graph.nodes) do
+    if not node.content then
+      local content = io_utils.read_file(path)
+      node.content = content or ""
+    end
+  end
+end
 
 local function get_graph()
   local files = io_utils.list_md_files(io_utils.MEMORY_DIR)
-  if _cache.graph == nil or _cache.file_count ~= #files then
-    local disk_entries = graph_cache.load()
-    local graph, entries_out = graph_builder.build_graph(files, disk_entries)
-    graph_cache.save(entries_out)
 
-    _cache.graph      = graph
-    _cache.file_count = #files
+  -- RAM hit: mesma quantidade + não dirty → assume inalterado
+  if _cache.graph and _cache.file_count == #files and not _cache.dirty then
+    return _cache.graph, files
   end
-  return _cache.graph, files
+
+  local disk = graph_cache.load()
+  local graph, file_hashes
+
+  if disk and disk.version == graph_cache.VERSION then
+    graph       = disk.graph
+    file_hashes = disk.file_hashes or {}
+
+    local disk_count = 0
+    for _ in pairs(graph.nodes or {}) do disk_count = disk_count + 1 end
+
+    -- Hot path rápido: count igual E não dirty → confia no disco, zero stat
+    if disk_count == #files and not _cache.dirty then
+      ensure_content(graph)
+      _cache.graph       = graph
+      _cache.file_count  = #files
+      _cache.file_hashes = file_hashes
+      return graph, files
+    end
+
+    -- dirty ou count mudou → recheck incremental por mtime
+    local current_set = {}
+    local changed = {}
+
+    for _, f in ipairs(files) do
+      current_set[f] = true
+      local mtime = graph_builder.get_mtime(f)
+      if not file_hashes[f] or file_hashes[f] ~= mtime then
+        changed[#changed + 1] = f
+      end
+    end
+
+    for path in pairs(graph.nodes) do
+      if not current_set[path] then
+        graph_builder.remove_graph_node(graph, path)
+        file_hashes[path] = nil
+      end
+    end
+
+    for _, f in ipairs(changed) do
+      if graph_builder.update_graph_node(graph, f) then
+        file_hashes[f] = graph_builder.get_mtime(f)
+      else
+        file_hashes[f] = nil
+      end
+    end
+
+    ensure_content(graph)
+    graph_cache.save(graph, file_hashes)
+    _cache.dirty = false
+  else
+    -- Cold path: rebuild completo
+    graph, file_hashes = graph_builder.build_graph_full(files)
+    graph_cache.save(graph, file_hashes)
+    _cache.dirty = false
+  end
+
+  _cache.graph       = graph
+  _cache.file_count  = #files
+  _cache.file_hashes = file_hashes
+  return graph, files
 end
 
 function memory.search(query)
@@ -33,9 +102,17 @@ function memory.search(query)
   return search_engine.search(query, graph, files)
 end
 
-function memory.invalidate_cache()
-  _cache.graph      = nil
-  _cache.file_count = 0
+-- Invalida RAM e marca dirty (próximo get_graph recheca mtimes).
+-- also_disk=true também apaga o cache em disco (rebuild completo na próxima vez).
+-- Callers existentes (editor/write/todo) não precisam mudar — dirty cobre o caso.
+function memory.invalidate_cache(also_disk)
+  _cache.graph       = nil
+  _cache.file_count  = 0
+  _cache.file_hashes = nil
+  _cache.dirty       = true
+  if also_disk then
+    pcall(os.remove, graph_cache.CACHE_PATH)
+  end
 end
 
 function memory.register(tools)
