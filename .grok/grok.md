@@ -63,3 +63,13 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** Mergeado (commit `8c5c820`). Branch deletada.
 
 ---
+
+## 2026-08-09 - [Ajuste de espaçamento: linha em branco entre status e Exec]
+
+**Contexto:** Samuel reportou que o status `✅ Permitido uma vez` **Contexto:** Samuel reportou que o status ficava colado no header do Exec. Exec (...)`.
+**Fix:** `"\n"` → `"\n\n"` no `io.write` do status (1 caractere).
+**Arquivo:** `tools/exec/permissions_ui.lua`
+**Author:** Grok 4.5 (xAI) + Ameno (edição local)
+**Status:** Aplicado localmente. Aguardando confirmação visual do Samuel.
+
+---

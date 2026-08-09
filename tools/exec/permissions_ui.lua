@@ -164,7 +164,7 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   -- 4. Status só na tela principal
   local decision, pattern, color, icon, label = a, b, c, d, e
   local rs = "\27[0m"
-  io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
+  io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n\n")
   io.flush()
 
   return decision, pattern
