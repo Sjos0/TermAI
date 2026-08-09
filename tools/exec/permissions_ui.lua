@@ -1,9 +1,9 @@
 -- tools/exec/permissions_ui.lua — Interface TUI de diálogo para permissões
--- v4: colapso por linhas VISUAIS (core.wlen + core.tw).
---     ESC[s/u falha no Termux quando o diálogo rola a tela — abandonado.
+-- v5: diálogo modal em alternate screen (ESC[?1049h / ESC[?1049l]).
+--     Tela principal intacta; sem contagem de linhas, sem ESC[1A/2K.
+--     Cleanup garantido via xpcall mesmo em erro.
 local suggest          = require("agent.hooks.bash_patterns.suggest")
 local approval_backend = require("agent.hooks.approval_backend")
-local core             = require("ui.core")
 
 local M = {}
 
@@ -15,32 +15,50 @@ local function get_wall_time()
   return val or os.time()
 end
 
--- Quantas linhas na tela uma string ocupa (ANSI ignorado, wrap por tw).
-local function visual_line_count(str, tw)
-  local plain = core.strip(str or "")
-  local total = 0
-  -- Cada segmento terminado em \n é uma linha lógica (pode wrapar)
-  for line in (plain .. "\n"):gmatch("([^\n]*)\n") do
-    local w = core.wlen(line)
-    if w == 0 then
-      total = total + 1
-    else
-      total = total + math.max(1, math.ceil(w / tw))
-    end
-  end
-  -- Se a string original NÃO termina em \n, o último gmatch adicionou
-  -- um segmento vazio extra — desconta.
-  if str and #str > 0 and str:sub(-1) ~= "\n" then
-    total = total - 1
-  end
-  if not str or str == "" then return 0 end
-  return math.max(0, total)
+-- ── Alternate screen (modal) ───────────────────────────────────────────────
+-- DECSET 1049: salva cursor + entra na tela alternativa.
+-- DECRST 1049: restaura tela principal + cursor.
+-- O terminal cuida de scroll/wrap — não precisamos simular viewport.
+
+local function enter_modal_screen()
+  io.write("\27[?1049h")  -- alternate screen buffer
+  io.write("\27[2J\27[H") -- clear + cursor home
+  io.flush()
 end
 
-function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
-  local backend = approval_backend.tool_backend()
-  if backend then return backend(tool_name, command, failed_sub, warnings) end
+local function leave_modal_screen()
+  io.write("\27[0m")      -- reset attributes
+  io.write("\27[?1049l")  -- back to main screen
+  io.flush()
+end
 
+-- Expostos só para testes unitários do lifecycle
+M._enter_modal_screen = enter_modal_screen
+M._leave_modal_screen = leave_modal_screen
+
+local function display_text(s)
+  s = tostring(s or "")
+  s = s:gsub("[\r\n]+", "·"):gsub("[\1-\31]", "·")
+  if #s > 120 then s = s:sub(1, 117) .. "..." end
+  return s
+end
+
+local function compute_suggested_pattern(tool_name, command, failed_sub)
+  if tool_name ~= "Exec" then return "" end
+  local target = failed_sub or command
+  local suggested_pattern = suggest.get_suggested_pattern(target)
+  if suggested_pattern == ""
+     or suggested_pattern:match("^%s*%*?%s*$")
+     or suggested_pattern:match("^\\%s*%*")
+     or not suggested_pattern:match("%w") then
+    return ""
+  end
+  return suggested_pattern
+end
+
+-- Roda o diálogo DENTRO da alternate screen. Retorna decision, pattern, label_parts.
+-- Nunca imprime o status final aqui — isso fica na tela principal após leave.
+local function run_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   local y  = "\27[38;5;220m"
   local gr = "\27[38;5;242m"
   local r  = "\27[38;5;203m"
@@ -48,87 +66,53 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
   local w  = "\27[1;37m"
   local rs = "\27[0m"
 
-  local function display_text(s)
-    s = tostring(s or "")
-    s = s:gsub("[\r\n]+", "·"):gsub("[\1-\31]", "·")
-    if #s > 120 then s = s:sub(1, 117) .. "..." end
-    return s
-  end
-
   local display_cmd = display_text(command)
   local display_sub = failed_sub and display_text(failed_sub) or nil
+  local suggested_pattern = compute_suggested_pattern(tool_name, command, failed_sub)
 
-  local suggested_pattern = ""
-  if tool_name == "Exec" then
-    local target = failed_sub or command
-    suggested_pattern = suggest.get_suggested_pattern(target)
-    if suggested_pattern == ""
-       or suggested_pattern:match("^%s*%*?%s*$")
-       or suggested_pattern:match("^\\%s*%*")
-       or not suggested_pattern:match("%w") then
-      suggested_pattern = ""
-    end
-  end
-
-  local tw = core.tw()
-  local lines_visual = 0
-
-  local function wl(str)
+  local function out(str)
     io.write(str)
-    lines_visual = lines_visual + visual_line_count(str, tw)
   end
 
-  wl("\n")
-  wl(r .. "┌──────────────────────────────────────────────────┐" .. rs .. "\n")
-  wl(r .. "│" .. w .. "  🔒 SOLICITAÇÃO DE PERMISSÃO                      " .. r .. "│" .. rs .. "\n")
-  wl(r .. "└──────────────────────────────────────────────────┘" .. rs .. "\n")
-  wl(w .. "  Ferramenta: " .. y .. tool_name .. rs .. "\n")
-  wl(w .. "  Comando:    " .. rs .. display_cmd .. "\n")
+  out("\n")
+  out(r .. "┌──────────────────────────────────────────────────┐" .. rs .. "\n")
+  out(r .. "│" .. w .. "  🔒 SOLICITAÇÃO DE PERMISSÃO                      " .. r .. "│" .. rs .. "\n")
+  out(r .. "└──────────────────────────────────────────────────┘" .. rs .. "\n")
+  out(w .. "  Ferramenta: " .. y .. tool_name .. rs .. "\n")
+  out(w .. "  Comando:    " .. rs .. display_cmd .. "\n")
 
   if display_sub and display_sub ~= display_cmd then
-    wl(gr .. "  (Subcomando pendente: " .. y .. display_sub .. gr .. ")" .. rs .. "\n")
+    out(gr .. "  (Subcomando pendente: " .. y .. display_sub .. gr .. ")" .. rs .. "\n")
   end
 
   if unknown_cmd then
-    wl(gr .. "  ⚠️  Este trecho não corresponde a um comando conhecido no PATH — "
-       .. "pode ser texto do agente, não uma ação real." .. rs .. "\n")
+    out(gr .. "  ⚠️  Este trecho não corresponde a um comando conhecido no PATH — "
+         .. "pode ser texto do agente, não uma ação real." .. rs .. "\n")
   end
 
   if warnings and #warnings > 0 then
-    wl("\n" .. r .. "  ⚠️  AVISOS DE SEGURANÇA DETECTADOS:" .. rs .. "\n")
+    out("\n" .. r .. "  ⚠️  AVISOS DE SEGURANÇA DETECTADOS:" .. rs .. "\n")
     for _, warn in ipairs(warnings) do
-      wl(r .. "  • " .. warn.message .. rs .. "\n")
+      out(r .. "  • " .. warn.message .. rs .. "\n")
     end
   end
 
-  wl("\n" .. w .. "  Escolha como prosseguir:" .. rs .. "\n")
-  wl(y .. "  [1] Permitir uma vez" .. rs .. "\n")
+  out("\n" .. w .. "  Escolha como prosseguir:" .. rs .. "\n")
+  out(y .. "  [1] Permitir uma vez" .. rs .. "\n")
 
   if tool_name == "Exec" and suggested_pattern ~= "" then
-    wl(y .. "  [2] Permitir sempre para o padrão: " .. g .. suggested_pattern .. rs .. "\n")
+    out(y .. "  [2] Permitir sempre para o padrão: " .. g .. suggested_pattern .. rs .. "\n")
   else
-    wl(y .. "  [2] Permitir sempre para esta ferramenta" .. rs .. "\n")
+    out(y .. "  [2] Permitir sempre para esta ferramenta" .. rs .. "\n")
   end
 
-  wl(y .. "  [3] Negar" .. rs .. "\n")
-  wl(y .. "  [4] Bloquear permanentemente" .. rs .. "\n")
-  wl(gr .. "  [c] Cancelar" .. rs .. "\n\n")
-  wl(gr .. "  [Ctrl+C] cancelar · [Enter] aprovar uma vez" .. rs .. "\n")
-
-  local function collapse_and_resolve(color, icon, label)
-    -- +1 = linha do prompt "Escolha..." + Enter do usuário
-    -- +2 = margem de segurança (subcontagem residual)
-    local total = lines_visual + 1 + 2
-    for _ = 1, total do
-      io.write("\27[1A\27[2K")
-    end
-    io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
-    io.flush()
-  end
+  out(y .. "  [3] Negar" .. rs .. "\n")
+  out(y .. "  [4] Bloquear permanentemente" .. rs .. "\n")
+  out(gr .. "  [c] Cancelar" .. rs .. "\n\n")
+  out(gr .. "  [Ctrl+C] cancelar · [Enter] aprovar uma vez" .. rs .. "\n")
 
   while true do
-    -- Prompt sem \n — o Enter do usuário completa a linha visual
-    io.write(y .. "  Escolha (1/2/3/4/c): " .. rs)
+    out(y .. "  Escolha (1/2/3/4/c): " .. rs)
     io.flush()
 
     local start_t = get_wall_time()
@@ -142,24 +126,48 @@ function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
     choice = choice:lower()
 
     if choice == "1" or choice == "" then
-      collapse_and_resolve(g, "✅", "Permitido uma vez")
-      return "once", suggested_pattern
+      return "once", suggested_pattern, g, "✅", "Permitido uma vez"
     elseif choice == "2" then
-      collapse_and_resolve(g, "✅", "Permitido sempre")
-      return "always", suggested_pattern
+      return "always", suggested_pattern, g, "✅", "Permitido sempre"
     elseif choice == "3" then
-      collapse_and_resolve(r, "🚫", "Negado")
-      return "deny", suggested_pattern
+      return "deny", suggested_pattern, r, "🚫", "Negado"
     elseif choice == "4" then
-      collapse_and_resolve(r, "🚫", "Bloqueado permanentemente")
-      return "block", suggested_pattern
+      return "block", suggested_pattern, r, "🚫", "Bloqueado permanentemente"
     elseif choice == "c" or choice == "cancelar" then
-      collapse_and_resolve(r, "🚫", "Cancelado")
-      return "cancel", suggested_pattern
+      return "cancel", suggested_pattern, r, "🚫", "Cancelado"
     else
-      wl(r .. "  Entrada inválida. Digite 1, 2, 3, 4 ou c." .. rs .. "\n")
+      out(r .. "  Entrada inválida. Digite 1, 2, 3, 4 ou c." .. rs .. "\n")
     end
   end
+end
+
+function M.show_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
+  local backend = approval_backend.tool_backend()
+  if backend then return backend(tool_name, command, failed_sub, warnings) end
+
+  -- 1. Entra no modal
+  enter_modal_screen()
+
+  -- 2. Roda o diálogo com garantia de leave mesmo em erro
+  local ok, a, b, c, d, e = xpcall(function()
+    return run_dialog(tool_name, command, failed_sub, warnings, unknown_cmd)
+  end, debug.traceback)
+
+  -- 3. SEMPRE sai do modal (tela principal restaurada pelo terminal)
+  leave_modal_screen()
+
+  if not ok then
+    -- a = traceback; propaga sem deixar o usuário preso na alternate screen
+    error(a, 0)
+  end
+
+  -- 4. Status só na tela principal
+  local decision, pattern, color, icon, label = a, b, c, d, e
+  local rs = "\27[0m"
+  io.write(color .. "  " .. icon .. " " .. label .. rs .. "\n")
+  io.flush()
+
+  return decision, pattern
 end
 
 return M
