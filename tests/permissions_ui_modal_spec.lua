@@ -49,9 +49,15 @@ local function all_output()
   return table.concat(captured)
 end
 
-local function count_occ(s, pat)
-  local n = 0
-  for _ in s:gmatch(pat) do n = n + 1 end
+-- Contagem por substring literal (plain), sem padrões Lua.
+local function count_occ(s, lit)
+  local n, pos = 0, 1
+  while true do
+    local i = s:find(lit, pos, true)
+    if not i then break end
+    n = n + 1
+    pos = i + #lit
+  end
   return n
 end
 
@@ -62,19 +68,19 @@ sec("1. Lifecycle alternate screen")
 install_io_mocks()
 ui._enter_modal_screen()
 local out1 = all_output()
-T("enter emite ESC[?1049h", out1:find("\27%[?1049h", 1, false) ~= nil)
-T("enter emite clear+home ESC[2J ESC[H", out1:find("\27%[2J", 1, false) ~= nil and out1:find("\27%[H", 1, false) ~= nil)
-T("enter NÃO usa ESC[1A", not out1:find("\27%[1A", 1, false))
-T("enter NÃO usa ESC[2K", not out1:find("\27%[2K", 1, false))
+T("enter emite ESC[?1049h", out1:find("\27[?1049h", 1, true) ~= nil)
+T("enter emite clear+home ESC[2J ESC[H", out1:find("\27[2J", 1, true) ~= nil and out1:find("\27[H", 1, true) ~= nil)
+T("enter NÃO usa ESC[1A", not out1:find("\27[1A", 1, true))
+T("enter NÃO usa ESC[2K", not out1:find("\27[2K", 1, true))
 restore_io()
 
 install_io_mocks()
 ui._leave_modal_screen()
 local out2 = all_output()
-T("leave emite ESC[?1049l", out2:find("\27%[?1049l", 1, false) ~= nil)
-T("leave emite reset ESC[0m", out2:find("\27%[0m", 1, false) ~= nil)
-T("leave NÃO usa ESC[1A", not out2:find("\27%[1A", 1, false))
-T("leave NÃO usa ESC[2K", not out2:find("\27%[2K", 1, false))
+T("leave emite ESC[?1049l", out2:find("\27[?1049l", 1, true) ~= nil)
+T("leave emite reset ESC[0m", out2:find("\27[0m", 1, true) ~= nil)
+T("leave NÃO usa ESC[1A", not out2:find("\27[1A", 1, true))
+T("leave NÃO usa ESC[2K", not out2:find("\27[2K", 1, true))
 restore_io()
 
 sec("2. Resultados de escolha (show_dialog)")
@@ -96,15 +102,15 @@ for _, case in ipairs(cases) do
   local tag = case.input == "" and "<Enter>" or case.input
   T("choice '" .. tag .. "' → " .. case.expect, decision == case.expect)
   T("choice '" .. tag .. "' emite enter+leave",
-    out:find("\27%[?1049h", 1, false) ~= nil and out:find("\27%[?1049l", 1, false) ~= nil)
+    out:find("\27[?1049h", 1, true) ~= nil and out:find("\27[?1049l", 1, true) ~= nil)
   T("choice '" .. tag .. "' status na main: " .. case.label,
     out:find(case.label, 1, true) ~= nil)
-  local leave_pos = out:find("\27%[?1049l", 1, false)
+  local leave_pos = out:find("\27[?1049l", 1, true)
   local label_pos = out:find(case.label, 1, true)
   T("choice '" .. tag .. "' leave antes do status",
     leave_pos ~= nil and label_pos ~= nil and leave_pos < label_pos)
-  T("choice '" .. tag .. "' sem ESC[1A collapse", not out:find("\27%[1A", 1, false))
-  T("choice '" .. tag .. "' sem ESC[2K collapse", not out:find("\27%[2K", 1, false))
+  T("choice '" .. tag .. "' sem ESC[1A collapse", not out:find("\27[1A", 1, true))
+  T("choice '" .. tag .. "' sem ESC[2K collapse", not out:find("\27[2K", 1, true))
   restore_io()
 end
 
@@ -119,9 +125,9 @@ local ok_call = pcall(function()
 end)
 local out_err = all_output()
 T("erro propaga (pcall falha)", ok_call == false)
-T("mesmo com erro, leave ESC[?1049l foi emitido", out_err:find("\27%[?1049l", 1, false) ~= nil)
-T("mesmo com erro, enter ESC[?1049h foi emitido", out_err:find("\27%[?1049h", 1, false) ~= nil)
-T("erro: leave ocorre exatamente 1 vez", count_occ(out_err, "\27%[?1049l") == 1)
+T("mesmo com erro, leave ESC[?1049l foi emitido", out_err:find("\27[?1049l", 1, true) ~= nil)
+T("mesmo com erro, enter ESC[?1049h foi emitido", out_err:find("\27[?1049h", 1, true) ~= nil)
+T("erro: leave ocorre exatamente 1 vez", count_occ(out_err, "\27[?1049l") == 1)
 restore_io()
 
 sec("4. Retry após entrada inválida")
@@ -133,7 +139,7 @@ local out4 = all_output()
 T("após 'x' inválido, '1' → once", d4 == "once")
 T("mensagem de entrada inválida presente", out4:find("Entrada inválida", 1, true) ~= nil)
 T("retry ainda faz enter+leave uma vez cada",
-  count_occ(out4, "\27%[?1049h") == 1 and count_occ(out4, "\27%[?1049l") == 1)
+  count_occ(out4, "\27[?1049h") == 1 and count_occ(out4, "\27[?1049l") == 1)
 restore_io()
 
 sec("5. Mecanismo antigo ausente")
@@ -144,9 +150,9 @@ ui.show_dialog("Exec", "curl -L https://example.com/a.pdf && curl -L https://exa
   { message = "Operador lógico '&&' detectado" },
 }, true)
 local out5 = all_output()
-T("fluxo longo sem ESC[1A", not out5:find("\27%[1A", 1, false))
-T("fluxo longo sem ESC[2K", not out5:find("\27%[2K", 1, false))
-T("fluxo longo usa alternate screen", out5:find("\27%[?1049h", 1, false) ~= nil)
+T("fluxo longo sem ESC[1A", not out5:find("\27[1A", 1, true))
+T("fluxo longo sem ESC[2K", not out5:find("\27[2K", 1, true))
+T("fluxo longo usa alternate screen", out5:find("\27[?1049h", 1, true) ~= nil)
 T("status final na main", out5:find("Permitido uma vez", 1, true) ~= nil)
 restore_io()
 
