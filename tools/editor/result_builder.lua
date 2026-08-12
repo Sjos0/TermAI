@@ -6,6 +6,7 @@ local M = {}
 local function should_diff(msg)
   return msg ~= nil and (
        msg:match("^Substituicao aplicada") ~= nil
+    or msg:match("^Substituição aplicada") ~= nil
     or msg:match("^Replacement applied") ~= nil)
 end
 
@@ -21,7 +22,7 @@ function M.build(path, msg, edits, before_content, file_info_fn, luac_val_fn)
   local luac_msg = luac_val_fn(path)
 
   local out = msg or "Replacement applied"
-  local is_zero_change = should_diff(msg) and (added_count == 0 or not added_count) and (removed_count == 0 or not removed_count)
+  local is_zero_change = before_content and before_content ~= "" and should_diff(msg) and (added_count == 0 or not added_count) and (removed_count == 0 or not removed_count)
 
   -- Veto de segurança: se o motor reportou sucesso mas nada foi alterado, força erro
   if is_zero_change then

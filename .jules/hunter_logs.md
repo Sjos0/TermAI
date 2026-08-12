@@ -34,3 +34,20 @@
 ## Lessons Learned
 - **Separação de Responsabilidades de UI:** Componentes de baixo nível / sub-ações não devem assumir como ou quando a tela será pausada ou limpa. Essa responsabilidade pertence ao gerenciador de fluxo de alto nível (o menu).
 - **Consistência:** Sub-ações como `set.lua` e `remove.lua` (de modelos) já seguiam esse padrão corretamente. O desvio nas outras sub-ações introduziu o bug.
+
+---
+
+## 2026-08-12 - [Memory Flush/Edit Diff Inexistente na TUI]
+> **Bug:** Quando o Memory Flush faz um Edit em arquivo de memória, o TUI mostra apenas "Substituição concluída ✓" sem mostrar o diff (linhas adicionadas/removidas). O usuário não vê o que foi escrito.
+> **Root Cause:**
+> 1. No arquivo `tools/editor/result_builder.lua`, a função `should_diff` rejeitava mensagens de sucesso do Edit que possuíam caracteres acentuados, como `"Substituição aplicada"`, permitindo apenas o formato sem acento (`"Substituicao aplicada"`) ou em inglês (`"Replacement applied"`). Como as mensagens retornadas nos testes e em certas configurações eram acentuadas, a verificação falhava e o diff não era gerado.
+> 2. No arquivo `tools/editor/diff_builder.lua`, a função `build` falhava em tratar `before_content` como vazio e falhava em abortar o diff quando o texto antigo (`old_text`) não era localizado. O diff falhava e não gerava as métricas corretas.
+> **Evidence:**
+> - A suíte de testes `tests/edit_diff_display_spec.lua` reportava originalmente 10 falhas isolando precisamente estes comportamentos no `diff_builder` (Caso 2, Caso 4) e no `result_builder` (Result 1, Result 3, Pipeline).
+> - Após as correções, todos os 37 testes passaram sem erros.
+> **Patch:**
+> - Atualizado `should_diff` em `tools/editor/result_builder.lua` para realizar match tanto de `"Substituicao aplicada"`, `"Substituição aplicada"`, quanto `"Replacement applied"`.
+> - Atualizado `build` em `tools/editor/diff_builder.lua` para lidar com `before_content == ""` retornando `nil, nil, nil`, e para retornar `nil, 0, 0` em buscas por texto exato quando `pos` (posição do texto antigo) for `nil`.
+> - Ajustado o cálculo de `is_zero_change` no `result_builder.lua` para evitar falsos positivos quando `before_content` não é fornecido.
+> - Melhorado o `diff_builder` para tratar patches com `old == new` como contexto comum, sem computar adições/remoções fantasmas.
+> **Lesson:** Sempre valide os caminhos de internacionalização/acentuação e trate com rigor as condições de contorno de arquivos/conteúdos nulos ou vazios no fluxo de exibição de diffs.
