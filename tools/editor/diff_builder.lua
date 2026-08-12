@@ -18,7 +18,7 @@ end
 -- patches: array de {old=, new=} ou {type="lines", ls=, le=, new=}
 -- Retorna string do diff formatado, total_adicionadas, total_removidas
 function M.build(before_content, patches)
-  if not before_content or not patches or #patches == 0 then return nil, 0, 0 end
+  if not before_content or before_content == "" or not patches or #patches == 0 then return nil, nil, nil end
 
   local file_lines = split_lines(before_content)
   local parts = {}
@@ -31,15 +31,14 @@ function M.build(before_content, patches)
       old = patch.old
       new = patch.new or ""
       local pos = before_content:find(old, 1, true)
-      if pos then
-        local count = 1
-        for _ in before_content:sub(1, pos - 1):gmatch("\n") do
-          count = count + 1
-        end
-        start_ln = count
-      else
-        start_ln = 1
+      if not pos then
+        return nil, 0, 0
       end
+      local count = 1
+      for _ in before_content:sub(1, pos - 1):gmatch("\n") do
+        count = count + 1
+      end
+      start_ln = count
       local old_lns = {}
       for ln in (old .. "\n"):gmatch("([^\n]*)\n") do
         old_lns[#old_lns + 1] = ln
@@ -61,14 +60,12 @@ function M.build(before_content, patches)
       for ln in (old .. "\n"):gmatch("([^\n]*)\n") do
         old_lns[#old_lns + 1] = ln
       end
-      removed_total = removed_total + #old_lns
 
       local new_lns = {}
       if new ~= "" then
         for ln in (new .. "\n"):gmatch("([^\n]*)\n") do
           new_lns[#new_lns + 1] = ln
         end
-        added_total = added_total + #new_lns
       end
 
       -- 1. Contexto Antes (até 2 linhas)
@@ -77,15 +74,26 @@ function M.build(before_content, patches)
         parts[#parts + 1] = string.format("%3d   | %s", j, file_lines[j] or "")
       end
 
-      -- 2. Linhas Removidas (-)
-      for j, ln in ipairs(old_lns) do
-        local cur_ln = start_ln + j - 1
-        parts[#parts + 1] = string.format("%3d - | %s", cur_ln, ln)
-      end
+      if old ~= new then
+        -- 2. Linhas Removidas (-)
+        for j, ln in ipairs(old_lns) do
+          local cur_ln = start_ln + j - 1
+          parts[#parts + 1] = string.format("%3d - | %s", cur_ln, ln)
+        end
 
-      -- 3. Linhas Adicionadas (+)
-      for j, ln in ipairs(new_lns) do
-        parts[#parts + 1] = string.format("%3d + | %s", start_ln + j - 1, ln)
+        -- 3. Linhas Adicionadas (+)
+        for j, ln in ipairs(new_lns) do
+          parts[#parts + 1] = string.format("%3d + | %s", start_ln + j - 1, ln)
+        end
+
+        removed_total = removed_total + #old_lns
+        added_total = added_total + #new_lns
+      else
+        -- Just show as context
+        for j, ln in ipairs(old_lns) do
+          local cur_ln = start_ln + j - 1
+          parts[#parts + 1] = string.format("%3d   | %s", cur_ln, ln)
+        end
       end
 
       -- 4. Contexto Depois (até 2 linhas)
