@@ -1,58 +1,25 @@
--- tools/exec/permissions/check.lua — Verificação de permissões e modos
+-- tools/exec/permissions/check.lua — Verificação de permissões (orquestração)
 local config_mod = require("config")
 local parser = require("agent.hooks.bash_patterns.parser")
 local matcher = require("tools.exec.permissions.matcher")
 local session = require("tools.exec.permissions.session")
 local rules = require("tools.exec.permissions.rules")
+local mode = require("tools.exec.permissions.mode")
 
 local M = {}
-
--- Retorna o modo de permissão atual (default, acceptEdits, bypass)
-function M.get_mode()
-  local cfg = {}
-  pcall(function() cfg = config_mod.load() end)
-  local mode = cfg.permissions and cfg.permissions.defaultMode or "default"
-  return mode:lower()
-end
-
--- Seta o modo de permissão (para a sessão/persistente)
-function M.set_mode(mode)
-  local cfg = {}
-  pcall(function() cfg = config_mod.load() end)
-  cfg.permissions = cfg.permissions or {}
-  cfg.permissions.defaultMode = mode
-  pcall(function() config_mod.save(cfg) end)
-end
-
--- Escapa uma string para uso seguro entre aspas simples em shell (evita injeção)
-local function shell_quote(s)
-  return "'" .. s:gsub("'", "'\\''") .. "'"
-end
-
--- Verifica se um nome de comando existe de fato no PATH (mesmo 'sh' usado pelo executor real).
--- Puramente informativo: nunca bloqueia nem auto-aprova, só evita que texto solto do
--- agente (ex: "Vou trazer os arquivos...") pareça uma ação legítima no diálogo de permissão.
-function M.command_exists(name)
-  if not name or name == "" then return true end
-  local h = io.popen("command -v -- " .. shell_quote(name) .. " >/dev/null 2>&1; echo $?")
-  if not h then return true end -- indisponível: não muda o comportamento atual
-  local res = h:read("*l")
-  h:close()
-  return res == "0"
-end
 
 -- Verifica permissões para uma chamada de ferramenta/comando
 -- Retorna: { allowed = boolean, reason = string, failed_sub = string|nil }
 function M.check(tool_name, command)
-  local mode = M.get_mode()
+  local current_mode = mode.get()
 
   -- 1. Se o modo for bypass, tudo é auto-aprovado
-  if mode == "bypass" then
+  if current_mode == "bypass" then
     return { allowed = true, reason = "Bypass de permissões ativo" }
   end
 
   -- 2. Se o modo for acceptEdits, auto-aceitamos edições/leituras, mas não Exec (bash)
-  if mode == "acceptedits" then
+  if current_mode == "acceptedits" then
     if tool_name ~= "Exec" then
       return { allowed = true, reason = "Modo acceptEdits auto-aprovou ferramenta não-bash" }
     end
@@ -102,13 +69,11 @@ function M.check(tool_name, command)
     local primary = sub_trim:match("^%s*(%S+)") or ""
 
     -- Prioridade 1: Deny rules (sempre bloqueia)
-    -- Verifica persistidos
     for _, p in ipairs(deny_rules) do
       if matcher.matches_rule(sub_trim, p) then
         return { allowed = false, reason = "deny", failed_sub = sub }
       end
     end
-    -- Verifica em memória da sessão
     for _, p in ipairs(session_deny) do
       if matcher.matches_rule(sub_trim, p) then
         return { allowed = false, reason = "deny", failed_sub = sub }
@@ -121,14 +86,12 @@ function M.check(tool_name, command)
     -- Prioridade 3: Allow rules
     local is_allowed = false
     if not is_safe then
-      -- Verifica persistidos
       for _, p in ipairs(allow_rules) do
         if matcher.matches_rule(sub_trim, p) then
           is_allowed = true
           break
         end
       end
-      -- Verifica em memória da sessão
       if not is_allowed then
         for _, p in ipairs(session_allow) do
           if matcher.matches_rule(sub_trim, p) then
@@ -145,7 +108,7 @@ function M.check(tool_name, command)
         allowed = false,
         reason = "ask",
         failed_sub = sub,
-        unknown_cmd = not M.command_exists(primary),
+        unknown_cmd = not mode.command_exists(primary),
       }
     end
   end

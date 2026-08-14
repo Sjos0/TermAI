@@ -5,6 +5,7 @@ local matcher = require("tools.exec.permissions.matcher")
 local session = require("tools.exec.permissions.session")
 local denial  = require("tools.exec.permissions.denial")
 local rules   = require("tools.exec.permissions.rules")
+local mode    = require("tools.exec.permissions.mode")
 local check   = require("tools.exec.permissions.check")
 
 local M = {}
@@ -27,9 +28,9 @@ M.add_rule    = rules.add
 M.remove_rule = rules.remove
 
 -- Modo + verificação
-M.get_mode       = check.get_mode
-M.set_mode       = check.set_mode
-M.command_exists = check.command_exists
+M.get_mode       = mode.get
+M.set_mode       = mode.set
+M.command_exists = mode.command_exists
 M.check          = check.check
 
 return M
