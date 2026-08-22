@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-21 - [Fix Streamer: Fechamento Limpo do curl Como Resposta Completa]
+**Contexto:** O `streamer.lua` (`pensar_stream`) marcava a resposta como incompleta quando o curl encerrava com código 0 (conexão fechada de forma limpa) sem emitir o sentinela `[DONE]`. Isso gerava falsos cortes de resposta em provedores que não enviam `[DONE]` explícito.
+**Files Modified:** `agent/api/request_stream/streamer.lua` (commit `113bb23`).
+**Learning:** Em Lua, `h:close()` retorna o código de saída do processo (0 = sucesso/conexão limpa). Um exit 0 do curl indica resposta completa mesmo sem sentinela — só um exit não-zero (ex: 28 = timeout do `--max-time`) indica corte real. O retorno de `h:close()` deve ser capturado (`close_ok`) e combinado com `done_received` para decidir `stream_finished`.
+**Prevention:** Ao avaliar término de stream, distinguir fechamento limpo (exit 0) de corte anômalo (exit != 0). Nunca tratar ausência de sentinela como incompletude quando o processo filho saiu com sucesso.
+**Author:** Ameno (aplicação) — correção validada por Claude via clone fresco.
+**Validation:** `luac5.4 -p` no arquivo + diff conferido por Claude linha a linha.
+**PR:** Direct commit to main (SHA: `113bb23`).
+
+---
+
 ## 2026-08-20 - [Onboarding de Instalação Fresca: install.sh + Auto-criação de config.json + Mensagem Amigável Sem Modelo]
 **Contexto:** Kira reinstalando o TermAI do zero (celular trocado) expôs que a instalação "clone + rodar" documentada no README tinha 3 lacunas: `~/.TermAI/` nunca é criado automaticamente, `config.json` ausente causa `os.exit(1)` cru, e usuário precisava criar alias manual pra ter o comando `TermAI`. Risco real de abandono por usuário novo que roda os comandos do README e não funciona de primeira.
 **Files Modified:** `install.sh` (novo), `config/store.lua`, `agent/context.lua`, `models/store.lua` (patch adicional de `mkdir -p`).
