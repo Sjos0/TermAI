@@ -63,7 +63,7 @@ function editor.register_tools(tools_mod, helpers)
         local before_content = read_file(path_exp)
         local ok, msg = editor.replace_multi(path_exp, edits)
         if path_exp:find("/memory/", 1, true) then mem.invalidate_cache() end
-        if not ok then return msg or "Edit failed" end
+        if not ok then return "❌ " .. (msg or "Edit failed") end
         return result_builder.build(path_exp, msg, edits, before_content, file_info, luac_val)
       else
         -- Legado: formato merge conflict (<<<<<<< SEARCH / ======= / >>>>>>> REPLACE)
@@ -75,7 +75,7 @@ function editor.register_tools(tools_mod, helpers)
         local before_content = read_file(path_p)
         local ok, msg = editor.replace_multi(path_p, edits_p)
         if path_p:find("/memory/", 1, true) then mem.invalidate_cache() end
-        if not ok then return msg or "Edit failed" end
+        if not ok then return "❌ " .. (msg or "Edit failed") end
         return result_builder.build(path_p, msg, edits_p, before_content, file_info, luac_val)
       end
     end,

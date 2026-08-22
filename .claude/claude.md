@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-21 - [Fix Edit: Falso-Positivo de Sucesso em Falha de Patch]
+**Contexto:** A ferramenta Edit exibia "Substituição concluída ✓" em verde mesmo quando o `matcher.lua` rejeitava o patch (ex: trecho ambíguo "aparece mais de uma vez"). O `executor.lua` decide sucesso checando se o resultado começa com `❌` (convenção do projeto), mas `tools/editor.lua` devolvia as mensagens de erro de `edit_engine.replace_multi` sem esse prefixo — então toda falha de Edit era classificada como sucesso pela UI, minando a confiança em qualquer "concluída ✓".
+**Files Modified:** `tools/editor.lua` (ambas as ramificações: formato JSON e legado merge-conflict) — adicionado prefixo `"❌ "` no `return` do branch `if not ok`.
+**Learning:** `agent/loop/tool_runner/executor.lua` usa `success = not result:match("^❌")` como convenção universal de erro. Qualquer ferramenta que retorne falha sem o prefixo `❌` será interpretada como sucesso. O `parser.is_edit_success` só reverte para `false` se achar `METRICS: added=0, removed=0`, o que não existe em mensagens de erro do matcher — daí o falso-positivo.
+**Prevention:** Toda ferramenta do TermAI deve prefixar mensagens de erro com `❌ `. Ao adicionar novas ferramentas ou ramos de retorno de erro, garantir o prefixo; testes de regressão devem forçar patches ambíguos e confirmar "Substituição falha ❌" em vermelho.
+**Author:** Claude (claude.ai) — investigação da causa raiz; Ameno (aplicação) — correção + teste funcional do handler real.
+**Validation:** `luac5.4 -p tools/editor.lua` OK; teste funcional invocando o handler registrado com `old_text` ambíguo retornou `❌ Falha no patch...` (vermelho); teste de edição válida manteve sucesso intacto.
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-21 - [Fix Streamer: Fechamento Limpo do curl Como Resposta Completa]
 **Contexto:** O `streamer.lua` (`pensar_stream`) marcava a resposta como incompleta quando o curl encerrava com código 0 (conexão fechada de forma limpa) sem emitir o sentinela `[DONE]`. Isso gerava falsos cortes de resposta em provedores que não enviam `[DONE]` explícito.
 **Files Modified:** `agent/api/request_stream/streamer.lua` (commit `113bb23`).
