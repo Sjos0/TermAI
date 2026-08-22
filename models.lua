@@ -16,5 +16,6 @@ M.remove_model    = crud.remove_model
 M.add_provider    = crud.add_provider
 M.remove_provider = crud.remove_provider
 M.update_api_key  = crud.update_api_key
+M.update_model    = crud.update_model
 
 return M

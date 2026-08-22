@@ -72,4 +72,37 @@ function M.update_api_key(provider_id, key)
   return store.save()
 end
 
+-- Atualiza campos de um modelo já cadastrado, in-place. `updates` é uma
+-- tabela parcial (só os campos que mudaram). Se updates.id vier preenchido,
+-- também sincroniza d.active — evita referência pendurada apontando pro
+-- id antigo se o modelo renomeado for o ativo no momento.
+function M.update_model(provider_id, model_id, updates)
+  local d = store.data()
+  local provider = d.providers[provider_id]
+  if not provider then return false, "Provedor não encontrado: " .. provider_id end
+
+  local model = nil
+  for _, m in ipairs(provider.models or {}) do
+    if m.id == model_id then model = m; break end
+  end
+  if not model then return false, "Modelo não encontrado: " .. model_id end
+
+  if updates.id and updates.id ~= model_id then
+    for _, m in ipairs(provider.models or {}) do
+      if m.id == updates.id then
+        return false, "Já existe um modelo com esse ID: " .. updates.id
+      end
+    end
+    local old_ref = provider_id .. "/" .. model_id
+    if d.active == old_ref then
+      d.active = provider_id .. "/" .. updates.id
+    end
+  end
+
+  for k, v in pairs(updates) do
+    model[k] = v
+  end
+  return store.save()
+end
+
 return M

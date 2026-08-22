@@ -55,14 +55,18 @@ function M.pick(provider_mod, provider_id)
   if max_str == nil then return false end
   local max_tok = (max_str ~= "" and tonumber(max_str)) or default_max
 
-  local default_reason = false
-  if curated and curated.reasoning then default_reason = true end
-  local reason_str = ui.prompt_read("Possui Reasoning nativo? (s/n) (Enter = "
-    .. (default_reason and "s" or "n") .. ")")
-  if reason_str == nil then return false end
-  local reasoning = default_reason
-  if reason_str ~= "" then
-    reasoning = reason_str:lower() == "s" or reason_str:lower() == "y"
+  -- Campo sem "Enter = padrão": um duplo-toque acidental (comum em teclados
+  -- Android) não pode silenciosamente decidir reasoning=false num modelo que
+  -- na verdade pensa — já causou bug real (modelo "livre" ficou sem pensar
+  -- até ser corrigido na mão). Exige 's' ou 'n' explícito, repete se vazio.
+  local reasoning
+  while true do
+    local reason_str = ui.prompt_read("Possui Reasoning nativo? (s/n — resposta obrigatória, sem padrão)")
+    if reason_str == nil then return false end
+    local low = reason_str:lower()
+    if low == "s" or low == "y" then reasoning = true; break end
+    if low == "n" then reasoning = false; break end
+    io.write(c.yellow .. "  Digite exatamente 's' ou 'n'.\n" .. c.reset)
   end
 
   return {
