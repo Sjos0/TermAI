@@ -31,7 +31,8 @@ function M.run(config_mod, ui)
     else
       ui.row("Wait máximo:",  rmax.."s  "..ui.DM.."(dobra a cada erro até este limite)"..ui.R)
     end
-    ui.row("Reasoning Effort:", req.reasoning_effort or "medium", ui.CY)
+    ui.row("Reasoning Effort (OpenRouter):", req.reasoning_effort or "medium", ui.CY)
+    ui.row("Thinking Effort (OpenCode Zen):", (cfg.agents.defaults.thinkingEffort or "high"), ui.CY)
     io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  Alterar Max Time (Total)   "..ui.DM.."(padrão: 180s | máx: 300s)"..ui.R.."\n")
     io.write("  "..ui.B.."2."..ui.R.."  Alterar Idle Time (Ocioso) "..ui.DM.."(padrão: 30s | máx: 180s)"..ui.R.."\n")
@@ -40,7 +41,8 @@ function M.run(config_mod, ui)
     io.write("  "..ui.B.."5."..ui.R.."  Restaurar padrões\n")
     io.write("  "..ui.B.."6."..ui.R.."  Modo de Requisicao         "..ui.DM.."(stream | buffer)"..ui.R.."\n")
     io.write("  "..ui.B.."7."..ui.R.."  Alterar wait timeout       "..ui.DM.."(padrao: 25s | buffer)"..ui.R.."\n")
-    io.write("  "..ui.B.."8."..ui.R.."  Reasoning Effort           "..ui.DM.."(OpenRouter effort)"..ui.R.."\n")
+    io.write("  "..ui.B.."8."..ui.R.."  Reasoning Effort (OpenRouter) "..ui.DM.."(6 níveis — só afeta modelos com reasoning_style=openrouter)"..ui.R.."\n")
+    io.write("  "..ui.B.."9."..ui.R.."  Thinking Effort (OpenCode Zen) "..ui.DM.."(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)"..ui.R.."\n")
     io.write("  "..ui.B.."0."..ui.R.."  Voltar\n\n")
     local ch = ui.rdl("Escolha")
     if ui.cancel(ch) then break end
@@ -136,7 +138,7 @@ function M.run(config_mod, ui)
       ui.pause()
 
     elseif ch == "8" then
-      io.write("\n"..ui.GR.."  Selecione o nível de esforço (6 niveis)"..ui.R.."\n")
+      io.write("\n"..ui.GR.."  Reasoning Effort (OpenRouter) — só afeta modelos com reasoning_style=openrouter"..ui.R.."\n")
       io.write("  "..ui.B.."1."..ui.R.."  high\n")
       io.write("  "..ui.B.."2."..ui.R.."  medium\n")
       io.write("  "..ui.B.."3."..ui.R.."  low\n")
@@ -149,6 +151,22 @@ function M.run(config_mod, ui)
       if efforts[lch] then
         config_mod.set("agents.defaults.request.reasoning_effort", efforts[lch])
         io.write(ui.G.."\n  ✅ Effort: "..efforts[lch].."\n"..ui.R)
+      else io.write(ui.GR.."\n  Cancelado.\n"..ui.R) end
+      ui.pause()
+
+    elseif ch == "9" then
+      -- Valores confirmados na documentação oficial do Hy3 (Tencent): não
+      -- existe "xhigh" documentado pra esse modelo — só 3 níveis reais.
+      io.write("\n"..ui.GR.."  Thinking Effort (OpenCode Zen) — afeta hy3-free e outros reasoning_effort"..ui.R.."\n")
+      io.write("  "..ui.B.."1."..ui.R.."  Non-think   "..ui.DM.."(no_think — respostas rápidas, sem raciocínio)"..ui.R.."\n")
+      io.write("  "..ui.B.."2."..ui.R.."  Think       "..ui.DM.."(low — raciocínio leve)"..ui.R.."\n")
+      io.write("  "..ui.B.."3."..ui.R.."  Think High  "..ui.DM.."(high — raciocínio profundo, padrão recomendado)"..ui.R.."\n")
+      io.write("  "..ui.B.."0."..ui.R.."  Cancelar\n\n")
+      local tch = ui.rdl("Escolha")
+      local tefforts = {["1"]="no_think",["2"]="low",["3"]="high"}
+      if tefforts[tch] then
+        config_mod.set("agents.defaults.thinkingEffort", tefforts[tch])
+        io.write(ui.G.."\n  ✅ Thinking Effort: "..tefforts[tch].."\n"..ui.R)
       else io.write(ui.GR.."\n  Cancelado.\n"..ui.R) end
       ui.pause()
     end

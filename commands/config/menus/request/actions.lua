@@ -113,7 +113,7 @@ function M.change_request_mode(ctx)
 end
 
 function M.change_reasoning_effort(ctx)
-  io.write("\n"..c.gray.."  Selecione o nível de esforço (6 niveis - OpenRouter, OpenCode, Gitlawb)"..c.reset.."\n")
+  io.write("\n"..c.gray.."  Reasoning Effort (OpenRouter) — só afeta modelos com reasoning_style=openrouter"..c.reset.."\n")
   io.write("  "..c.white.."1."..c.reset.."  high     "..c.dim.."(Profundo)"..c.reset.."\n")
   io.write("  "..c.white.."2."..c.reset.."  medium   "..c.dim.."(Equilibrado - Padrão)"..c.reset.."\n")
   io.write("  "..c.white.."3."..c.reset.."  low      "..c.dim.."(Leve)"..c.reset.."\n")
@@ -149,6 +149,25 @@ function M.change_language(ctx)
     io.write(c.green.."\n  ✅ Idioma do Agente configurado para: "..langs[lch].."\n"..c.reset)
   else 
     io.write(c.gray.."\n  Cancelado.\n"..c.reset) 
+  end
+  ui.pause()
+end
+
+function M.change_thinking_effort(ctx)
+  -- Valores confirmados na documentação oficial do Hy3 (Tencent): não
+  -- existe "xhigh" documentado pra esse modelo — só 3 níveis reais.
+  io.write("\n"..c.gray.."  Thinking Effort (OpenCode Zen) — afeta hy3-free e outros reasoning_effort"..c.reset.."\n")
+  io.write("  "..c.white.."1."..c.reset.."  Non-think   "..c.dim.."(no_think — respostas rápidas, sem raciocínio)"..c.reset.."\n")
+  io.write("  "..c.white.."2."..c.reset.."  Think       "..c.dim.."(low — raciocínio leve)"..c.reset.."\n")
+  io.write("  "..c.white.."3."..c.reset.."  Think High  "..c.dim.."(high — raciocínio profundo, padrão recomendado)"..c.reset.."\n")
+  io.write("  "..c.white.."0."..c.reset.."  Cancelar\n\n")
+  local tch = ui.prompt_read("Escolha")
+  local tefforts = {["1"]="no_think",["2"]="low",["3"]="high"}
+  if tefforts[tch] then
+    saver.save_defaults(ctx, "thinkingEffort", tefforts[tch])
+    io.write(c.green.."\n  ✅ Thinking Effort: "..tefforts[tch].."\n"..c.reset)
+  else
+    io.write(c.gray.."\n  Cancelado.\n"..c.reset)
   end
   ui.pause()
 end

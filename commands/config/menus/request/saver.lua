@@ -12,4 +12,13 @@ function M.save_req(ctx, key, val)
   config_mod.set("agents.defaults.request." .. key, val)
 end
 
+-- Grava um parâmetro direto em agents.defaults (fora de request), ex: thinkingEffort
+function M.save_defaults(ctx, key, val)
+  if not ctx.cfg.agents.defaults then
+    ctx.cfg.agents.defaults = {}
+  end
+  ctx.cfg.agents.defaults[key] = val
+  config_mod.set("agents.defaults." .. key, val)
+end
+
 return M

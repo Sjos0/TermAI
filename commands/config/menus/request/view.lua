@@ -21,7 +21,7 @@ function M.print_header()
   io.write(c.gray.."  "..SEP..c.reset.."\n\n")
 end
 
-function M.print_status(req)
+function M.print_status(req, defaults)
   local tout    = req.timeout      or api.CURL_TIMEOUT
   local retries = req.max_retries  or api.MAX_RETRIES
   local mode    = req.retry_mode   or api.RETRY_MODE
@@ -52,7 +52,8 @@ function M.print_status(req)
     row("Wait máximo:",  rmax .. "s  (dobra a cada erro)")
   end
   
-  row("Reasoning Effort:", req.reasoning_effort or "medium", c.cyan)
+  row("Reasoning Effort (OpenRouter):", req.reasoning_effort or "medium", c.cyan)
+  row("Thinking Effort (OpenCode Zen):", (defaults.thinkingEffort or "high"), c.cyan)
   row("Idioma do Agente:", req.language or "Portuguese", c.cyan)
 end
 
@@ -64,8 +65,9 @@ function M.print_options()
   io.write("  "..c.white.."4."..c.reset.."  Restaurar padrões\n")
   io.write("  "..c.white.."5."..c.reset.."  Alterar wait timeout  "..c.dim.."(padrão: 25s)"..c.reset.."\n")
   io.write("  "..c.white.."6."..c.reset.."  Modo de Requisicao    "..c.dim.."(stream / buffer)"..c.reset.."\n")
-  io.write("  "..c.white.."7."..c.reset.."  Reasoning Effort      "..c.dim.."(OpenRouter effort)"..c.reset.."\n")
+  io.write("  "..c.white.."7."..c.reset.."  Reasoning Effort (OpenRouter) "..c.dim.."(6 níveis — só afeta modelos com reasoning_style=openrouter)"..c.reset.."\n")
   io.write("  "..c.white.."8."..c.reset.."  Idioma do Agente      "..c.dim.."(Português / English / Español)"..c.reset.."\n")
+  io.write("  "..c.white.."9."..c.reset.."  Thinking Effort (OpenCode Zen) "..c.dim.."(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)"..c.reset.."\n")
   io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
 end
 

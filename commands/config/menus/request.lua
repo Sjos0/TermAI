@@ -7,9 +7,10 @@ local M = {}
 
 function M.run(ctx)
   while true do
-    local req = ctx.cfg.agents.defaults.request or {}
+    local defaults = ctx.cfg.agents.defaults or {}
+    local req = defaults.request or {}
     view.print_header()
-    view.print_status(req)
+    view.print_status(req, defaults)
     view.print_options()
 
     local ch = ui.prompt_read("Escolha")
@@ -23,6 +24,7 @@ function M.run(ctx)
     elseif ch == "6" then actions.change_request_mode(ctx)
     elseif ch == "7" then actions.change_reasoning_effort(ctx)
     elseif ch == "8" then actions.change_language(ctx)
+    elseif ch == "9" then actions.change_thinking_effort(ctx)
     end
   end
 end
