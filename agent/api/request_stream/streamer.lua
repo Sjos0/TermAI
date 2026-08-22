@@ -81,7 +81,10 @@ function M.pensar_stream(ctx, txt, role)
         end
       end
     end
-    h:close()
+    -- Curl que sai com código 0 fechou a conexão de forma limpa — mesmo sem
+    -- o sentinela "[DONE]" explícito, a resposta está completa. Só um exit
+    -- não-zero (ex: 28 = timeout do --max-time) indica corte de verdade.
+    local close_ok = h:close()
     os.remove(tmp_path)
 
     if got_data then
@@ -110,7 +113,8 @@ function M.pensar_stream(ctx, txt, role)
       table.insert(ctx.msgs, asst)
       utils.ensure_tokens(ctx)
       ctx.tokens_fresh = stream_fresh
-      return full, false, done_received, reasoning, tool_calls
+      local stream_finished = done_received or close_ok == true
+      return full, false, stream_finished, reasoning, tool_calls
     end
 
     ui.stream_end()
