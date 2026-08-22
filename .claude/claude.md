@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-22 - [Precisão em ms no Cronômetro do Footer]
+**Contexto:** Mesmo após o fix do Bug 1 (ordem de chamada), respostas rápidas de verdade (modelos "free" em 300-700ms) ainda mostravam "0s" porque o footer truncava pra segundos inteiros via `os.time()`. O código já tinha infraestrutura de ms (`timing.get_ms_time()` e `format_duration()`, usados no "Pensou") — faltava estendê-la pro contador total do footer.
+**Files Modified:** `ui/spinner/timing.lua` (nova `M.elapsed_total_ms()`, mede desde `_start_ms`), `ui/spinner/compact.lua` (stop_thinking retorna `elapsed_total_ms()` em vez de `elapsed_sec()` nos dois modos), `ui/misc.lua` (require timing + footer usa `format_duration(elapsed_ms)`).
+**Learning:** Reusar infraestrutura existente (`get_ms_time`/`format_duration`) em vez de duplicar. `elapsed_total_ms()` mede desde o início do ciclo; não confundir com `elapsed_ms()` (que mede desde o início do reasoning, usado só na linha "Pensou").
+**Prevention:** `agent/loop.lua` NÃO precisa mudar — já acumula `elapsed = elapsed + ui.stop_thinking()` cegamente; como stop_thinking agora retorna ms, a soma continua correta (só muda a unidade). `agent/main_loop/overflow_handler.lua` também não precisa mudar — só repassa `elapsed` adiante. Sempre que mudar a unidade de uma métrica, verificar se os consumidores a formatam (footer) ou só a repassam (loop/overflow).
+**Author:** Claude (claude.ai) — investigação + patch; Ameno (aplicação) — correção + validação.
+**Validation:** `luac5.4 -p` nos 3 arquivos OK; teste funcional `elapsed_total_ms()` retornou 383ms após ~300ms (não 0s); `format_duration` formata "383ms"/"6.8seg"; grep confirma loop.lua e overflow_handler.lua só atribuem/repassam elapsed.
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-22 - [Bug 1 Revisado: Cronômetro "0s" no Footer — Ordem de Chamada no Modo Compact]
 **Contexto:** Investigação anterior (2026-08-21) suspeitou que `timing.elapsed_sec()` desse 0 por resolução de 1s do `os.time()`, mas isso não explicava 0s *consistente* em turnos de vários segundos. Causa real (confirmada lendo `ui/spinner/compact.lua` inteiro): no modo thinking `compact` (evidência: mensagens "⬤ Pensou (Xseg)" na tela), `M.stop_thinking()` chamava `M.stop_thinking_and_print_compact()` ANTES de ler `timing.elapsed_sec()`. Como `stop_thinking_and_print_compact()` já invoca `timing.clear_anim()` internamente (zera `_anim_start`), o `elapsed_sec()` lido DEPOIS usava o fallback `_anim_start or os.time()` → `os.time() - os.time()` = 0 **deterministicamente**, não por arredondamento.
 **Files Modified:** `ui/spinner/compact.lua` — movido `local elapsed = timing.elapsed_sec()` para ANTES da chamada de `stop_thinking_and_print_compact()` no branch compact.

@@ -84,4 +84,12 @@ function M.elapsed_sec()
   return os.time() - (_anim_start or os.time())
 end
 
+--- Elapsed total em ms desde o início do ciclo (_start_ms), independente
+--- de reasoning ter começado ou não. Usado pelo footer principal — não
+--- confundir com elapsed_ms(), que mede a partir do início do reasoning
+--- (usado só na linha "Pensou").
+function M.elapsed_total_ms()
+  return M.get_ms_time() - (_start_ms or M.get_ms_time())
+end
+
 return M

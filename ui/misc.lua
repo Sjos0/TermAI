@@ -1,4 +1,5 @@
-local core = require("ui.core")
+local core   = require("ui.core")
+local timing = require("ui.spinner.timing")
 local c = core.c
 local M = {}
 
@@ -25,9 +26,10 @@ end
 
 -- end_time: HH:MM capturado no momento exato em que o stream terminou.
 -- Substitui "gw: connected" para mostrar QUANDO a resposta chegou.
-function M.footer(a, b, elapsed, end_time)
-  local t   = elapsed  and string.format(" | %ds",   elapsed)  or ""
-  local ts  = end_time and string.format(" | %s",    end_time) or ""
+-- elapsed agora chega em MILISSEGUNDOS (era segundos inteiros antes).
+function M.footer(a, b, elapsed_ms, end_time)
+  local t   = elapsed_ms and string.format(" | %s", timing.format_duration(elapsed_ms)) or ""
+  local ts  = end_time   and string.format(" | %s", end_time) or ""
   local pct = a / b * 100
   io.write(token_color(pct)
     .. ("tokens: %d/%d (%.1f%%)"):format(a, b, pct)
