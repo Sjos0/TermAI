@@ -94,6 +94,10 @@ end
 function M.stop_thinking()
   local tmode = get_thinking_mode()
   if tmode == "compact" then
+    -- Captura elapsed ANTES de stop_thinking_and_print_compact(), pois essa
+    -- função já chama timing.clear_anim() por dentro (zera _anim_start).
+    -- Ler elapsed_sec() depois disso sempre retornava 0 (os.time() - os.time()).
+    local elapsed = timing.elapsed_sec()
     local ok_state, state = pcall(require, "ui.stream.state")
     if ok_state and state and state._s then
       if not state._s.compact_thinking_stopped then
@@ -103,7 +107,6 @@ function M.stop_thinking()
     else
       M.stop_thinking_and_print_compact()
     end
-    local elapsed = timing.elapsed_sec()
     timing.clear_anim()
     return elapsed
   else

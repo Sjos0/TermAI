@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-22 - [Bug 1 Revisado: Cronômetro "0s" no Footer — Ordem de Chamada no Modo Compact]
+**Contexto:** Investigação anterior (2026-08-21) suspeitou que `timing.elapsed_sec()` desse 0 por resolução de 1s do `os.time()`, mas isso não explicava 0s *consistente* em turnos de vários segundos. Causa real (confirmada lendo `ui/spinner/compact.lua` inteiro): no modo thinking `compact` (evidência: mensagens "⬤ Pensou (Xseg)" na tela), `M.stop_thinking()` chamava `M.stop_thinking_and_print_compact()` ANTES de ler `timing.elapsed_sec()`. Como `stop_thinking_and_print_compact()` já invoca `timing.clear_anim()` internamente (zera `_anim_start`), o `elapsed_sec()` lido DEPOIS usava o fallback `_anim_start or os.time()` → `os.time() - os.time()` = 0 **deterministicamente**, não por arredondamento.
+**Files Modified:** `ui/spinner/compact.lua` — movido `local elapsed = timing.elapsed_sec()` para ANTES da chamada de `stop_thinking_and_print_compact()` no branch compact.
+**Learning:** A investigação anterior (elapsed_sec ter resolução de 1s) estava tecnicamente correta sobre a função, mas NÃO era a causa determinística do sintoma. A causa real era **ordem de chamada** (ler o timer depois de uma função interna já tê-lo zerado). Sempre capturar métricas derivadas de estado mutável ANTES de chamar a função que o limpa. O fix do `agent/loop.lua` (acumular `elapsed`) continua válido e correto, mas residia em nó anterior da cadeia — não consertava este.
+**Prevention:** Ao ler estado temporário que será zerado por uma sub-rotina, capture o valor ANTES de invocá-la. Testes de regressão devem forçar turno com tool call no modo compact e confirmar footer ≠ 0s, coerente com o "Pensou (Xseg)".
+**Author:** Claude (claude.ai) — causa raiz real; Ameno (aplicação) — correção + validação de sintaxe.
+**Validation:** `luac5.4 -p ui/spinner/compact.lua` OK. Teste funcional confirmou que ler DEPOIS do clear retorna 0 determinístico (bug antigo); a ordem corrigida captura antes do clear.
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-21 - [Fix Duplo: Tempo do Footer (Bug 1) + Restart cai pro Shell (Bug 2)]
 **Contexto:** Instalação nova (Moto G8 Plus) expôs dois bugs independentes. (1) O footer de tempo mostrava "0s" em turnos com tool call: `agent/loop.lua` sobrescrevia `elapsed` a cada iteração do loop ReAct (`elapsed = ui.stop_thinking()`) em vez de acumular, então só refletia a última perna (curta). (2) O comando `restart` derrubava o TermAI pro shell do Termux em vez de reiniciar: `agent/restart.lua` sai com `os.exit(123)` (contrato com um wrapper externo que relança o processo), mas `install.sh` e o alias manual não tinham esse loop.
 **Files Modified:** `agent/loop.lua` (linha 94: `elapsed = elapsed + ui.stop_thinking()`; + comentário na declaração), `install.sh` (wrapper com `while true; do ...; status=$?; if [ "$status" -ne 123 ]; then exit "$status"; fi; done`).
