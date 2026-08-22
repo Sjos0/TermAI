@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-21 - [Fix Duplo: Tempo do Footer (Bug 1) + Restart cai pro Shell (Bug 2)]
+**Contexto:** Instalação nova (Moto G8 Plus) expôs dois bugs independentes. (1) O footer de tempo mostrava "0s" em turnos com tool call: `agent/loop.lua` sobrescrevia `elapsed` a cada iteração do loop ReAct (`elapsed = ui.stop_thinking()`) em vez de acumular, então só refletia a última perna (curta). (2) O comando `restart` derrubava o TermAI pro shell do Termux em vez de reiniciar: `agent/restart.lua` sai com `os.exit(123)` (contrato com um wrapper externo que relança o processo), mas `install.sh` e o alias manual não tinham esse loop.
+**Files Modified:** `agent/loop.lua` (linha 94: `elapsed = elapsed + ui.stop_thinking()`; + comentário na declaração), `install.sh` (wrapper com `while true; do ...; status=$?; if [ "$status" -ne 123 ]; then exit "$status"; fi; done`).
+**Learning:** Bug 1 — variáveis de acumulação de tempo em loops ReAct devem somar (`elapsed +`), nunca atribuir (`elapsed =`), senão descartam iterações anteriores. Bug 2 — `os.exit(123)` em `restart.lua` é um contrato implícito com o ambiente externo (wrapper/instalador) para relançar o processo; esse contrato NÃO está documentado em nenhum README e quebrou na instalação fresca.
+**Prevention:** (1) Todo acumulador em loop deve usar `+=`-style. (2) QUALQUER wrapper/instalador futuro do TermAI (install.sh, alias, systemd, etc.) DEVE implementar o loop de exit-code 123 — é um contrato entre `agent/restart.lua` e o ambiente externo. Documentar esse contrato no README/install.sh. (3) Após rodar `install.sh` atualizado, remover o `alias TermAI=...` do `~/.bashrc` (alias tem prioridade sobre binário no PATH, senão o wrapper novo fica sem efeito).
+**Author:** Claude (claude.ai) — investigação da causa raiz de ambos; Ameno (aplicação) — correção + validação.
+**Validation:** `luac5.4 -p agent/loop.lua` OK; `bash -n install.sh` OK; teste unitário do acúmulo (39s = 5+32+2 vs antigo 2s); grep confirma loop de exit 123 no wrapper.
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-21 - [Fix Edit: Falso-Positivo de Sucesso em Falha de Patch]
 **Contexto:** A ferramenta Edit exibia "Substituição concluída ✓" em verde mesmo quando o `matcher.lua` rejeitava o patch (ex: trecho ambíguo "aparece mais de uma vez"). O `executor.lua` decide sucesso checando se o resultado começa com `❌` (convenção do projeto), mas `tools/editor.lua` devolvia as mensagens de erro de `edit_engine.replace_multi` sem esse prefixo — então toda falha de Edit era classificada como sucesso pela UI, minando a confiança em qualquer "concluída ✓".
 **Files Modified:** `tools/editor.lua` (ambas as ramificações: formato JSON e legado merge-conflict) — adicionado prefixo `"❌ "` no `return` do branch `if not ok`.

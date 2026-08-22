@@ -29,7 +29,8 @@ function M.rodar(ctx, input, role, max_iter)
   local cur_text   = input
   local cur_role   = role or "user"
   local iter       = 0
-  local elapsed    = 0
+  local elapsed    = 0  -- Acumulado ao longo de TODAS as iterações do turno
+                        -- (thinking + tool calls + resposta final), não só a última.
   local raw_limit  = max_iter or ctx.MAX_ITER
   local limit      = (raw_limit == 0) and math.huge or raw_limit
   local stream_complete   = true
@@ -91,7 +92,7 @@ function M.rodar(ctx, input, role, max_iter)
     spinner_started = false
     local resp, is_overflow, done_flag, reasoning, tool_calls =
       api.pensar_stream(ctx, cur_text, cur_role)
-    elapsed = ui.stop_thinking()
+    elapsed = elapsed + ui.stop_thinking()
     if done_flag ~= nil then stream_complete = done_flag end
     if is_overflow then
       return resp, elapsed, false, true, stream_complete, ""

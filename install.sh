@@ -14,10 +14,20 @@ mkdir -p "$HOME/.TermAI"
 
 # 2. Comando global "TermAI" — real binário no PATH, sem alias e sem tocar em .bashrc.
 #    $PREFIX/bin já está no PATH por padrão em qualquer sessão do Termux.
+#    Loop de restart: agent/restart.lua sai com os.exit(123) quando o próprio
+#    TermAI pede reinício (ex: após mudança de código/config). Sem esse loop,
+#    o processo simplesmente encerra e devolve o usuário pro shell do Termux
+#    em vez de voltar pro prompt do TermAI.
 WRAPPER="$PREFIX/bin/TermAI"
 cat << 'ENDOFFILE' > "$WRAPPER"
 #!/data/data/com.termux/files/usr/bin/bash
-exec lua5.4 "$HOME/TermAI/main.lua" "$@"
+while true; do
+  lua5.4 "$HOME/TermAI/main.lua" "$@"
+  status=$?
+  if [ "$status" -ne 123 ]; then
+    exit "$status"
+  fi
+done
 ENDOFFILE
 chmod +x "$WRAPPER"
 
