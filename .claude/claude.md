@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-22 - [Correção: edit.lua lista numerada (reuso de set.lua) em vez de referência digitada]
+**Contexto:** O `edit.lua` (opção 5) criado no patch anterior pedia a referência do modelo digitada em texto puro (`"Referência do modelo pra editar"`), copiando o estilo do `info.lua` antigo. O pedido original do Samuel era lista numerada pra escolher (igual à opção 2, `set.lua`), já que ele não decora o texto exato `provider/id`. Lacuna apontada pelo próprio Claude após revisão.
+**Files Modified:** `commands/models/models/edit.lua` — entrada de `M.edit` agora usa `models_mod.list()` pra listar todos os modelos com número (reusando exatamente o padrão de `set.lua`: header, lista `m.ref (ctx)`, `ui.is_cancel` no `0`, range check `1..#models`, `ref = models[idx].ref`). Remove o prompt de texto puro.
+**Learning (Ameno):** `models.list()` retorna itens com `.ref` e `.context_window` (models/list.lua), confirmado antes de aplicar — o código do Claude estava consistente com o existente. Ao criar fluxo de seleção, reusar o padrão já consagrado em `set.lua` em vez de inventar entrada por texto (DRY / guia de estilo do projeto).
+**Prevention:** Todo menu de escolha de modelo deve listar por número (padrão `set.lua`), nunca pedir referência digitada. Ao copiar estilo de outro comando, copiar o que JÁ resolve o problema do usuário, não o fallback de argumento opcional.
+**Author:** Claude (claude.ai) — apontou a lacuna e propôs o patch; Ameno (aplicação + validação de que `list()` retorna `.ref`/`.context_window`).
+**Validation:** `luac5.4 -p commands/models/models/edit.lua` OK; teste funcional (script Lua isolado) listou 34 modelos com `.ref`/`.context_window`; mapeamento idx→ref ok para válido/`0` (cancela)/fora-range (inválido)/não-numérico (inválido).
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-22 - [Editor de Modelo (opção 5) + Endurecimento da Pergunta de Reasoning]
 **Contexto:** (1) A pergunta "Possui Reasoning nativo?" em `add_remote.lua` aceitava Enter vazio como padrão — e para modelo "free/contributor" fora do catálogo curado o padrão é sempre `false`. Um duplo-toque acidental no Enter (comum em teclado Android) silenciosamente decidia `reasoning=false`, causando o bug real do Samuel (modelo livre sem pensar). (2) A opção 5 do gerenciador de modelos (`info.lua`) era só-leitura; `crud.lua` nunca teve `update_model`.
 **Files Modified:** `commands/models/models/add_remote.lua` (pergunta de reasoning vira loop obrigatório 's'/'n', repete se vazio/inválido, sem padrão); `models/crud.lua` (nova `update_model` — grava em `models.json` via `store.save`, sincroniza `d.active` se o modelo renomeado for o ativo); `models.lua` (raiz — expõe `M.update_model = crud.update_model`, **lacuna que o Claude deixou**: o `edit.lua` chama `models_mod.update_model` mas a função não estava na fachada do módulo `models`); `commands/models/models.lua` (fachada ganha `M.edit = edit_mod.edit`); `commands/models/menu.lua` (opção 5 → `edit`, label "Detalhes / Editar", remove `ui.pause()` redundante); `commands/models/models/edit.lua` (NOVO — editor interativo de 7 campos: nome, id, contextWindow, maxTokens, reasoning, reasoning_style, default_effort).

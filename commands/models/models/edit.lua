@@ -76,8 +76,26 @@ end
 
 function M.edit(models_mod, ref)
   if not ref then
-    ref = ui.prompt_read("Referência do modelo pra editar (0 para voltar)")
-    if ui.is_cancel(ref) then return end
+    local models = models_mod.list()
+    if #models == 0 then
+      io.write(c.red .. "  Nenhum modelo cadastrado.\n" .. c.reset)
+      return
+    end
+    io.write("\n" .. c.bold .. c.cyan .. "  Escolha um Modelo pra Editar" .. c.reset .. "\n")
+    io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+    for i, m in ipairs(models) do
+      io.write("  " .. c.white .. i .. ". " .. c.reset .. m.ref
+        .. c.gray .. "  (" .. ui.fmt_ctx(m.context_window) .. ")" .. c.reset .. "\n")
+    end
+    io.write("\n")
+    local choice = ui.prompt_read("Número do modelo (0 para voltar)")
+    if ui.is_cancel(choice) then return end
+    local idx = tonumber(choice)
+    if not idx or idx < 1 or idx > #models then
+      io.write(c.red .. "  Opção inválida.\n" .. c.reset)
+      return
+    end
+    ref = models[idx].ref
   end
   local provider_id, model_id = ref:match("^([^/]+)/(.+)$")
   if not provider_id then
