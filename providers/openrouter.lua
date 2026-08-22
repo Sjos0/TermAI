@@ -6,6 +6,9 @@ return {
   needs_key = true,
   key_hint  = "sk-or-...",
   docs    = "https://openrouter.ai/keys",
+  -- Explícito por documentação/simetria — já era o fallback histórico
+  -- hardcoded em models/resolve.lua, agora vem do próprio provedor.
+  default_reasoning_style = "openrouter",
   models  = {
     {
       id            = "google/gemma-4-31b-it:free",

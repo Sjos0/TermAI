@@ -20,6 +20,15 @@ local function find_builtin_model(provider_id, model_id)
   return nil
 end
 
+-- Busca o módulo built-in do PROVEDOR (não do modelo) — usado pro fallback
+-- de reasoning_style quando o modelo específico não está no catálogo curado
+-- (ex: modelo "free/contributor" pego ao vivo via fetch_remote_models).
+local function find_builtin_provider(provider_id)
+  local ok, providers_mod = pcall(require, "providers")
+  if not ok then return nil end
+  return providers_mod.get(provider_id)
+end
+
 function M.resolve(ref)
   local d = store.data()
   ref = ref or d.active
@@ -57,6 +66,13 @@ function M.resolve(ref)
   local builder = ENDPOINT_MAP[api_type] or ENDPOINT_MAP["openai-completions"]
   local endpoint, auth_style = builder(provider, model_id)
 
+  -- Prioridade do reasoning_style: 1) o que está salvo no modelo (inclusive
+  -- herdado do catálogo curado pelo merge acima), 2) o padrão do PROVEDOR
+  -- (ex: qualquer modelo da OpenCode Zen herda "reasoning_effort" mesmo sem
+  -- estar no catálogo curado), 3) "openrouter" como último fallback histórico.
+  local builtin_provider = find_builtin_provider(provider_id)
+  local default_style    = (builtin_provider and builtin_provider.default_reasoning_style) or "openrouter"
+
   return {
     ref              = ref,
     provider         = provider_id,
@@ -69,7 +85,7 @@ function M.resolve(ref)
     max_tokens       = model.maxTokens or 4096,
     context_window   = model.contextWindow or 200000,
     reasoning        = model.reasoning or false,
-    reasoning_style  = model.reasoning_style or "openrouter",
+    reasoning_style  = model.reasoning_style or default_style,
     input            = model.input or {"text"},
     cost             = model.cost or {input=0, output=0, cacheRead=0, cacheWrite=0},
   }

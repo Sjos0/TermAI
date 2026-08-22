@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-22 - [Causa Raiz: reasoning_style por Provedor (herança de default_reasoning_style)]
+**Contexto:** Correção anterior (script pontual em 4 modelos "free") foi curativo, não remédio — todo modelo novo da OpenCode Zen voltaria a nascer sem `reasoning_style`. Investigação achou que `models/resolve.lua` já faz merge com o catálogo curado (campos faltantes do models.json são preenchidos do built-in), mas modelos "contributor/free" (pegos ao vivo via `fetch_remote_models`) não estão no catálogo curado e não têm de onde herdar. O mecanismo de herança já existia, só faltava a camada de provedor.
+**Files Modified:** `providers/opencode.lua` (adiciona `default_reasoning_style = "reasoning_effort"`), `providers/openrouter.lua` (adiciona `default_reasoning_style = "openrouter"`), `models/resolve.lua` (nova `find_builtin_provider()` + prioridade `model.reasoning_style` → `provider.default_reasoning_style` → fallback `"openrouter"`).
+**Learning:** Config por provedor > config por modelo para atributos que valem para toda a família. Qualquer modelo (curado ou ao vivo) herda o estilo do provedor a menos que sobrescreva. Mudança intencional: modelos CURADOS de reasoning=true no opencode.lua (claude-opus-4-6, claude-sonnet-4-6, gpt-5, gemini-3.1-pro, glm-5.1) também passam a herdar `reasoning_effort` em vez do implícito `openrouter` — correção adicional, não efeito colateral.
+**Prevention:** Ao adicionar atributo de modelo que depende de gateway/API, preferir fallback no nível do provedor. O assistente `add_remote.lua` continua só perguntando o booleano `reasoning` — o estilo vem do provedor, não precisa de nova pergunta.
+**Author:** Claude (claude.ai) — causa raiz + patch; Ameno (aplicação) — correção + validação.
+**Validation:** `luac5.4 -p` nos 3 arquivos OK; Teste1 hy3-free herda `reasoning_effort` sem estar salvo; Teste2 modelo novo free herda `reasoning_effort`; Teste3 gemma openrouter mantém `openrouter` (sem regressão). models.json restaurado ao estado original.
+**PR:** Direct commit to main.
+
+---
+
 ## 2026-08-22 - [Precisão em ms no Cronômetro do Footer]
 **Contexto:** Mesmo após o fix do Bug 1 (ordem de chamada), respostas rápidas de verdade (modelos "free" em 300-700ms) ainda mostravam "0s" porque o footer truncava pra segundos inteiros via `os.time()`. O código já tinha infraestrutura de ms (`timing.get_ms_time()` e `format_duration()`, usados no "Pensou") — faltava estendê-la pro contador total do footer.
 **Files Modified:** `ui/spinner/timing.lua` (nova `M.elapsed_total_ms()`, mede desde `_start_ms`), `ui/spinner/compact.lua` (stop_thinking retorna `elapsed_total_ms()` em vez de `elapsed_sec()` nos dois modos), `ui/misc.lua` (require timing + footer usa `format_duration(elapsed_ms)`).

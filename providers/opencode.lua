@@ -11,6 +11,12 @@ local M = {
   needs_key = true,
   key_hint  = "sk-z...",
   docs      = "https://opencode.ai/auth",
+  -- Estilo padrão de reasoning pra QUALQUER modelo deste provedor (curado
+  -- ou pego ao vivo via fetch_remote_models) que tenha reasoning=true e
+  -- não defina o próprio reasoning_style. OpenCode Zen é openai-completions
+  -- puro, não OpenRouter — o formato certo é o parâmetro plano
+  -- "reasoning_effort", não o {reasoning={effort=...}} da OpenRouter.
+  default_reasoning_style = "reasoning_effort",
   models    = {
     {
       id            = "opencode/claude-opus-4-6",
