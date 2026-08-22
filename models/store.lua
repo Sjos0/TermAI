@@ -5,6 +5,10 @@ local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 M.PATH = HOME .. "/.TermAI/agents/main/agent/models.json"
 M._data = nil
 
+local function ensure_dir()
+  local dir = M.PATH:match("^(.*)/[^/]+$")
+  if dir then os.execute("mkdir -p '" .. dir .. "'") end
+end
 function M.load()
   local f = io.open(M.PATH, "r")
   if not f then
@@ -23,6 +27,7 @@ end
 
 function M.save()
   if not M._data then return false end
+  ensure_dir()
   local f = io.open(M.PATH, "w")
   if not f then return false end
   f:write(json.encode(M._data))

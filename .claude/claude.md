@@ -4,6 +4,18 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-08-20 - [Onboarding de Instalação Fresca: install.sh + Auto-criação de config.json + Mensagem Amigável Sem Modelo]
+**Contexto:** Kira reinstalando o TermAI do zero (celular trocado) expôs que a instalação "clone + rodar" documentada no README tinha 3 lacunas: `~/.TermAI/` nunca é criado automaticamente, `config.json` ausente causa `os.exit(1)` cru, e usuário precisava criar alias manual pra ter o comando `TermAI`. Risco real de abandono por usuário novo que roda os comandos do README e não funciona de primeira.
+**Files Modified:** `install.sh` (novo), `config/store.lua`, `agent/context.lua`, `models/store.lua` (patch adicional de `mkdir -p`).
+**Learning:** `config/migrate.lua` só cria `~/.TermAI/agents/main/agent/` como efeito colateral de migração de config *antigo* — instalação 100% fresca nunca passa por ali, então nenhum diretório nem config padrão é garantido. Mesma classe de bug do `models/store.lua` — `io.open("w")` falha silenciosamente sem diretório pai. **Adição do Ameno:** o `models/store.lua` original (pré-patch) NÃO tinha `mkdir -p`, então `TermAI models add-provider` quebraria na instalação fresca — corrigido com `ensure_dir()` espelhando `config/store.lua`.
+**Prevention:** Todo módulo `store.lua` que escreve arquivo dentro de `~/.TermAI/` deve garantir o diretório pai com `mkdir -p` e ter um caminho de "primeira execução" que cria defaults, em vez de assumir que outro fluxo (instalador, migração) já preparou o terreno.
+**Author:** Claude (claude.ai) + Ameno (aplicação).
+**Validation:** `luac5.4 -p` nos 3 arquivos + teste manual de instalação fresca (apagar ~/.TermAI, rodar install.sh, TermAI tui sem provider, TermAI models add-provider).
+
+---
+
+## 2026-07-30 - [Retry Lines Not Cleared on Tool-Only Responses]
+
 ## 2026-07-30 - [Retry Lines Not Cleared on Tool-Only Responses]
 **Bug:** When the API returned a response containing only `tool_calls` (no reasoning or content text), the retry status lines (`⚠ Tentativa X/Y`, `⏳ Aguardando Ns...`) were never cleared from the TUI. This happened because `spinner.clear_retry_lines()` was only called inside `ui.stream_reasoning()` and `ui.stream_token()`, which only fire when text deltas arrive. Tool-only responses bypassed both functions.
 **Files Modified:**

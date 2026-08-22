@@ -20,8 +20,9 @@ function M.build()
 
   local active = models_mod.resolve(cfg.agents.defaults.model.primary)
   if not active then
-    print("[ERRO] Modelo ativo não encontrado: "
-      .. tostring(cfg.agents.defaults.model.primary))
+    print("\27[38;5;220m⚠️  Nenhum modelo configurado ainda.\27[0m")
+    print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
+    print("Depois defina:  \27[1mTermAI models set <provider>/<modelo>\27[0m")
     os.exit(1)
   end
 
