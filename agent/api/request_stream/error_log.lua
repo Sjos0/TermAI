@@ -22,6 +22,15 @@ function M.describe(err)
   return table.concat(parts, " | ")
 end
 
+-- Formato RFC7807 "problem+json" (ex: NVIDIA NIM quando um modelo é
+-- desativado/retirado — HTTP 410 Gone vem como {type,title,status,detail}).
+local function describe_problem_json(ed)
+  local parts = { ed.title or "erro sem título" }
+  if ed.detail then parts[#parts + 1] = ed.detail end
+  if ed.status then parts[#parts + 1] = "status=" .. tostring(ed.status) end
+  return table.concat(parts, " | ")
+end
+
 local function log_path()
   local d = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
   return d .. "/termai_api_errors.log"
@@ -52,10 +61,12 @@ function M.record(attempt, max_attempts, endpoint, reason, raw_body)
 end
 
 -- Extrai uma mensagem de erro legível do corpo bruto (não-stream) de uma
--- resposta HTTP. Reconhece três formatos vistos nos providers do projeto:
+-- resposta HTTP. Reconhece quatro formatos vistos nos providers do projeto:
 --   OpenAI-style:  {"error": {message, type, code, param}}
 --   Array style:   [{"error": {...}}]
 --   Formato plano: {"message": ..., "type": ..., "code": ...}  (ex: NVIDIA NIM)
+--   RFC7807:       {"type": "about:blank", "title", "status", "detail"}
+--                  (ex: NVIDIA NIM quando o modelo foi retirado — HTTP 410)
 -- Retorna nil se o corpo estiver vazio ou não bater com nenhum formato
 -- conhecido — quem chama decide o fallback (ex: "Sem resposta do servidor").
 function M.extract_from_body(body)
@@ -64,6 +75,7 @@ function M.extract_from_body(body)
   if not ok or type(ed) ~= "table" then return nil end
   if ed.error then return M.describe(ed.error) end
   if ed[1] and ed[1].error then return M.describe(ed[1].error) end
+  if ed.title and ed.status then return describe_problem_json(ed) end
   if ed.message then return M.describe(ed) end
   return nil
 end

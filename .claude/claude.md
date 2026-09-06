@@ -157,7 +157,41 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 - `session/manager/messages.lua` — `save_message` accepts optional `incomplete` param
 - `agent/main_loop/persistence.lua` — `save_exchange` accepts optional `stream_complete` param, flags the last assistant message as incomplete when the stream was cut short
 - `agent/main_loop.lua` — passes `stream_complete` through to `save_exchange`
-**Learning:** Persistence happening only once, at the end of a potentially multi-iteration turn, turns any in-memory-only rollback inside that turn into permanent silent data loss.
+ **Learning:** Persistence happening only once, at the end of a potentially multi-iteration turn, turns any in-memory-only rollback inside that turn into permanent silent data loss.
+
+---
+
+## 2026-09-01 - [Falha total de providers LLM + diagnóstico de erro RFC7807]
+**Busca do Google: 100% saudável.** HTTP 200, resposta grounded completa com citações reais (Brasília, fontes gov.br/wikipedia/britannica). Config confere: `enabled=true`, `provider=google_grounding`, chave presente. Isso nunca foi bug de rede nem de chave — o que quer que tenha te feito achar que tava quebrado provavelmente foi o mesmo momento em que os providers LLM tavam falhando junto na mesma sessão. Testa ao vivo dentro do TermAI agora que é rápido confirmar.
+
+### Fechamento do caso — causa raiz de cada "provedor quebrado"
+
+| Provedor | Causa real | Status |
+|---|---|---|
+| **NVIDIA** | Modelo ativo (`stepfun-ai/step-3.7-flash`) foi descontinuado (410 Gone) — catálogo curado local também tinha outro modelo morto (`z-ai/glm-5.2`) | ✅ Trocado pra `moonshotai/kimi-k3`, cadastrado com `reasoning_style=chat_template_kwargs` |
+| **OpenCode** | Conta sem forma de pagamento cadastrada (`CreditsError`) — bloqueia modelos pagos/contributor | ✅ `ling-3.0-flash-fin-free` funciona, cadastrado |
+| **OpenRouter** | Nunca esteve quebrado — só um 429 temporário de rate-limit no pool compartilhado do `glm-5.2:free` | ✅ `inclusionai/ling-3.0-flash-fin:free` confirmado, cadastrado |
+| **Google Search** | Nunca esteve quebrado — testado ponta a ponta agora, funcionando | ✅ Sem ação necessária |
+
+Nenhum dos 4 era problema de rede/TLS/DNS do device (o teste do GitHub já tinha descartado isso lá no início).
+
+**Ação pendente sua (fora do meu escopo):** se quiser voltar a usar modelos pagos do OpenCode Zen, precisa cadastrar forma de pagamento em `https://opencode.ai/workspace/wrk_01KRETZCGMS00VHN5BVW8GY160/billing`.
+
+### Files Modified
+- `agent/api/request_stream/error_log.lua` — adicionado reconhecimento de formato RFC7807 problem+json em `extract_from_body`
+- `~/.TermAI/agents/main/agent/models.json` — modelo ativo trocado para `nvidia/moonshotai/kimi-k3`; cadastrados `moonshotai/kimi-k3` (nvidia), `ling-3.0-flash-fin-free` (opencode), `inclusionai/ling-3.0-flash-fin:free` (openrouter)
+
+### Learning
+Catálogos curados hardcoded em `providers/*.lua` ficam defasados quando provedores fazem EOL de modelos — o `resolve.lua` só valida contra a lista local salva em `models.json`, não contra o catálogo curado. Erros HTTP não seguem só o formato OpenAI `{error:{message,type,code}}` — alguns gateways (NVIDIA NIM em 410) usam RFC7807 problem+json.
+
+### Prevention
+Ao adicionar providers novos ou revisar catálogos existentes, testar cada modelo curado com curl direto (fora do TermAI) antes de confiar na lista hardcoded. `error_log.extract_from_body` deve ganhar novos formatos conforme novos providers/erros aparecerem — não assumir que todo erro vem no formato OpenAI.
+
+### Author
+Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
+
+### Validation
+`luac5.4 -p` OK em `error_log.lua`. Todos os 3 modelos cadastrados confirmados com HTTP 200 via curl direto antes do cadastro em `models.json`. Google Search Grounding validado com resposta grounded completa (200).
 **Prevention:** Rollback (`table.remove`) should only be used for validation failures the caller itself recovers from in the same call stack (e.g. context overflow, which triggers compaction). Never use it as error-cleanup for something the user typed.
 
 ## 2026-08-01 - [Compact Thinking Spinner Skips Injetando/Requisitando States]

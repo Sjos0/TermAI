@@ -12,12 +12,16 @@ local hist       = require("session.manager.history")
 local msgs       = require("session.manager.messages")
 local flush      = require("session.manager.flush_index")
 local cleanup    = require("session.manager.cleanup")
+local orphan     = require("session.manager.orphan_scan")
 local M = {}
-
 function M.init(session_config)
   state._config = session_config or {}
   store.ensure_dir()
   state._index = store.load_index()
+
+  -- Recupera sessões órfãs (.jsonl no disco sem entrada no índice) ANTES
+  -- de qualquer decisão sobre a sessão ativa — evita perda pós-restauração.
+  orphan.scan()
 
   if not state._index.active or not sess_ops.find_session(state._index.active) then
     local id = sess_ops.create_session_entry()
