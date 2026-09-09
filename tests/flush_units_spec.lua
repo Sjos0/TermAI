@@ -67,10 +67,23 @@ T("parcial: exec+edit marcados, read+done abertos",
   and partial:find("%[x%] edit") ~= nil
   and partial:find("%[ %] done") ~= nil)
 
-T("envelope <FLUSH_STATUS>...
-</FLUSH_STATUS>",
+T("envelope <FLUSH_STATUS>...</FLUSH_STATUS>",
   all_false:match("^<FLUSH_STATUS>") ~= nil
   and all_false:match("</FLUSH_STATUS>$") ~= nil)
+
+-- Contrato de escape do monólito (main): \\n literal, NÃO newline 0x0A.
+-- Regressão residual PR #39 / análise Caçador — trava permanente.
+local expected_all_false =
+  "<FLUSH_STATUS>\\n  [ ] exec  [ ] read  [ ] edit  [ ] done\\n</FLUSH_STATUS>"
+T("escape idêntico ao monólito (\\n literal, não 0x0A)",
+  all_false == expected_all_false,
+  "got=" .. string.format("%q", all_false))
+
+T("não contém newline real (0x0A) no corpo",
+  all_false:find("\n", 1, true) == nil)
+
+T("contém o par de caracteres backslash+n",
+  all_false:find("\\n", 1, true) ~= nil)
 
 -- ─────────────────────────────────────────────────────────────
 -- format_context.format_context
