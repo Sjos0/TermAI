@@ -47,7 +47,9 @@ function M.rodar(ctx, input, role, max_iter)
 
     -- ── v2: Caminho nativo JSON ─────────────────────────────────────────
     if tool_calls and #tool_calls > 0 then
-      local result = json_path.handle(ctx, resp, tool_calls, stream_complete, elapsed)
+      local result = json_path.handle(
+        ctx, resp, tool_calls, stream_complete, elapsed, last_reasoning
+      )
       if result.action == "return" then
         return result.resp, result.elapsed, result.flush_done,
                result.is_overflow, result.stream_complete, result.last_reasoning

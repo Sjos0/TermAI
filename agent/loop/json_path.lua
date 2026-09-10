@@ -11,16 +11,18 @@ local M = {}
 -- @param tool_calls table Lista de tool_calls
 -- @param stream_complete boolean
 -- @param elapsed number Tempo acumulado até agora
+-- @param last_reasoning string|nil Estado outer de reasoning da fachada
+--        (propagado no return de cancel, como no monólito)
 -- @return table Resultado estruturado:
 --   { action = "return", ... }  — interrompe o loop (cancel ou FLUSH_DONE)
 --   { action = "continue", iter_delta = 1, cur_text = nil, cur_role = nil, last_reasoning = "" }
-function M.handle(ctx, resp, tool_calls, stream_complete, elapsed)
+function M.handle(ctx, resp, tool_calls, stream_complete, elapsed, last_reasoning)
   local resp_stripped = response_utils.strip_flush_tag(resp)
   if resp_stripped ~= "" then ui.ai_msg_stream(resp_stripped) end
 
   tool_runner.run_batch(ctx, tool_calls)
 
-  -- Cancelamento atômico do turno
+  -- Cancelamento atômico do turno: propaga last_reasoning outer (paridade com monólito)
   if ctx.tool_cancelled then
     ctx.tool_cancelled = nil
     ctx.prev_command_cancelled = true
@@ -31,7 +33,7 @@ function M.handle(ctx, resp, tool_calls, stream_complete, elapsed)
       flush_done = false,
       is_overflow = false,
       stream_complete = stream_complete,
-      last_reasoning = "",
+      last_reasoning = last_reasoning or "",
     }
   end
 
