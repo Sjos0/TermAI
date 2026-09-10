@@ -1,6 +1,9 @@
 -- Test T2: GateDetector — Inspeção de tool_calls e resposta (TDD isolado)
 -- Testa a lógica de detecção com tool_calls mock.
 -- NÃO carrega agent.flush (depende de API real).
+--
+-- Contrato alinhado à produção (agent/flush/gate_detector.lua):
+-- tool name do gate exec é "Exec" (capital E), não "exec".
 
 local M = {}
 
@@ -19,9 +22,9 @@ function M.detect_gates(tool_calls, resp, flush_state, tool_results)
       local args = func.arguments or tc.arguments or ""
       local args_str = type(args) == "string" and args or (type(args) == "table" and (args.file or args.path or "") or "")
 
-      -- Gate exec: date
+      -- Gate exec: date (nome de produção: "Exec")
       if not flush_state.exec then
-        if name == "exec" and (args_str:match("date") or args_str:match("%%Y") or args_str:match("%%A")) then
+        if name == "Exec" and (args_str:match("date") or args_str:match("%%Y") or args_str:match("%%A")) then
           flush_state.exec = true
         end
       end
@@ -73,18 +76,18 @@ local function test(nome, fn)
 end
 
 test("Gate exec com 'date'", function(s)
-  M.detect_gates({{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, "", s)
+  M.detect_gates({{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, "", s)
   assert(s.exec == true, "exec deveria ser true")
   assert(s.read == false and s.edit == false and s.done == false)
 end)
 
 test("Gate exec com %%Y (alternativo)", function(s)
-  M.detect_gates({{ name = "exec", arguments = "date '+%%Y-%%m-%%d %%A'" }}, "", s)
+  M.detect_gates({{ name = "Exec", arguments = "date '+%%Y-%%m-%%d %%A'" }}, "", s)
   assert(s.exec == true)
 end)
 
 test("Gate exec SEM date (nao marca)", function(s)
-  M.detect_gates({{ name = "exec", arguments = "ls -la" }}, "", s)
+  M.detect_gates({{ name = "Exec", arguments = "ls -la" }}, "", s)
   assert(s.exec == false)
 end)
 
@@ -131,7 +134,7 @@ end)
 
 test("Multiplos gates no mesmo turno", function(s)
   M.detect_gates({
-    { name = "exec", arguments = "date \"+%Y-%m-%d\"" },
+    { name = "Exec", arguments = "date \"+%Y-%m-%d\"" },
     { name = "Read", arguments = "memory/2026-07-16.md" },
   }, "", s)
   assert(s.exec == true)

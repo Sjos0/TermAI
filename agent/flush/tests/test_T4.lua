@@ -1,6 +1,9 @@
 -- Test T4: FlushLoop — Validação da lógica do loop próprio do flush (TDD conceitual)
 -- Testa as transições de estado e decisões do loop SEM chamar API real.
 -- A implementação real substituirá ag_loop.rodar em flush.lua.
+--
+-- Contrato alinhado à produção (agent/flush/gate_detector.lua):
+-- tool name do gate exec é "Exec" (capital E), não "exec".
 
 -- ==========================================
 -- SIMULAÇÃO DO FLUSHLOOP (lógica pura)
@@ -20,7 +23,7 @@ function M.simular(turnos, max_iter)
     fs.exec = false; fs.read = false; fs.edit = false; fs.done = false
   end
 
-  -- detect_gates (mesma lógica de T2)
+  -- detect_gates (mesma lógica de produção / T2 alinhado)
   local function detect_gates(tool_calls, resp, flush_state, tool_results)
     tool_results = tool_results or {}
     if tool_calls and #tool_calls > 0 then
@@ -29,7 +32,7 @@ function M.simular(turnos, max_iter)
         local name = func.name or tc.name
         local args = func.arguments or tc.arguments or ""
         local args_str = type(args) == "string" and args or (type(args) == "table" and (args.file or args.path or "") or "")
-        if not flush_state.exec and name == "exec" and (args_str:match("date") or args_str:match("%%Y")) then
+        if not flush_state.exec and name == "Exec" and (args_str:match("date") or args_str:match("%%Y")) then
           flush_state.exec = true
         end
         if not flush_state.read and name == "Read" and (args_str:match("memory/") or args_str:match("%.md")) then
@@ -102,7 +105,7 @@ end
 -- Teste 1: Caminho feliz completo (4 turnos)
 test("Caminho feliz — exec → read → edit → done em 4 turnos", function()
   local turnos = {
-    { tool_calls = {{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "", tool_results = {} },
+    { tool_calls = {{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "", tool_results = {} },
     { tool_calls = {{ name = "Read", arguments = "memory/2026-07-16.md" }}, resp = "", tool_results = {} },
     { tool_calls = {{ name = "Edit", arguments = "memory/2026-07-16.md" }}, resp = "", tool_results = { true } },
     { tool_calls = {}, resp = "[FLUSH_DONE]", tool_results = {} },
@@ -115,7 +118,7 @@ end)
 -- Teste 2: Falha no Edit → retenta no turno seguinte → conclui
 test("Edit falha no turno 3, retenta no 4, conclui no 5", function()
   local turnos = {
-    { tool_calls = {{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
+    { tool_calls = {{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
     { tool_calls = {{ name = "Read", arguments = "memory/2026-07-16.md" }}, resp = "" },
     { tool_calls = {{ name = "Edit", arguments = "memory/2026-07-16.md" }}, resp = "", tool_results = { false } },
     { tool_calls = {{ name = "Read", arguments = "memory/2026-07-16.md" }}, resp = "" },
@@ -143,7 +146,7 @@ end)
 
 -- Teste 4: Checklist mostra progresso
 test("Checklist mostra progresso correto", function()
-  local turno1 = { tool_calls = {{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" }
+  local turno1 = { tool_calls = {{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" }
   local r1 = M.simular({ turno1 }, 10)
   assert(r1.checklist:match("%[x%] exec"), "exec deveria estar marcado como [x]")
   assert(r1.checklist:match("%[ %] read"), "read deveria estar como [ ]")
@@ -153,7 +156,7 @@ end)
 -- Teste 5: Estado não degrada entre turnos
 test("Estado preservado entre turnos (exec continua true)", function()
   local turnos = {
-    { tool_calls = {{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
+    { tool_calls = {{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
     { tool_calls = {}, resp = "pensando..." },
     { tool_calls = {}, resp = "[FLUSH_DONE]" },
   }
@@ -165,7 +168,7 @@ end)
 test("Read antes de exec (ordem flexivel) -> ambos marcados", function()
   local turnos = {
     { tool_calls = {{ name = "Read", arguments = "memory/2026-07-16.md" }}, resp = "" },
-    { tool_calls = {{ name = "exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
+    { tool_calls = {{ name = "Exec", arguments = "date \"+%Y-%m-%d\"" }}, resp = "" },
     { tool_calls = {}, resp = "[FLUSH_DONE]" },
   }
   local r = M.simular(turnos, 10)
