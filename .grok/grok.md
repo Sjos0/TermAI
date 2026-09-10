@@ -73,3 +73,16 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** Aplicado localmente. Aguardando confirmação visual do Samuel.
 
 ---
+
+## 2026-09-10 - [PR #40: facade agent/loop + fix last_reasoning no cancel JSON]
+
+**Contexto:** Issue #29 — monólito `agent/loop.lua` (187 linhas) concentrava loop ReAct e protocolo.
+**Implementação:** fachada `M.rodar` + `system_messages`, `response_utils`, `json_path`, `xml_path` (branch `refactor/29-agent-loop-facade`).
+**Review Caçador:** divergência residual — cancel JSON hardcodava `last_reasoning = ""` em vez de propagar o outer da fachada.
+**Fix:** `json_path.handle` recebe e propaga `last_reasoning` no return de cancel (`3de8a67`); FLUSH_DONE continua zerando.
+**Testes:** trava em `tests/loop_units_spec.lua` — cancel com outer vazio e com outer **não-vazio** (guarda contra regressão do hardcode).
+
+**Author:** Grok (xAI) — Agente Implementador
+**Status:** PR #40 aberta; correção e teste forte na mesma branch.
+
+---

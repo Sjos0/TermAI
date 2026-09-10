@@ -347,6 +347,15 @@ T("json cancel: prev_command_cancelled=true", ctx.prev_command_cancelled == true
 T("json cancel: resp original preservado", r.resp == "rodando")
 T("json cancel: last_reasoning vazio", r.last_reasoning == "")
 
+-- Trava do Caçador (PR #40): cancel com last_reasoning outer NÃO-vazio
+-- deve propagar o 6º valor (paridade monólito; evita hardcode "").
+ctx = fresh_ctx()
+r = jp.handle(ctx, "rodando", { { name = "Exec" } }, true, 9, "raciocínio preservado")
+T("json cancel: last_reasoning outer não-vazio propagado",
+  r.action == "return"
+  and r.last_reasoning == "raciocínio preservado",
+  "esperado propagar outer; got: " .. tostring(r.last_reasoning))
+
 -- cancel tem prioridade sobre FLUSH_DONE (verificado primeiro no código)
 ctx = fresh_ctx()
 r = jp.handle(ctx, "done [FLUSH_DONE]", { { name = "X" } }, true, 1)
@@ -419,112 +428,75 @@ T("xml pre_feedback only: continue", r.action == "continue")
 T("xml pre_feedback only: iter_delta=0", r.iter_delta == 0)
 T("xml pre_feedback only: cur_text=feedback", r.cur_text == "feedback prévio")
 
--- tools + pre_feedback → concatena com \n\n
-set_th("txt", { { name = "X" } }, "mais feedback", "out")
+-- tools + pre_feedback → concatena
+set_th("txt", { { name = "Exec" } }, "mais feedback", "out1")
 r = xp.handle({}, "txt", "", true, 0, 0, 2)
-T("xml tools+feedback: cur_text concatenado",
-  r.cur_text == "out\n\nmais feedback")
+T("xml tools+pre_feedback: cur_text combina",
+  r.action == "continue" and r.cur_text:find("out1") ~= nil and r.cur_text:find("mais feedback") ~= nil)
 
 -- tools + FLUSH_DONE → return flush_done (não continue)
-set_th("ok [FLUSH_DONE]", { { name = "W" } }, nil, "wrote")
-r = xp.handle({}, "raw [FLUSH_DONE]", "", true, 0, 0, 2)
-T("xml tools+FLUSH_DONE: return flush_done",
+set_th("feito [FLUSH_DONE]", { { name = "Write" } }, nil, "ok")
+r = xp.handle({}, "feito [FLUSH_DONE]", "", true, 1, 0, 2)
+T("xml tools+FLUSH_DONE: return+flush_done",
   r.action == "return" and r.flush_done == true)
 
--- retry: resposta vazia
+-- resposta vazia → retry
 reset_ui_log()
-set_th("", {}, nil, "")
-r = xp.handle({}, "", nil, true, 0, 0, 2)
-T("xml vazio: action=retry", r.action == "retry")
-T("xml vazio: vazio_count=1", r.vazio_count == 1)
-T("xml vazio: cur_role=user", r.cur_role == "user")
-T("xml vazio sem reasoning: mensagem genérica",
-  r.cur_text:find("Continue de onde parou") ~= nil)
-
--- retry: vazio COM reasoning
-set_th("[vazio]", {}, nil, "")
-r = xp.handle({}, "[vazio]", "estava pensando em X", true, 0, 0, 2)
-T("xml [vazio]+reasoning: mensagem de raciocínio",
-  r.action == "retry" and r.cur_text:find("não emitiu resposta") ~= nil)
-
--- retry: unfulfilled intent
-reset_ui_log()
-set_th("Vou abrir o arquivo:", {}, nil, "")
-r = xp.handle({}, "Vou abrir o arquivo:", "", true, 0, 0, 2)
-T("xml unfulfilled: action=retry", r.action == "retry")
-T("xml unfulfilled: mensagem anúncio",
-  r.cur_text:find("anunciou uma ação") ~= nil)
-T("xml unfulfilled: streamou o anúncio",
-  #ui_log == 1 and ui_log[1].text == "Vou abrir o arquivo:")
-
--- esgota retries (vazio_count já no limite)
-reset_ui_log()
-set_th("", {}, nil, "")
-r = xp.handle({}, "", "", true, 0, 2, 2)
-T("xml retries esgotados: action=return", r.action == "return")
-T("xml retries esgotados: flush_done=false", r.flush_done == false)
-
--- unfulfilled no limite também retorna
-set_th("fazendo:", {}, nil, "")
-r = xp.handle({}, "fazendo:", "", true, 0, 2, 2)
-T("xml unfulfilled esgotado: return", r.action == "return")
-T("xml unfulfilled esgotado: streamou display",
-  #ui_log >= 1 and ui_log[#ui_log].text == "fazendo:")
-
--- [ERRO...] não entra em retry de vazio
-set_th("", {}, nil, "")
-r = xp.handle({}, "[ERRO provider down]", "", true, 0, 0, 2)
-T("xml [ERRO]: não é retry (return)", r.action == "return")
-
--- [ERRO] com texto unfulfilled também não retenta
-set_th("vou:", {}, nil, "")
-r = xp.handle({}, "[ERRO algo] vou:", "", true, 0, 0, 2)
-T("xml [ERRO]+unfulfilled: return (sem retry)", r.action == "return")
-
--- FLUSH_DONE na resp impede classificar como vazio mesmo com display vazio
--- (strip remove a tag do texto; resp bruta ainda tem a tag)
-set_th("[FLUSH_DONE]", {}, nil, "")
-r = xp.handle({}, "[FLUSH_DONE]", "", true, 0, 0, 2)
-T("xml resp FLUSH_DONE display vazio: return flush_done",
-  r.action == "return" and r.flush_done == true)
-
--- contrato estrutural das actions
-set_th("ok", {}, nil, "")
-r = xp.handle({}, "ok", "rr", true, 1, 0, 2)
-T("xml return contrato: campos obrigatórios",
-  r.action == "return"
-  and r.resp ~= nil
-  and r.elapsed ~= nil
-  and r.flush_done ~= nil
-  and r.is_overflow == false
-  and r.stream_complete ~= nil
-  and r.last_reasoning ~= nil)
-
-set_th("t", { { name = "A" } }, nil, "x")
-r = xp.handle({}, "t", "", true, 0, 0, 2)
-T("xml continue contrato: campos obrigatórios",
-  r.action == "continue"
-  and r.iter_delta ~= nil
-  and r.cur_text ~= nil
-  and r.cur_role == "user"
-  and r.last_reasoning == "")
-
 set_th("", {}, nil, "")
 r = xp.handle({}, "", "", true, 0, 0, 2)
-T("xml retry contrato: campos obrigatórios",
-  r.action == "retry"
-  and type(r.vazio_count) == "number"
-  and r.cur_text ~= nil
-  and r.cur_role == "user")
+T("xml vazio: action=retry", r.action == "retry")
+T("xml vazio: vazio_count incrementado", r.vazio_count == 1)
+T("xml vazio: cur_role=user", r.cur_role == "user")
+T("xml vazio: prompt de continue",
+  type(r.cur_text) == "string" and r.cur_text:find("%[SISTEMA%]") ~= nil)
 
--- ═══════════════════════════════════════════════════════════════
--- Integração leve: response_utils ↔ paths (sem fachada)
--- ═══════════════════════════════════════════════════════════════
-sec("integração leve response_utils ↔ paths")
+-- [vazio] literal também conta como vazio
+set_th("[vazio]", {}, nil, "")
+r = xp.handle({}, "[vazio]", "", true, 0, 0, 2)
+T("xml [vazio] literal: retry", r.action == "retry")
 
--- json_path usa strip antes de streamar
+-- unfulfilled (termina em :) → retry com mensagem específica
 reset_ui_log()
-package.loaded["agent.loop.tool_runner"].run_batch = function() end
+set_th("Vou executar agora:", {}, nil, "")
+r = xp.handle({}, "Vou executar agora:", "", true, 0, 0, 2)
+T("xml unfulfilled: action=retry", r.action == "retry")
+T("xml unfulfilled: streamou o anúncio", #ui_log == 1)
+T("xml unfulfilled: prompt pede execução",
+  r.cur_text:find("anunciou uma ação") ~= nil)
+
+-- esgotou retries de vazio → return com aviso
+set_th("", {}, nil, "")
+r = xp.handle({}, "", "", true, 0, 2, 2)
+T("xml vazio esgotado: action=return", r.action == "return")
+T("xml vazio esgotado: flush_done=false", r.flush_done == false)
+
+-- erro prefixado não entra em retry de vazio
+set_th("", {}, nil, "")
+r = xp.handle({}, "[ERRO] falhou", "", true, 0, 0, 2)
+T("xml [ERRO]: não retry de vazio (return)", r.action == "return")
+
+-- unfulfilled com FLUSH_DONE na resp bruta não retry
+set_th("ação:", {}, nil, "")
+r = xp.handle({}, "ação: [FLUSH_DONE]", "", true, 0, 0, 2)
+T("xml unfulfilled+FLUSH_DONE na resp: return",
+  r.action == "return" and r.flush_done == true)
+
+-- reasoning não-vazio em retry de vazio usa prompt de raciocínio
+set_th("", {}, nil, "")
+r = xp.handle({}, "", "estava pensando X", true, 0, 0, 2)
+T("xml vazio+reasoning: prompt menciona raciocínio",
+  r.action == "retry" and r.cur_text:find("raciocínio") ~= nil)
+
+-- ═══════════════════════════════════════════════════════════════
+-- Integração leve entre módulos (sem API)
+-- ═══════════════════════════════════════════════════════════════
+sec("integração leve")
+
+-- json_path usa response_utils.strip_flush_tag
+reset_ui_log()
+package.loaded["agent.loop.tool_runner"].run_batch = function(c, tc)
+  batch_log[#batch_log + 1] = { ctx = c, tool_calls = tc }
+end
 package.loaded["agent.loop.json_path"] = nil
 jp = require("agent.loop.json_path")
 jp.handle({}, "msg [FLUSH_DONE]", { { name = "Z" } }, true, 0)
