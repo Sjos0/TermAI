@@ -3,6 +3,8 @@
 
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local BASE = HOME .. "/TermAI"
+-- Path quotado para git -C (protege espaços e metacaracteres no HOME)
+local BASE_Q = "'" .. BASE:gsub("'", "'\\''") .. "'"
 
 local c = {
   reset = "\27[0m",
@@ -40,6 +42,13 @@ local function read_version()
   local v = (f:read("*a") or ""):match("^%s*(.-)%s*$") or "?"
   f:close()
   return v
+end
+
+-- Lê VERSION do tip remoto (após fetch). Fallback "?" se o arquivo não existir.
+local function read_remote_version()
+  local out, exit = run("git -C " .. BASE_Q .. " show origin/main:VERSION")
+  if exit ~= 0 or not out or out == "" then return "?" end
+  return (out:match("^%s*(.-)%s*$") or "?")
 end
 
 local function step_ok(msg)
@@ -95,7 +104,7 @@ if git_exit ~= 0 then
 end
 
 -- 2. É um clone git?
-local inside, inside_exit = run("git -C " .. BASE .. " rev-parse --is-inside-work-tree")
+local inside, inside_exit = run("git -C " .. BASE_Q .. " rev-parse --is-inside-work-tree")
 if inside_exit ~= 0 or not (inside or ""):match("true") then
   step_fail("Instalação não parece ser um clone git.")
   io.write("\n  Reinstale com:\n    git clone https://github.com/Sjos0/TermAI.git ~/TermAI\n\n")
@@ -104,7 +113,7 @@ end
 step_ok("Repositório git OK")
 
 -- 3. Remote origin existe?
-local _, origin_exit = run("git -C " .. BASE .. " remote get-url origin")
+local _, origin_exit = run("git -C " .. BASE_Q .. " remote get-url origin")
 if origin_exit ~= 0 then
   step_fail("Remote 'origin' não configurado")
   io.write("\n  Configure com:\n    git -C ~/TermAI remote add origin https://github.com/Sjos0/TermAI.git\n\n")
@@ -112,7 +121,7 @@ if origin_exit ~= 0 then
 end
 
 -- 4. Clean check
-local status_out, status_exit = run("git -C " .. BASE .. " status --porcelain")
+local status_out, status_exit = run("git -C " .. BASE_Q .. " status --porcelain")
 local dirty = (status_exit == 0) and status_out and status_out ~= ""
 
 if dirty then
@@ -133,7 +142,7 @@ else
 end
 
 -- 5. Fetch
-local fetch_out, fetch_exit = run("git -C " .. BASE .. " fetch origin main")
+local fetch_out, fetch_exit = run("git -C " .. BASE_Q .. " fetch origin main")
 if fetch_exit ~= 0 then
   step_fail("Fetch origin/main falhou")
   io.write("\n  Não foi possível alcançar o GitHub.\n")
@@ -147,8 +156,8 @@ end
 step_ok("Fetch origin/main")
 
 -- 6. Comparar SHAs
-local local_sha, local_exit = run("git -C " .. BASE .. " rev-parse HEAD")
-local remote_sha, remote_exit = run("git -C " .. BASE .. " rev-parse origin/main")
+local local_sha, local_exit = run("git -C " .. BASE_Q .. " rev-parse HEAD")
+local remote_sha, remote_exit = run("git -C " .. BASE_Q .. " rev-parse origin/main")
 
 if local_exit ~= 0 or remote_exit ~= 0 or not local_sha or not remote_sha then
   step_fail("Não foi possível obter SHAs local/remoto")
@@ -172,13 +181,14 @@ if local_sha == remote_sha then
   os.exit(0)
 end
 
--- Há atualização
+-- Há atualização — versão remota disponível após fetch
+local remote_version = read_remote_version()
+
 if flags.check then
-  -- Só reporta; não aplica
-  local new_version_guess = "?"  -- VERSION só muda após reset; usamos SHA
+  -- Só reporta; não aplica (mockup da issue: Local + Remoto com versão e SHA)
   io.write("\n")
   io.write("  Local:  " .. old_version .. "  (" .. local_short .. ")\n")
-  io.write("  Remoto: (" .. remote_short .. ")\n\n")
+  io.write("  Remoto: " .. remote_version .. "  (" .. remote_short .. ")\n\n")
   io.write("  Há atualização disponível.\n")
   io.write("  Rode: TermAI update\n\n")
   os.exit(0)
@@ -188,10 +198,10 @@ if flags.dry_run then
   step_ok("Nova versão disponível")
   io.write("\n")
   io.write("  Seria aplicado:\n")
-  io.write("    " .. old_version .. " → (versão remota)\n")
+  io.write("    " .. old_version .. " → " .. remote_version .. "\n")
   io.write("    " .. local_short .. ".." .. remote_short .. "\n\n")
   -- Log resumido
-  local log_out = run("git -C " .. BASE .. " log --oneline " .. local_sha .. ".." .. remote_sha .. " | head -n 10")
+  local log_out = run("git -C " .. BASE_Q .. " log --oneline " .. local_sha .. ".." .. remote_sha .. " | head -n 10")
   if log_out and log_out ~= "" then
     io.write("  Commits que seriam aplicados:\n")
     for line in log_out:gmatch("[^\n]+") do
@@ -205,7 +215,7 @@ end
 
 -- 7. Aplicar reset --hard
 step_ok("Nova versão disponível")
-local _, reset_exit = run("git -C " .. BASE .. " reset --hard origin/main")
+local _, reset_exit = run("git -C " .. BASE_Q .. " reset --hard origin/main")
 if reset_exit ~= 0 then
   step_fail("Código sincronizado (reset --hard) falhou")
   io.write("\n  O reset não pôde ser aplicado. Verifique permissões.\n\n")
@@ -219,7 +229,7 @@ io.write("\n")
 io.write("  " .. old_version .. "  →  " .. new_version .. "\n")
 io.write("  " .. local_short .. ".." .. remote_short .. "\n\n")
 
-local log_out = run("git -C " .. BASE .. " log --oneline " .. local_sha .. ".." .. remote_sha .. " | head -n 10")
+local log_out = run("git -C " .. BASE_Q .. " log --oneline " .. local_sha .. ".." .. remote_sha .. " | head -n 10")
 if log_out and log_out ~= "" then
   io.write("  Commits novos:\n")
   for line in log_out:gmatch("[^\n]+") do
