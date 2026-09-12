@@ -2,18 +2,19 @@
 -- Testes unitários e de contrato do comando CLI `TermAI update`
 -- Origem: Issue #41 / PR #42 (feature/41-cli-update)
 -- Objetivo: trava de regressão para helpers puros, parsing de flags,
---           árvore de decisão (check / force / dry-run / dirty / already-up-to-date)
---           e registro do comando em main.lua / help.lua.
+--           árvore de decisão (check / force / dry-run / dirty / already-up-to-date),
+--           registro real em main.lua/help.lua e contratos pós-d712060
+--           (BASE_Q, read_remote_version, formato Remoto: versão + SHA).
 --
 -- "E se isso mudar?": qualquer alteração futura em short_sha, leitura de
--- VERSION, mensagens de erro acionáveis, clean-check obrigatório ou
--- preferência por reset --hard deve falhar aqui antes de chegar ao usuário
--- no Termux.
+-- VERSION, mensagens de erro acionáveis, clean-check obrigatório,
+-- preferência por reset --hard, quoting de BASE ou versão remota no
+-- --check/--dry-run deve falhar aqui antes de chegar ao usuário no Termux.
 --
--- Nota: commands/update.lua é um script top-level com funções locais e
--- forte dependência de io.popen/git. Não alteramos produção (escopo do
--- Agente de Testes). Reimplementamos os contratos puros e simulamos as
--- saídas de `run()` para validar a lógica de decisão.
+-- Nota: commands/update.lua é script top-level com funções locais e I/O
+-- git. Não alteramos produção (escopo Agente de Testes). Helpers puros
+-- reimplementados; registro e design validados por leitura real dos fontes
+-- quando o cwd é a raiz do clone.
 
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
@@ -31,6 +32,14 @@ local function sec(title)
   print("\n=== " .. title .. " ===")
 end
 
+local function read_file(path)
+  local f = io.open(path, "r")
+  if not f then return nil end
+  local s = f:read("*a") or ""
+  f:close()
+  return s
+end
+
 print("\n=== Unit tests: commands/update (Issue #41 / PR #42) ===\n")
 
 -- ─────────────────────────────────────────────────────────────
@@ -38,7 +47,6 @@ print("\n=== Unit tests: commands/update (Issue #41 / PR #42) ===\n")
 -- ─────────────────────────────────────────────────────────────
 sec("helpers puros")
 
--- short_sha: primeiros 7 chars; vazio/nil → "?"
 local function short_sha(sha)
   if not sha or sha == "" then return "?" end
   return sha:sub(1, 7)
@@ -50,18 +58,26 @@ T("short_sha 40 chars → 7", short_sha("279337a28edb8a09393701e556ade743f25f294
 T("short_sha 7 chars → idêntico", short_sha("abc1234") == "abc1234")
 T("short_sha 3 chars → idêntico (sem pad)", short_sha("ab") == "ab")
 
--- trim de VERSION (match ^%s*(.-)%s*$)
 local function trim_version(raw)
   return (raw or ""):match("^%s*(.-)%s*$") or "?"
 end
 
 T("trim_version com espaços e newline", trim_version("  0.9.1\n") == "0.9.1")
-T("trim_version vazio → vazio (ou ? no caller)", trim_version("") == "")
+T("trim_version vazio → vazio", trim_version("") == "")
 T("trim_version só whitespace → vazio", trim_version("   \n\t  ") == "")
 T("trim_version sem espaços", trim_version("1.2.3") == "1.2.3")
 
+-- Contrato de quoting BASE_Q: 'path' com aspas simples escapadas
+local function quote_base(base)
+  return "'" .. base:gsub("'", "'\\''") .. "'"
+end
+
+T("BASE_Q path simples", quote_base("/home/u/TermAI") == "'/home/u/TermAI'")
+T("BASE_Q com espaço", quote_base("/home/my user/TermAI") == "'/home/my user/TermAI'")
+T("BASE_Q com aspas simples", quote_base("/home/o'brien/TermAI") == "'/home/o'\\''brien/TermAI'")
+
 -- ─────────────────────────────────────────────────────────────
--- Parsing de flags (contrato do loop for i = 2, #arg)
+-- Parsing de flags
 -- ─────────────────────────────────────────────────────────────
 sec("parsing de flags")
 
@@ -90,13 +106,13 @@ T("--dry-run sozinho", parse_flags({"update", "--dry-run"}).dry_run == true)
 T("--help / -h", parse_flags({"update", "--help"}).help == true
   and parse_flags({"update", "-h"}).help == true)
 
-T("combinação --check --force", 
+T("combinação --check --force",
   (function()
     local f = parse_flags({"update", "--check", "--force"})
     return f.check and f.force and not f.dry_run
   end)())
 
-T("flag desconhecida é ignorada (não quebra)",
+T("flag desconhecida é ignorada",
   (function()
     local f = parse_flags({"update", "--unknown", "--check"})
     return f.check == true and not f.force
@@ -107,22 +123,7 @@ T("flag desconhecida é ignorada (não quebra)",
 -- ─────────────────────────────────────────────────────────────
 sec("árvore de decisão (simulada)")
 
---[[
-  Modelo mental do fluxo (update.lua):
-  1. git no PATH?
-  2. é clone git?
-  3. origin configurado?
-  4. dirty? → sem --force: abort; com --force: warn e segue
-  5. fetch origin main
-  6. SHAs iguais? → already up-to-date (exit 0)
-  7. --check? → reporta disponível, exit 0 (sem aplicar)
-  8. --dry-run? → mostra o que seria feito, exit 0 (sem aplicar)
-  9. reset --hard origin/main
-]]
-
 local function decide(scenario)
-  -- scenario: { git_ok, inside_git, origin_ok, dirty, force, fetch_ok,
-  --             local_sha, remote_sha, check, dry_run }
   if not scenario.git_ok then return "fail_no_git" end
   if not scenario.inside_git then return "fail_not_git_clone" end
   if not scenario.origin_ok then return "fail_no_origin" end
@@ -134,63 +135,52 @@ local function decide(scenario)
   return "apply_reset"
 end
 
-T("sem git → fail_no_git",
-  decide({ git_ok = false }) == "fail_no_git")
-
+T("sem git → fail_no_git", decide({ git_ok = false }) == "fail_no_git")
 T("não é clone → fail_not_git_clone",
   decide({ git_ok = true, inside_git = false }) == "fail_not_git_clone")
-
 T("sem origin → fail_no_origin",
   decide({ git_ok = true, inside_git = true, origin_ok = false }) == "fail_no_origin")
-
 T("dirty sem force → fail_dirty",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = true, force = false,
   }) == "fail_dirty")
-
-T("dirty com force → passa do clean-check",
+T("dirty com force → apply_reset",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = true, force = true, fetch_ok = true,
     local_sha = "aaa", remote_sha = "bbb",
   }) == "apply_reset")
-
 T("fetch falha → fail_fetch",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = false,
   }) == "fail_fetch")
-
 T("SHAs iguais → already_up_to_date",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = true,
     local_sha = "abc123", remote_sha = "abc123",
   }) == "already_up_to_date")
-
-T("--check com update disponível → check_available (não aplica)",
+T("--check com update → check_available",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = true,
     local_sha = "aaa", remote_sha = "bbb", check = true,
   }) == "check_available")
-
-T("--dry-run com update disponível → dry_run_preview (não aplica)",
+T("--dry-run com update → dry_run_preview",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = true,
     local_sha = "aaa", remote_sha = "bbb", dry_run = true,
   }) == "dry_run_preview")
-
 T("caminho feliz → apply_reset",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = true,
     local_sha = "aaa", remote_sha = "bbb",
   }) == "apply_reset")
-
-T("--check com SHAs iguais ainda é already_up_to_date (prioridade)",
+T("--check + SHAs iguais → already_up_to_date (prioridade)",
   decide({
     git_ok = true, inside_git = true, origin_ok = true,
     dirty = false, fetch_ok = true,
@@ -198,12 +188,10 @@ T("--check com SHAs iguais ainda é already_up_to_date (prioridade)",
   }) == "already_up_to_date")
 
 -- ─────────────────────────────────────────────────────────────
--- Contratos de mensagem / UI (padrões que não podem sumir)
+-- Contratos de mensagem / UI
 -- ─────────────────────────────────────────────────────────────
 sec("contratos de mensagem (padrões estáveis)")
 
--- Estes strings são contratos de UX mencionados na issue e no PR.
--- Se alguém alterar o texto sem intenção, o teste grita.
 local expected_phrases = {
   no_git = "git não encontrado no PATH",
   not_clone = "Instalação não parece ser um clone git",
@@ -214,52 +202,68 @@ local expected_phrases = {
   fetch_fail = "Fetch origin/main falhou",
   success = "TermAI atualizado com sucesso",
   dry_run_note = "(nenhum arquivo foi alterado)",
+  remoto_label = "Remoto:",  -- pós-d712060: linha com versão + SHA
 }
 
--- Validamos apenas que os helpers de step_* produzem o prefixo certo
--- e que as frases-chave existem no código-fonte (leitura estática via
--- string do arquivo quando disponível; aqui usamos as constantes do PR).
-
-T("frase no_git presente no contrato", expected_phrases.no_git:find("git não encontrado") ~= nil)
-T("frase dirty presente no contrato", expected_phrases.dirty:find("Working tree") ~= nil)
-T("frase already presente no contrato", expected_phrases.already:find("versão mais recente") ~= nil)
-T("frase success presente no contrato", expected_phrases.success:find("atualizado com sucesso") ~= nil)
-T("dry-run anuncia que nada foi alterado", expected_phrases.dry_run_note:find("nenhum arquivo") ~= nil)
+T("frase no_git", expected_phrases.no_git:find("git não encontrado") ~= nil)
+T("frase dirty", expected_phrases.dirty:find("Working tree") ~= nil)
+T("frase already", expected_phrases.already:find("versão mais recente") ~= nil)
+T("frase success", expected_phrases.success:find("atualizado com sucesso") ~= nil)
+T("dry-run anuncia nada alterado", expected_phrases.dry_run_note:find("nenhum arquivo") ~= nil)
+T("label Remoto presente no contrato UI", expected_phrases.remoto_label == "Remoto:")
 
 -- ─────────────────────────────────────────────────────────────
--- Registro do comando (main.lua + help.lua)
+-- Leitura real dos fontes (quando cwd = raiz do clone)
 -- ─────────────────────────────────────────────────────────────
-sec("registro do comando")
+sec("registro e design (leitura real dos arquivos)")
 
--- Verificamos a presença via leitura do conteúdo esperado na branch.
--- Em ambiente de CI local o teste pode ser estendido para abrir os arquivos.
--- Aqui validamos o contrato documentado no PR #42.
+local main_src = read_file("main.lua") or read_file("./main.lua")
+local help_src = read_file("commands/help.lua") or read_file("./commands/help.lua")
+local update_src = read_file("commands/update.lua") or read_file("./commands/update.lua")
 
-local main_registers_update = true  -- PR #42: commands.update = BASE .. "/commands/update.lua"
-local help_lists_update = true      -- PR #42: linha "update" em help.lua e no banner sem args
+if main_src then
+  T("main.lua registra update no mapa",
+    main_src:find("update%s*=%s*BASE%s*%.%.%s*\"/commands/update%.lua\"") ~= nil
+    or main_src:find('update%s*=%s*BASE%s*%.%.%s*"/commands/update%.lua"') ~= nil
+    or main_src:find("commands/update.lua") ~= nil)
+  T("main.lua banner menciona TermAI update",
+    main_src:find("TermAI update") ~= nil)
+else
+  T("main.lua legível no cwd (pule se fora do clone)", false,
+    "rode da raiz do repositório: lua tests/update_units_spec.lua")
+end
 
-T("main.lua registra comando 'update'", main_registers_update)
-T("help.lua lista comando 'update'", help_lists_update)
+if help_src then
+  T("help.lua lista comando update",
+    help_src:find("update") ~= nil
+    and help_src:find("origin/main") ~= nil)
+else
+  T("help.lua legível no cwd", false, "rode da raiz do repositório")
+end
 
--- ─────────────────────────────────────────────────────────────
--- Preferência de design: reset --hard (não pull)
--- ─────────────────────────────────────────────────────────────
-sec("decisões de design protegidas")
-
--- O PR explicitamente prefere `git reset --hard origin/main` em vez de
--- `pull` para evitar merges e deixar a árvore idêntica ao remoto.
--- Qualquer regressão para `pull` ou merge deve ser consciente.
-
-local uses_reset_hard = true  -- contrato da issue #41 / PR #42
-T("usa reset --hard origin/main (não pull)", uses_reset_hard)
-
--- Clean-check é obrigatório; --force apenas sobrescreve com aviso.
-local clean_check_mandatory = true
-T("clean-check é obrigatório (sem --force aborta)", clean_check_mandatory)
-
--- Nunca toca em ~/.TermAI/
-local never_touches_dot_termai = true
-T("nunca toca em ~/.TermAI/", never_touches_dot_termai)
+if update_src then
+  T("update.lua usa reset --hard origin/main",
+    update_src:find("reset %-%-hard origin/main") ~= nil)
+  T("update.lua NÃO usa git pull como caminho principal",
+    update_src:find("git .- pull") == nil)
+  T("update.lua define BASE_Q (quoting)",
+    update_src:find("BASE_Q") ~= nil
+    and update_src:find("gsub") ~= nil)
+  T("update.lua tem read_remote_version",
+    update_src:find("read_remote_version") ~= nil
+    and update_src:find("show origin/main:VERSION") ~= nil)
+  T("update.lua imprime label Remoto: no --check",
+    update_src:find("Remoto:") ~= nil)
+  T("update.lua nunca referencia ~/.TermAI/",
+    update_src:find("%.TermAI") == nil
+    and update_src:find("~/.TermAI") == nil)
+  T("update.lua clean-check via status --porcelain",
+    update_src:find("status %-%-porcelain") ~= nil)
+  T("update.lua fetch origin main",
+    update_src:find("fetch origin main") ~= nil)
+else
+  T("update.lua legível no cwd", false, "rode da raiz do repositório")
+end
 
 -- ─────────────────────────────────────────────────────────────
 -- RELATÓRIO
