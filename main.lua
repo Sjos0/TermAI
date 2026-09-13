@@ -20,8 +20,9 @@ local commands = {
   models  = BASE .. "/commands/models.lua",
   restart = BASE .. "/commands/restart.lua",
   config  = BASE .. "/commands/config_cli.lua",
+  update  = BASE .. "/commands/update.lua",
   npx     = BASE .. "/tools/skills/skills_installer/cli.lua",
-  skills = BASE .. "/tools/skills/skills_installer/cli.lua",
+  skills  = BASE .. "/tools/skills/skills_installer/cli.lua",
 }
 
 -- Sem argumento: banner + lista de comandos CLI
@@ -38,9 +39,10 @@ if not arg_cmd or arg_cmd == "" then
     .. "       " .. D .. "Configurações (timeout, hooks, modelos...)\n" .. R)
   io.write("  " .. W .. "TermAI models" .. R
     .. "       " .. D .. "Gerenciar provedores e modelos de IA\n" .. R)
-
   io.write("  " .. W .. "TermAI status" .. R
     .. "       " .. D .. "Status da sessão ativa\n" .. R)
+  io.write("  " .. W .. "TermAI update" .. R
+    .. "       " .. D .. "Atualiza o TermAI a partir do GitHub (origin/main)\n" .. R)
   io.write("  " .. W .. "TermAI help" .. R
     .. "         " .. D .. "Ajuda detalhada\n" .. R)
   io.write("\n")
