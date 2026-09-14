@@ -12,6 +12,7 @@
 Um agente que roda no bolso — sem daemon permanente, sem servidor próprio — conectando-se a provedores de IA sob demanda.
 
 ---
+
 ## Highlights
 
 - **Multi-Provedor** — suporte a OpenRouter, Google, NVIDIA, Cloudflare, mimo, opencode e provedores customizados. Use o modelo que preferir.
@@ -24,29 +25,80 @@ Um agente que roda no bolso — sem daemon permanente, sem servidor próprio —
 - **Políticas de Permissão** — o agente aplica políticas de aprovação baseadas em segurança e risco do comando. Comandos de baixo risco rodam direto; comandos de alto risco pedem aprovação. Você decide o que o agente pode fazer.
 - **Hooks e Skills** — extensível com scripts do usuário e módulos carregáveis para testes, debugging e planejamento.
 - **Mais atualizações virão** — o TermAI está em desenvolvimento ativo. Novas funcionalidades, melhorias de performance e novos provedores serão adicionados continuamente.
-```bash
-# Instalar Termux (F-Droid ou termux.dev)
-pkg install lua5.4 git
-
-# Clonar
-git clone https://github.com/Sjos0/TermAI.git ~/TermAI
-cd ~/TermAI
-
-# Executar
-lua5.4 main.lua
-```
 
 ---
 
-## Quick Start (TL;DR)
+## Instalação (recomendado)
+
+O caminho oficial de instalação usa o script `install.sh`, que cria o comando global `TermAI` no PATH do Termux (wrapper com loop de restart).
 
 ```bash
-# Clone + execute em 2 comandos
+# 1. Instalar Termux (F-Droid ou termux.dev) e dependências base
+pkg install -y lua54 git curl
+
+# 2. Clonar o repositório
+git clone https://github.com/Sjos0/TermAI.git ~/TermAI
+cd ~/TermAI
+
+# 3. Rodar o instalador (idempotente)
+bash install.sh
+```
+
+Após a instalação, o binário `TermAI` fica disponível de qualquer pasta:
+
+```bash
+TermAI models add-provider   # configura seu provedor de IA (primeiro passo)
+TermAI tui                   # inicia o agente interativo
+```
+
+O instalador:
+
+- Instala `lua54`, `git` e `curl` se ainda não estiverem presentes.
+- Cria `~/.TermAI` para dados de configuração.
+- Escreve o wrapper `$PREFIX/bin/TermAI` que invoca `lua5.4 $HOME/TermAI/main.lua` com loop de restart (exit code 123).
+
+### Uso sem instalador (legado / desenvolvimento)
+
+Ainda é possível executar diretamente:
+
+```bash
+git clone https://github.com/Sjos0/TermAI.git ~/TermAI
+cd ~/TermAI
+lua5.4 main.lua
+```
+
+Ou em um único comando:
+
+```bash
 git clone https://github.com/Sjos0/TermAI.git ~/TermAI && lua5.4 ~/TermAI/main.lua
 ```
 
 Configure seu modelo em `~/.TermAI/config.json` com provider e API key.
 Veja `config/migrate.lua` para exemplos de configuração.
+
+---
+
+## Comandos CLI
+
+Após a instalação, o entry point `main.lua` despacha subcomandos:
+
+| Comando | Descrição |
+|---------|-----------|
+| `TermAI` | Exibe o menu de comandos disponíveis |
+| `TermAI tui` | Inicia o agente interativo (TUI) |
+| `TermAI config` | Configurações (timeout, hooks, modelos…) |
+| `TermAI models` | Gerenciar provedores e modelos de IA |
+| `TermAI status` | Status da sessão ativa |
+| `TermAI update` | Atualiza o TermAI a partir do GitHub (origin/main) |
+| `TermAI help` | Ajuda detalhada |
+
+Exemplos de uso de `models`:
+
+```bash
+TermAI models add-provider
+TermAI models list
+TermAI models set
+```
 
 ---
 
@@ -59,11 +111,12 @@ TermAI/
 ├── ui/                 # Interface TUI, streaming, renderização
 ├── session/            # Persistência de sessões (JSONL)
 ├── config/             # Configuração e migração
-├── commands/           # Comandos do usuário (/compact, /config, etc.)
+├── commands/           # Comandos do usuário (/compact, /config, etc.) e CLI
 ├── memoryflush/        # Memória de longo prazo (flush/arquivamento)
 ├── hooks/              # Sistema de eventos
 ├── tests/              # Testes automatizados
-├── main.lua            # Entry point
+├── install.sh          # Instalador: cria o comando global TermAI
+├── main.lua            # Entry point CLI (despacha tui, models, config…)
 └── config.lua          # Fachada de configuração
 ```
 
@@ -71,7 +124,7 @@ TermAI/
 
 ## Security Model
 
-O Termai aplica políticas de aprovação baseadas em segurança e risco do comando:
+O TermAI aplica políticas de aprovação baseadas em segurança e risco do comando:
 
 - Comandos de **baixo risco** (echo, cat, find, grep, lua) → aprovados automaticamente
 - Comandos de **alto risco** (rm, mv, dd) → requerem aprovação explícita
@@ -83,11 +136,20 @@ O Termai aplica políticas de aprovação baseadas em segurança e risco do coma
 
 ## Operator Quick Refs
 
+### Comandos de sessão (dentro da TUI)
+
 - `/compact` — compactação manual (com foco opcional: `/compact foque em X`)
 - `/config` — reconfiguração de modelos
 - `/models` — seleção de modelo
 - `/clear` — limpar contexto da sessão
 - `/status` — ver status do TermAI
+
+### Comandos de linha de comando (pós-instalação)
+
+- `TermAI tui` — inicia o agente
+- `TermAI models add-provider` — configura provedor
+- `TermAI update` — atualiza a partir do GitHub
+- `TermAI help` — ajuda detalhada
 
 ---
 
