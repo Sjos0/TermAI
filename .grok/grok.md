@@ -86,3 +86,21 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** PR #40 aberta; correção e teste forte na mesma branch.
 
 ---
+
+## 2026-09-14 - [PR: fix README DOC-GAP #35 + VERSION 1.14.09.2026]
+
+**Contexto:** Issue #35 — README ainda documentava apenas o fluxo legado (`lua5.4 main.lua`) e omitia `install.sh`, o comando global `TermAI` e os subcomandos CLI (`tui`, `models`, `config`, `update`, etc.).
+
+**O que foi feito:**
+- Reescrita da seção de instalação: caminho recomendado via `install.sh` + wrapper `$PREFIX/bin/TermAI`.
+- Documentação dos comandos CLI disponíveis pós-instalação.
+- Atualização da árvore de estrutura para incluir `install.sh` e esclarecer o papel de `main.lua`.
+- Operator Quick Refs agora distingue comandos de sessão (TUI) e comandos de linha de comando.
+- Bump de VERSION de `1.2.0` → `1.14.09.2026` (formato data embutida no dia da entrega).
+
+**Decisão de versão:** escolhido `1.14.09.2026` (1. + dia.mês.ano) para manter prefixo semântico leve e deixar a data de release explícita, alinhado à sugestão do solicitante (ajustando mês para setembro/2026).
+
+**Author:** Grok (xAI) — Agente Implementador
+**Status:** Branch `fix/35-readme-install-cli`; PR a abrir.
+
+---
