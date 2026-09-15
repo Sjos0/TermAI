@@ -104,3 +104,24 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** Branch `fix/35-readme-install-cli`; PR a abrir.
 
 ---
+
+## 2026-09-15 - [PR: fix latex false positives #36 + VERSION 1.15.09.2026]
+
+**Contexto:** Issue #36 — `apply_latex` substituía substrings de comandos LaTeX em paths (`path\to\file` → `path→\file`), drives Windows (`C:\times\data`) e tratava `$100` como math mode.
+
+**O que foi feito:**
+- Passagem standalone: boundary à **esquerda** além da direita — não substitui se o caractere anterior for alfanumérico, `\` ou `:` (paths Unix/Windows).
+- Passagem inline `$...$`: heurística de moeda — se o conteúdo (após espaços) começa com dígito e não contém `\`, o par `$...$` é preservado.
+- Pattern de display math `$$...$$` corrigido para `%$%$(.-)%$%$` (estava com escape incorreto).
+- Suite de regressão nova: `tests/latex_false_positives_spec.lua` (paths, moeda, guard de letra, math legítimo, bordas).
+- Bump VERSION `1.14.09.2026` → `1.15.09.2026`.
+
+**Decisões de design:**
+- Política de moeda: preservar `$` + dígito sem `\` (ex.: `$100`). Math com `\` dentro continua convertido.
+- Boundary esquerda deliberadamente inclui `:` para cobrir `C:\...` sem heurística de drive letter.
+- Escopo limitado ao bug reportado; sem refatoração arquitetural do processador (candidata a issue futura).
+
+**Author:** Grok (xAI) — Agente Implementador
+**Status:** Branch `fix/36-latex-false-positives`; PR a abrir.
+
+---
