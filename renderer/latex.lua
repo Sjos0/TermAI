@@ -2,6 +2,12 @@
 -- Cobre 3 contextos: blocos $$...$$, inline $...$, e símbolos standalone
 -- (sem delimitadores $) que o modelo às vezes emite fora de math mode.
 -- Dependências externas: nenhuma (Lua puro).
+--
+-- Política de limites (Issue #36):
+-- - Standalone: exige boundary à esquerda e à direita para evitar falsos
+--   positivos em paths (path\to\file, C:\times\data) e substrings.
+-- - Inline $...$: preserva pares que parecem moeda ($100); processa math
+--   legítimo (conteúdo com \ ou sem dígito logo após o $).
 local M = {}
 
 local latex_map = {
@@ -32,6 +38,17 @@ for k in pairs(latex_map) do
 end
 table.sort(latex_keys_sorted, function(a, b) return #a > #b end)
 
+-- Boundary à esquerda para standalone: não substituir se o caractere
+-- anterior for alfanumérico, '\' ou ':' (paths Windows e Unix).
+local function is_left_boundary(s, pos)
+  if pos <= 1 then return true end
+  local prev = s:sub(pos - 1, pos - 1)
+  if prev:match("[%w\\:]") then
+    return false
+  end
+  return true
+end
+
 local function apply_latex(s)
   if not s then return "" end
   -- Optimization (Bolt): Fast-path non-allocating search for '\\' or '$'.
@@ -51,31 +68,42 @@ local function apply_latex(s)
     return result
   end
 
+  local function replace_symbols(text)
+    for _, k in ipairs(latex_keys_sorted) do
+      text = replace_all(text, k, latex_map[k])
+    end
+    return text
+  end
+
   -- Passagem 1: blocos $$...$$
-  s = s:gsub("%%$(.-)%$%$", function(x)
-    for _, k in ipairs(latex_keys_sorted) do x = replace_all(x, k, latex_map[k]) end
-    return x
+  s = s:gsub("%$%$(.-)%$%$", function(x)
+    return replace_symbols(x)
   end)
 
   -- Passagem 2: inline $...$
+  -- Política (#36): preservar pares que parecem moeda ($100, $ 50).
+  -- Heurística: se o conteúdo, após espaços opcionais, começa com dígito
+  -- e não contém '\' (sem comando LaTeX), devolve o par intacto.
   s = s:gsub("%$(.-)%$", function(x)
-    for _, k in ipairs(latex_keys_sorted) do x = replace_all(x, k, latex_map[k]) end
-    return x
+    local trimmed_start = x:match("^%s*(.*)$") or x
+    if not x:find("\\", 1, true) and trimmed_start:match("^%d") then
+      return "$" .. x .. "$"
+    end
+    return replace_symbols(x)
   end)
 
   -- Passagem 3: símbolos LaTeX standalone (sem delimitadores $).
-  -- Cobre casos em que o modelo escreve \rightarrow fora de math mode,
-  -- por exemplo em quebras de linha ou em texto corrido.
-  -- Ordenado do mais longo para o mais curto para evitar match parcial.
+  -- Cobre casos em que o modelo escreve \rightarrow fora de math mode.
+  -- Boundaries esquerda + direita evitam paths e substrings (Issue #36).
   for _, k in ipairs(latex_keys_sorted) do
-    -- find + replace manual para evitar problemas com % em gsub replacement
     local i = 1
     while true do
       local a, b = s:find(k, i, true)
       if not a then break end
-      -- Garante que não é parte de uma palavra maior (ex: \times vs \timesX)
       local after = s:sub(b + 1, b + 1)
-      if after == "" or not after:match("[a-zA-Z]") then
+      local right_ok = (after == "" or not after:match("[a-zA-Z]"))
+      local left_ok = is_left_boundary(s, a)
+      if left_ok and right_ok then
         s = s:sub(1, a - 1) .. latex_map[k] .. s:sub(b + 1)
         i = a + #latex_map[k]
       else
