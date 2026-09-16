@@ -1,5 +1,6 @@
 -- config.lua — Fachada + Entry Point (dentro da TUI)
 -- v2.2: Adicionado suporte à opção "7. Conectores" no menu principal.
+-- v2.3: Opção "8. Tools" — desativação por agente (Issue #32).
 local ui         = require("commands.models.ui")
 local config_mod = require("config")
 local c = ui.c
@@ -39,6 +40,7 @@ function M.run(ctx)
     io.write("  "..c.white.."5."..c.reset.."  Skills           "..c.dim.."(instalar, remover)"..c.reset.."\n")
     io.write("  "..c.white.."6."..c.reset.."  Pesquisa Web     "..c.dim.."(Google Grounding, DuckDuckGo)"..c.reset.."\n")
     io.write("  "..c.white.."7."..c.reset.."  Conectores       "..c.dim.."(MCP Server remoto, Claude.ai)"..c.reset.."\n")
+    io.write("  "..c.white.."8."..c.reset.."  Tools            "..c.dim.."(ativar/desativar por agente)"..c.reset.."\n")
     io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
     local ch = ui.prompt_read("Escolha")
     if ui.is_cancel(ch) then break end
@@ -49,6 +51,7 @@ function M.run(ctx)
     elseif ch == "5" then load_menu("skills").run(ctx)
     elseif ch == "6" then load_menu("web_tools").run(ctx)
     elseif ch == "7" then load_menu("connectors").run(ctx)
+    elseif ch == "8" then load_menu("tools").run(ctx)
     end
   end
   io.write("\27[?1049l"); io.flush()

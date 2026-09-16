@@ -1,6 +1,7 @@
 -- payload.lua — Construção do payload JSON para a API.
 -- v3: native tool calling via parâmetro tools; suporte a txt=nil (continue após tools).
 -- v3: ctx.no_tools trava o schema de ferramentas fora do payload (REQ-8).
+-- v3.1: aplica ctx.disabled_tools no get_schema (Issue #32).
 local json  = require("json")
 local utils = require("agent.api.utils")
 local M     = {}
@@ -28,9 +29,10 @@ local function build_payload(ctx, txt, role, stream)
   -- só pedir no prompt pro modelo não chamar tool, é não oferecer a
   -- opção. Chat normal nunca seta isso (ctx.no_tools fica nil), então
   -- esse comportamento não muda em nada.
+  -- Issue #32: quando tools forem incluídas, filtrar por ctx.disabled_tools.
   local ok_t, tools_mod = pcall(require, "tools")
   if not ctx.no_tools and ok_t and tools_mod.get_schema then
-    local schema = tools_mod.get_schema()
+    local schema = tools_mod.get_schema(ctx.disabled_tools)
     if schema then
       payload.tools       = schema
       payload.tool_choice = "auto"
