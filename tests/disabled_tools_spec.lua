@@ -54,7 +54,7 @@ local function schema_names(schema)
   local n = {}
   if not schema then return n end
   for _, entry in ipairs(schema) do
-    local fn = entry["function"] or entry.function
+    local fn = entry["function"]
     if fn and fn.name then n[#n + 1] = fn.name end
   end
   return n
@@ -213,7 +213,7 @@ if context_src then
     context_src:find("agent_id") ~= nil)
   -- Não deve hardcodar filtro só para "main" no path de disabled
   T("context resolve agente por list[1].id (não hardcode exclusivo)",
-    context_src:find("list%[1%]") ~= nil or context_src:find("list%[1%]") ~= nil
+    context_src:find("list%[1%]") ~= nil
     or context_src:find("get_agent") ~= nil)
 else
   T("context.lua legível no cwd", false, "rode da raiz do clone")
