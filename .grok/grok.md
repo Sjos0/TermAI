@@ -125,3 +125,27 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** Branch `fix/36-latex-false-positives`; PR a abrir.
 
 ---
+
+## 2026-09-16 - [PR: desativação de tools por agente #32 + VERSION 1.16.09.2026]
+
+**Contexto:** Issue #32 — permitir desativar (e reativar) tools de forma persistente e por agente, de modo que tools desativadas não entrem no schema enviado ao modelo.
+
+**O que foi feito:**
+- `tools.get_schema(disabled)` / `tools.get_docs(disabled)` com filtro opcional (set ou array); ordem estável preservada; nil se zero tools restarem.
+- `agent/context.lua`: resolve agente ativo por id, popula `ctx.disabled_tools` (set) e `ctx.agent_id` — sem hardcode `"main"`.
+- `agent/api/payload.lua`: passa `ctx.disabled_tools` para `get_schema`; `ctx.no_tools` continua soberano (compactação).
+- Defesa em profundidade em `tools.call` / `tools.call_structured` (erro claro se path legado chamar tool desativada).
+- Menu TUI `commands/config/menus/tools.lua` e CLI `commands/config_cli/menus/tools.lua`: lista do registry, toggle individual, desativar todas, reativar todas; persiste em `agents.list[].disabled_tools`.
+- Registro da opção 8 nos menus principais de config (TUI e CLI).
+- Bump VERSION `1.15.09.2026` → `1.16.09.2026`.
+
+**Decisões de design:**
+- Filtro centralizado na fachada `tools` (parâmetro explícito) — não acopla tools a ctx global.
+- Persistência no entry do agente (não em defaults nem em sessão).
+- Permissões (ask/block/always) intocadas e ortogonais.
+- Multi-agent-ready: resolve por id do agente ativo.
+
+**Author:** Grok (xAI) — Agente Implementador
+**Status:** Branch `feature/32-disable-tools-per-agent`; PR a abrir.
+
+---

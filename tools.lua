@@ -3,6 +3,7 @@
 -- v3.1: Registra a nova ferramenta de leitura de páginas web "web_fetch".
 --       get_schema() com ordem estável e determinística.
 -- v3.2: call_structured(name, args, opts) com opts.skip_pretool.
+-- v3.3: get_schema/get_docs aceitam disabled_set (Issue #32); defesa em call*.
 local json   = require("json")
 local tools  = {}
 tools.registry = {}
@@ -32,11 +33,40 @@ require("tools.skills").register(tools)
 require("tools.restart").register(tools)
 require("tools.todo").register(tools)
 
-function tools.call(cmd_string)
+-- Converte array ou set em tabela de lookup O(1). Aceita nil.
+local function to_disabled_set(disabled)
+  if not disabled then return {} end
+  if type(disabled) ~= "table" then return {} end
+  local set = {}
+  -- Já é set? (chaves string -> true)
+  local is_set = false
+  for k, v in pairs(disabled) do
+    if type(k) == "string" and v == true then
+      is_set = true
+      break
+    end
+  end
+  if is_set then
+    for k, v in pairs(disabled) do
+      if v then set[k] = true end
+    end
+  else
+    for _, name in ipairs(disabled) do
+      if type(name) == "string" then set[name] = true end
+    end
+  end
+  return set
+end
+
+function tools.call(cmd_string, disabled_tools)
   local t_name, t_arg = cmd_string:match("^([^|]+)|(.*)$")
   if not t_name then return "❌ Erro: Sintaxe inválida." end
   t_name = t_name:match("^%s*(.-)%s*$")
   t_arg  = t_arg and t_arg:match("^%s*(.-)%s*$") or ""
+  local dset = to_disabled_set(disabled_tools)
+  if dset[t_name] then
+    return "❌ Ferramenta '" .. t_name .. "' está desativada para este agente."
+  end
   local tool = tools.registry[t_name]
   if not tool then return "❌ Erro: Ferramenta '" .. t_name .. "' não existe." end
   local hooks_engine = require("agent.hooks.engine")
@@ -52,6 +82,10 @@ end
 
 function tools.call_structured(name, args, opts)
   opts = opts or {}
+  local dset = to_disabled_set(opts.disabled_tools)
+  if dset[name] then
+    return "❌ Ferramenta '" .. name .. "' está desativada para este agente."
+  end
   local tool = tools.registry[name]
   if not tool then return "❌ Ferramenta '" .. name .. "' não existe." end
 
@@ -101,10 +135,17 @@ function tools.call_structured(name, args, opts)
   return res
 end
 
-function tools.get_schema()
+--- get_schema([disabled_set])
+-- disabled_set: tabela de lookup { Name = true, ... } ou array de nomes.
+-- Omite tools desativadas; mantém ordem estável (table.sort).
+-- Retorna nil se nenhuma tool com schema restar.
+function tools.get_schema(disabled)
+  local dset = to_disabled_set(disabled)
   local names = {}
   for name, data in pairs(tools.registry) do
-    if data.schema then names[#names + 1] = name end
+    if data.schema and not dset[name] then
+      names[#names + 1] = name
+    end
   end
   table.sort(names)
   local schema = {}
@@ -122,9 +163,17 @@ function tools.get_schema()
   return #schema > 0 and schema or nil
 end
 
-function tools.get_docs()
+--- get_docs([disabled_set]) — mesmo filtro do schema, para system prompt / listagens.
+function tools.get_docs(disabled)
+  local dset = to_disabled_set(disabled)
   local doc = "FERRAMENTAS NATIVAS DISPONÍVEIS:\n"
-  for name, data in pairs(tools.registry) do
+  local names = {}
+  for name in pairs(tools.registry) do
+    if not dset[name] then names[#names + 1] = name end
+  end
+  table.sort(names)
+  for _, name in ipairs(names) do
+    local data = tools.registry[name]
     doc = doc .. "- " .. name .. ": " .. data.desc .. "\n"
   end
   return doc

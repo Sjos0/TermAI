@@ -1,5 +1,6 @@
 -- config_cli.lua — Fachada + Entry Point
 -- Consumidor: main.lua via dofile(BASE.."/commands/config_cli.lua")
+-- v2: opção Tools (Issue #32).
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 package.path = HOME.."/TermAI/?.lua;"..HOME.."/TermAI/?/init.lua;"..package.path
 
@@ -19,6 +20,7 @@ while true do
   io.write("  "..ui.B.."5."..ui.R.."  Web Tools        "..ui.DM.."(busca na web via Google)"..ui.R.."\n")
   io.write("  "..ui.B.."6."..ui.R.."  Skills           "..ui.DM.."(instalar, remover)"..ui.R.."\n")
   io.write("  "..ui.B.."7."..ui.R.."  Conectores       "..ui.DM.."(MCP Server, Claude.ai)"..ui.R.."\n")
+  io.write("  "..ui.B.."8."..ui.R.."  Tools            "..ui.DM.."(ativar/desativar por agente)"..ui.R.."\n")
   io.write("  "..ui.B.."0."..ui.R.."  Sair\n\n")
 
   local ch = ui.rdl("Escolha")
@@ -33,5 +35,6 @@ while true do
   elseif ch == "5" then load_menu("web_tools").run(config_mod, ui)
   elseif ch == "6" then load_menu("skills").run(config_mod, ui)
   elseif ch == "7" then load_menu("connectors").run(config_mod, ui)
+  elseif ch == "8" then load_menu("tools").run(config_mod, ui)
   end
 end
