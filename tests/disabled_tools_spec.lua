@@ -5,7 +5,8 @@
 -- deixar de ser estável, se call* deixar de recusar tool desativada, ou se
 -- callers sem 2º arg quebrarem — este arquivo grita antes da TUI.
 --
--- Escopo: fachada tools (get_schema, get_docs, call, call_structured).
+-- Escopo: fachada tools (get_schema, get_docs, call, call_structured)
+-- + contrato estático do runner / path XML (propagação de disabled_tools).
 -- Não cobre menus TUI/CLI (I/O interativo) nem persistência em config.json
 -- (integração com filesystem do usuário).
 
@@ -117,7 +118,6 @@ sec("get_schema — todos desativados → nil")
 
 local all_disabled = {}
 for _, n in ipairs(full_names) do all_disabled[n] = true end
--- Tools sem schema não entram em get_schema; desativar só as que têm schema
 local none = tools.get_schema(all_disabled)
 T("todas com schema desativadas → nil", none == nil)
 
@@ -149,7 +149,6 @@ T("get_docs sem filtro ainda lista a tool",
 sec("defesa call / call_structured")
 -- ─────────────────────────────────────────────────────────────
 
--- Path desativado: retorna antes de hooks / execute
 local msg_call = tools.call(sample .. "|dummy", { [sample] = true })
 T("call recusa tool desativada (set)",
   type(msg_call) == "string" and msg_call:find("desativada") ~= nil,
@@ -164,25 +163,20 @@ T("call_structured recusa tool desativada",
   type(msg_struct) == "string" and msg_struct:find("desativada") ~= nil,
   tostring(msg_struct))
 
--- Callers legados sem 2º arg: não devem tratar como "tudo desativado"
--- (só validamos que a assinatura aceita nil — não executamos tool real
--- para evitar dependência de hooks/permissões no unitário)
 T("call sem 2º arg não explode na assinatura",
   (function()
-    -- Sintaxe inválida evita execute; testa path antes do disabled check parcial
     local r = tools.call("sem-pipe-aqui")
     return type(r) == "string" and r:find("Sintaxe") ~= nil
   end)())
 
 T("call_structured sem opts.disabled_tools aceita opts vazio",
   (function()
-    -- Tool inexistente: path após disabled check
     local r = tools.call_structured("ToolInexistenteXYZ999", {}, {})
     return type(r) == "string" and r:find("não existe") ~= nil
   end)())
 
 -- ─────────────────────────────────────────────────────────────
-sec("payload contrato (leitura estática)")
+sec("payload / context / runner / xml contratos (leitura estática)")
 -- ─────────────────────────────────────────────────────────────
 
 local function read_file(path)
@@ -196,6 +190,11 @@ end
 local payload_src = read_file("agent/api/payload.lua") or read_file("./agent/api/payload.lua")
 local context_src = read_file("agent/context.lua") or read_file("./agent/context.lua")
 local tools_src = read_file("tools.lua") or read_file("./tools.lua")
+local runner_src = read_file("agent/loop/tool_runner/executor.lua")
+  or read_file("./agent/loop/tool_runner/executor.lua")
+local xml_src = read_file("agent/loop/xml_path.lua") or read_file("./agent/loop/xml_path.lua")
+local th_exec_src = read_file("agent/tools_handler/executor.lua")
+  or read_file("./agent/tools_handler/executor.lua")
 
 if payload_src then
   T("payload passa ctx.disabled_tools a get_schema",
@@ -211,7 +210,6 @@ if context_src then
     context_src:find("disabled_tools") ~= nil)
   T("context popula agent_id",
     context_src:find("agent_id") ~= nil)
-  -- Não deve hardcodar filtro só para "main" no path de disabled
   T("context resolve agente por list[1].id (não hardcode exclusivo)",
     context_src:find("list%[1%]") ~= nil
     or context_src:find("get_agent") ~= nil)
@@ -227,6 +225,35 @@ if tools_src then
     tools_src:find("to_disabled_set") ~= nil)
 else
   T("tools.lua legível no cwd", false)
+end
+
+-- #49: hot path do runner deve propagar ctx.disabled_tools
+if runner_src then
+  T("runner individual passa disabled_tools a call_structured",
+    runner_src:find("disabled_tools%s*=%s*ctx%.disabled_tools") ~= nil)
+  local count = 0
+  for _ in runner_src:gmatch("disabled_tools%s*=%s*ctx%.disabled_tools") do
+    count = count + 1
+  end
+  T("runner propaga disabled_tools em individual e grupo Read",
+    count >= 2, "ocorrências=" .. tostring(count))
+else
+  T("tool_runner/executor.lua legível no cwd", false)
+end
+
+if xml_src then
+  T("xml_path passa ctx.disabled_tools a th.executar",
+    xml_src:find("executar%(ferramentas,%s*ctx%.disabled_tools%)") ~= nil)
+else
+  T("xml_path.lua legível no cwd", false)
+end
+
+if th_exec_src then
+  T("tools_handler/executor aceita disabled_tools no call",
+    th_exec_src:find("tools%.call%([^,]+,%s*disabled_tools%)") ~= nil
+    or th_exec_src:find("tools%.call%(.-disabled_tools%)") ~= nil)
+else
+  T("tools_handler/executor.lua legível no cwd", false)
 end
 
 -- ─────────────────────────────────────────────────────────────
