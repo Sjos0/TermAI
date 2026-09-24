@@ -1,4 +1,5 @@
 -- agent/loop/xml_path.lua — Caminho legado XML do loop ReAct + retries vazio/unfulfilled.
+-- v2: propaga ctx.disabled_tools ao tools_handler.executar (Issue #32 / #49).
 local ui = require("ui")
 local th = require("agent.tools_handler")
 local response_utils = require("agent.loop.response_utils")
@@ -24,7 +25,8 @@ function M.handle(ctx, resp, reasoning, stream_complete, elapsed, vazio_count, m
     local exec_result = ""
     local iter_delta = 0
     if #ferramentas > 0 then
-      exec_result = th.executar(ferramentas)
+      -- Defesa em profundidade: path XML também respeita tools desativadas.
+      exec_result = th.executar(ferramentas, ctx.disabled_tools)
       iter_delta = 1
     end
     local cur_text = has_pre_feedback

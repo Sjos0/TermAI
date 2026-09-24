@@ -1,5 +1,6 @@
 -- agent/tools_handler/executor.lua
 -- Execucao de tool calls: executar() com UI e feedback, executar_silent() sem UI.
+-- v2: 2º arg opcional disabled_tools (Issue #32 / Caçador #49 — path XML legado).
 local ui    = require("ui")
 local tools = require("tools")
 local M     = {}
@@ -9,13 +10,13 @@ local ef = (function()
   return ok and m or nil
 end)()
 
-function M.executar(ferramentas)
+function M.executar(ferramentas, disabled_tools)
   local resultados = {}
   for _, tool in ipairs(ferramentas) do
     local display = (tool.nome .. " | " .. tool.arg):gsub("\n", " ")
     if #display > 70 then display = display:sub(1, 70) .. "..." end
     ui.tool_start(display)
-    local out = tools.call(tool.nome .. "|" .. tool.arg)
+    local out = tools.call(tool.nome .. "|" .. tool.arg, disabled_tools)
     local ok  = not out:match("^❌")
     ui.tool_end(display, out, ok)
     local result_text = out
@@ -39,10 +40,10 @@ function M.executar(ferramentas)
   return table.concat(resultados, "\n\n")
 end
 
-function M.executar_silent(ferramentas)
+function M.executar_silent(ferramentas, disabled_tools)
   local resultados = {}
   for _, tool in ipairs(ferramentas) do
-    local out = tools.call(tool.nome .. "|" .. tool.arg)
+    local out = tools.call(tool.nome .. "|" .. tool.arg, disabled_tools)
     local ok  = not out:match("^❌")
     resultados[#resultados + 1] = string.format(
       '<tool_result name="%s" status="%s">\n%s\n</tool_result>',

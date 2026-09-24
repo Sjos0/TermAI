@@ -1,5 +1,6 @@
 -- agent/loop/tool_runner/executor.lua — Orquestração de execuções individuais e em lote.
 -- v2: PreToolUse ANTES de tool_start — evita bolinha amarela órfã após diálogo de permissão.
+-- v2.1: propaga ctx.disabled_tools a call_structured (Issue #32 / Caçador #49).
 local ui        = require("ui")
 local tools_mod = require("tools")
 local json      = require("json")
@@ -88,7 +89,12 @@ local function executar_individual(ctx, tc)
       ui.tool_start(display_str)
 
       local start_t = get_wall_time()
-      result = tools_mod.call_structured(tc.name, tc.args, { skip_pretool = true })
+      -- Issue #32 / #49: defesa em profundidade — schema já filtra, mas se
+      -- tool_call desativada chegar (alucinação / histórico), recusar aqui.
+      result = tools_mod.call_structured(tc.name, tc.args, {
+        skip_pretool = true,
+        disabled_tools = ctx.disabled_tools,
+      })
       local elapsed_ms = math.max(0, math.floor((get_wall_time() - start_t) * 1000))
 
       local bp = require("agent.hooks.bash_patterns")
@@ -130,7 +136,10 @@ local function executar_grupo_read(ctx, tcs)
   local names, oks = {}, {}
   for _, tc in ipairs(tcs) do
     local start_t = get_wall_time()
-    local result = tools_mod.call_structured(tc.name, tc.args)
+    -- Mesmo filtro de desativação do path individual (#32 / #49).
+    local result = tools_mod.call_structured(tc.name, tc.args, {
+      disabled_tools = ctx.disabled_tools,
+    })
     local elapsed_ms = math.max(0, math.floor((get_wall_time() - start_t) * 1000))
 
     local bp = require("agent.hooks.bash_patterns")

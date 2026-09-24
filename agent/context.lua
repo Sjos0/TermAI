@@ -1,5 +1,6 @@
 -- context.lua — Inicialização e construção do ctx.
 -- Lê configurações de request (timeout, retries) e as aplica no api.lua.
+-- v2: popula ctx.disabled_tools a partir do agente ativo (Issue #32).
 local config_mod    = require("config")
 local models_mod    = require("models")
 local security      = require("agent.security")
@@ -41,21 +42,32 @@ function M.build()
 
   local compaction = cfg.agents.defaults.compaction or {}
 
+  -- Agente ativo: mesmo critério já usado no projeto (primeiro da lista ou id).
+  -- Nunca hardcodar "main" no path de filtro (Issue #32).
+  local agent_id = (cfg.agents.list and cfg.agents.list[1] and
+                    cfg.agents.list[1].id) or "main"
+  local agent_entry = config_mod.get_agent(agent_id)
+  local disabled_list = (agent_entry and agent_entry.disabled_tools) or {}
+  local disabled_set = {}
+  for _, name in ipairs(disabled_list) do
+    if type(name) == "string" then disabled_set[name] = true end
+  end
+
   local ctx = {
-    cfg        = cfg,
-    active     = active,
-    tokens     = 0,
-    msgs       = {{role = "system",
-                   content = prompt_module.build(workspace, tools, session.current(), cfg)}},
-    MAX_ITER   = cfg.agents.defaults.maxIter or 20,
-    workspace  = workspace,
-    compaction = compaction,
+    cfg             = cfg,
+    active          = active,
+    tokens          = 0,
+    msgs            = {{role = "system",
+                       content = prompt_module.build(workspace, tools, session.current(), cfg)}},
+    MAX_ITER        = cfg.agents.defaults.maxIter or 20,
+    workspace       = workspace,
+    compaction      = compaction,
+    agent_id        = agent_id,
+    disabled_tools  = disabled_set,
   }
 
   session.set_model(active.ref)
 
-  local agent_id   = (cfg.agents.list and cfg.agents.list[1] and
-                      cfg.agents.list[1].id) or "main"
   local agent_base = HOME .. "/.TermAI/agents/" .. agent_id
   mf.init(agent_base, agent_id)
 
