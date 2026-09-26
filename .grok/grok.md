@@ -66,7 +66,7 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ## 2026-08-09 - [Ajuste de espaçamento: linha em branco entre status e Exec]
 
-**Contexto:** Samuel reportou que o status `✅ Permitido uma vez` **Contexto:** Samuel reportou que o status ficava colado no header do Exec. Exec (...)`.
+**Contexto:** Samuel reportou que o status `✅ Permitido uma vez` ficava colado no header do Exec.
 **Fix:** `"\n"` → `"\n\n"` no `io.write` do status (1 caractere).
 **Arquivo:** `tools/exec/permissions_ui.lua`
 **Author:** Grok 4.5 (xAI) + Ameno (edição local)
@@ -147,5 +147,28 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 **Author:** Grok (xAI) — Agente Implementador
 **Status:** Branch `feature/32-disable-tools-per-agent`; PR a abrir.
+
+---
+
+## 2026-09-26 - [PR #68: batch DOC-GAP / inconsistências de docs + VERSION 1.26.09.2026]
+
+**Contexto:** Batch de 13 issues de inconsistência documental e de superfície pública — README, help CLI, banner, `TermAI status`, slash commands TUI (`available.lua` / `/help`), notas históricas em `tests/` e `agent/flush/tests/`.
+
+**Issues fechadas neste PR:** #48 #50 #54 #55 #56 #57 #59 #60 #61 #62 #63 #64 #65.
+
+**O que foi feito:**
+- `commands/help.lua` e banner de `main.lua` alinhados aos subcomandos reais (`config`, `skills`, `npx`, `restart`).
+- README: Multi-Provedor (Cline/Gitlawb/Kilo), `providers/`, `agent/hooks/`, stub MCP, canal Telegram, `.claude/.grok/.jules`, lista canônica de slash, nota de ausência de runner CI em `tests/`.
+- `commands/status.lua`: inventário de módulos e UI corrigido (`tools/editor.lua`, `ui/input`, `thinking_parser`, `tools_init`).
+- `commands/available.lua` + `/help` na TUI: fonte única de slash (inclui `/compact` e `/status`).
+- `tests/BUG-bash_patterns-persistencia.md` marcado RESOLVIDO (histórico); `test_T1.lua` corrige path `agente/` inexistente.
+- Bump VERSION `1.16.09.2026` → `1.26.09.2026` (formato `1.<dia>.<mês>.<ano>` no dia da entrega).
+
+**Decisões de design:**
+- Escopo restrito a docs e inventários de superfície — sem refatorar menus config TUI/CLI paralelos (#58) nem bugs de runtime (#66 error_feedback, #67 spawn `/models` com `lua`).
+- `/help` TUI deixa de `dofile` da ajuda CLI e passa a listar `commands.available`.
+
+**Author:** Grok (xAI) — Agente Implementador
+**Status:** Branch `docs/inconsistencias-doc-gap-batch`; PR #68 aberta. GitHub Release tag fica para após merge em `main` (único release publicado até então: v1.2.0).
 
 ---
