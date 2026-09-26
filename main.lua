@@ -43,6 +43,12 @@ if not arg_cmd or arg_cmd == "" then
     .. "       " .. D .. "Status da sessão ativa\n" .. R)
   io.write("  " .. W .. "TermAI update" .. R
     .. "       " .. D .. "Atualiza o TermAI a partir do GitHub (origin/main)\n" .. R)
+  io.write("  " .. W .. "TermAI skills" .. R
+    .. "       " .. D .. "Instala e gerencia skills do agente\n" .. R)
+  io.write("  " .. W .. "TermAI npx" .. R
+    .. "         " .. D .. "Alias de skills (instalador de skills)\n" .. R)
+  io.write("  " .. W .. "TermAI restart" .. R
+    .. "      " .. D .. "Solicita restart do processo TermAI\n" .. R)
   io.write("  " .. W .. "TermAI help" .. R
     .. "         " .. D .. "Ajuda detalhada\n" .. R)
   io.write("\n")
