@@ -40,19 +40,22 @@ io.write("\n")
 -- Módulos
 io.write(c.bold .. "  Módulos:" .. c.reset .. "\n")
 local modules = {
-  "agente.lua", "editor.lua", "json.lua", "memoryflush.lua",
+  "agente.lua", "json.lua", "memoryflush.lua",
   "prompt.lua", "renderer.lua", "tools.lua", "ui.lua",
 }
 for _, mod in ipairs(modules) do
   check(mod, HOME .. "/TermAI/" .. mod)
 end
+-- Editor vive em tools/ (não na raiz)
+check("tools/editor.lua", HOME .. "/TermAI/tools/editor.lua")
 io.write("\n")
 
 -- UI
 io.write(c.bold .. "  Interface:" .. c.reset .. "\n")
 local ui_modules = {
-  "core.lua", "header.lua", "messages.lua",
-  "tools.lua", "spinner.lua", "stream.lua", "misc.lua",
+  "core.lua", "header.lua", "input.lua", "messages.lua",
+  "spinner.lua", "stream.lua", "thinking_parser.lua",
+  "tools_init.lua", "misc.lua",
 }
 for _, mod in ipairs(ui_modules) do
   check("ui/" .. mod, HOME .. "/TermAI/ui/" .. mod)
