@@ -8,8 +8,10 @@ M.commands = {
   { name = "/reset",    desc = "Limpar a conversa atual (mantém o ID da sessão)" },
   { name = "/session",  desc = "Listar sessões  |  /session <id> para trocar" },
   { name = "/clear",    desc = "Deletar a conversa atual e migrar para outra sessão" },
+  { name = "/compact",  desc = "Compactação manual (opcional: /compact foque em X)" },
+  { name = "/status",   desc = "Ver status do TermAI" },
   { name = "/restart",  desc = "Reiniciar a TUI" },
-  { name = "/help",     desc = "Mostrar ajuda" },
+  { name = "/help",     desc = "Mostrar ajuda dos slash commands" },
   { name = "/sair",     desc = "Encerrar o TermAI" },
 }
 

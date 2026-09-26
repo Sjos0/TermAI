@@ -56,7 +56,13 @@ local function route(input, ctx, flush_msgs_start)
   end
 
   if input == "/help" then
-    dofile(BASE .. "/commands/help.lua")
+    -- Ajuda de slash (TUI), não a ajuda CLI de commands/help.lua (Issue #56)
+    local available = require("commands.available")
+    io.write("\n\27[1m  Comandos da TUI:\27[0m\n\n")
+    for _, cmd in ipairs(available.commands) do
+      io.write(string.format("  \27[38;5;114m%-12s\27[0m %s\n", cmd.name, cmd.desc))
+    end
+    io.write("\n")
     return { action = "continue" }
   end
 

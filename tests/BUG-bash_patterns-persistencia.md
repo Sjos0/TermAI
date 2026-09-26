@@ -1,7 +1,7 @@
 # Bug: Permissões Exec (bash_patterns) — Não Persistem
 
 **Data:** 2026-07-23
-**Status:** HIPÓTESE — Aguardando validação por teste
+**Status:** RESOLVIDO (histórico) — o parser atual já possui máquina de estado para heredoc; a hipótese H1 foi confirmada e o comportamento de extrair conteúdo de heredoc como subcomando foi tratado. Este arquivo permanece como registro de investigação (Issue #48).
 
 ## Sintomas
 1. "Falha no trecho" aparece no dialog de permissão (confuso — não é falha real)
@@ -70,7 +70,7 @@ Parser extrai: `["cat << 'EOF' > /tmp/t.txt", "conteudo"]`
 
 ## Complemento: Caso `sed` (2026-07-23)
 
-O comando `sed -i '117a\-...' file.lua` apareceu no dialog com o texto inteiro.
+O comando `sed -i '117a\\-...' file.lua` apareceu no dialog com o texto inteiro.
 **Não é bug** — é comportamento correto:
 - `sed` não está em `SAFE_COMMANDS` → precisa de permissão
 - Parser extrai o `sed` como 1 subcomando (correto, respeita aspas)

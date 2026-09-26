@@ -67,11 +67,12 @@ print("\n━━━━━━━━━━━━━━━━━━━━━━━�
 print("✅ T1: FlushState — TODOS OS 5 TESTES PASSARAM")
 print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 
--- 3. Validação da implementação (será usada após modificar flush.lua)
+-- 3. Nota: série T1/T2/T4 (T3 ausente no tree). Não há validate_T1.lua;
+--    este arquivo testa apenas o conceito local de flush_state (Issue #64).
 print("---")
 print("⚠️  ATENÇÃO: Teste isolado do CONCEITO passou!")
-print("   Para validar a implementação REAL em flush.lua,")
-print("   execute: lua agente/flush/tests/validate_T1.lua")
+print("   Não existe validate_T1.lua nem test_T3.lua neste diretório.")
+print("   Path correto do diretório: agent/flush/tests/ (não agente/).")
 print("---")
 
 os.exit(0)
