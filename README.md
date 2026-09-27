@@ -147,7 +147,7 @@ Lista canônica em `commands/available.lua` (e tratada pelo router em `agent/mai
 - `/reset` — limpar a conversa atual (mantém o ID da sessão)
 - `/session` — listar sessões; `/session <id>` para trocar
 - `/clear` — deletar a conversa atual e migrar para outra sessão
-- `/compact` — compacção manual (com foco opcional: `/compact foque em X`)
+- `/compact` — compactação manual (com foco opcional: `/compact foque em X`)
 - `/status` — ver status do TermAI
 - `/restart` — reiniciar a TUI
 - `/help` — mostrar ajuda dos slash commands
