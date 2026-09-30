@@ -72,7 +72,7 @@ function M.install_from_files(files_map, files_list, skill_name, dest_dir)
       if rel:sub(1, 1) == "/" then rel = rel:sub(2) end
       if rel ~= "" then
         -- Pular paths sem extensao (entradas de diretorio do GitHub)
-        local ext = rel:match("%.(%[^%.]+)$") or ""
+        local ext = rel:match("%.([^%.]+)$") or ""
         if ext ~= "" then
           local full_path = final_dir .. "/" .. rel
           local dir = full_path:gsub("/[^/]+$", "")
