@@ -73,8 +73,8 @@ T("get_skills_dir(nil) == workspace/skills",
 T("get_skills_dir(\"main\") == workspace/skills",
   skills_utils.get_skills_dir("main") == MAIN_WS)
 T("get_skills_dir(\"\") trata como non-main se truthy vazio?",
-  -- string vazia é truthy em Lua no `if agent_name and agent_name ~= "main"`
-  -- "" ~= "main" → entra no branch workspace/<name>/skills
+  -- string vazia é truthy em Lua no `if agent_name and agent_name ~= \"main\"`
+  -- \"\" ~= \"main\" → entra no branch workspace/<name>/skills
   skills_utils.get_skills_dir("") == PROJECT_ROOT .. "/workspace//skills"
   or skills_utils.get_skills_dir("") == MAIN_WS)
 T("main path termina com /workspace/skills",
@@ -197,8 +197,8 @@ if g_src then
   T("github_installer NÃO require skills_installer.utils",
     -- não deve recalcular dest localmente
     not g_src:find("skills_installer.utils", 1, true))
-  T("github_installer NÃO chama get_dest internamente",
-    not g_src:find("get_dest", 1, true))
+  T("github_installer NÃO chama get_dest( (só comentário ok)",
+    not g_src:find("get_dest(", 1, true))
   T("github_installer passa dest a install_from_files",
     g_src:find("install_from_files", 1, true) ~= nil
     and g_src:find(", dest%)") ~= nil or g_src:find(", dest") ~= nil)
