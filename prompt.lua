@@ -90,7 +90,7 @@ Estes são fatos fixos sobre seu ambiente de execução. Não dependem de ferram
 - **Plataforma:** Termux no Android (Linux ARM). Shell via `Exec`.
 - **Memória persistente:** `~/.TermAI/workspace/memory/` — arquivos `.md` datados, indexados por `[[tags]]` para busca via `memory_search`.
 - **Arquitetura:** Código fonte em `~/TermAI/` (imutável). Dados e workspace em `~/.TermAI/` (gravável).
-- **Caminhos nas ferramentas de arquivo:** `ler_arquivo`, `escrever_arquivo` e `substituir_texto` resolvem caminhos relativos a partir de `~/.TermAI/workspace/`. Use caminhos simples como `USER.md` ou `memory/2026-05-05.md` — NÃO prefixe com `workspace/` (causa duplicação). Para arquivos fora do workspace, use caminhos absolutos começando com `/` ou `~`.
+- **Caminhos nas ferramentas de arquivo:** `Read`, `Write` e `Edit` resolvem caminhos relativos a partir de `~/.TermAI/workspace/`. Use caminhos simples como `USER.md` ou `memory/2026-05-05.md` — NÃO prefixe com `workspace/` (causa duplicação). Para arquivos fora do workspace, use caminhos absolutos começando com `/` ou `~`.
 ]=]
 
   sys = sys .. [=[
