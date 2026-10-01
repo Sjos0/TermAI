@@ -57,14 +57,16 @@ function M.build(workspace, tools, session_id, cfg)
       local todo_fmt    = require("tools.todo.formatter")
       local todos = todo_store.load(session_id)
       if #todos == 0 then return nil end
-      return todo_fmt.render_system_block(todos)
+      return todo_fmt.render(todos)
     end)
     if todo_ok and todo_block then
-      sys = sys .. "\n\n" .. todo_block
+      sys = sys .. "\n\n### TAREFAS EM ANDAMENTO (restauradas)\n" .. todo_block
+        .. "\nEssa lista já existia antes deste boot/restart. Continue de onde "
+        .. "parou; não recrie do zero. Chame todo_write normalmente para atualizar."
     end
   end
 
-  -- Protocolo de raciocínio (thinking_protocol)
+  -- Injeção do Protocolo de Raciocínio (ativável via config)
   local tp = cfg and cfg.agents and cfg.agents.defaults
              and cfg.agents.defaults.thinking_protocol or {}
   if tp.enabled then
