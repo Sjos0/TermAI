@@ -172,3 +172,19 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Status:** Branch `docs/inconsistencias-doc-gap-batch`; PR #68 aberta. GitHub Release tag fica para após merge em `main` (único release publicado até então: v1.2.0).
 
 ---
+
+---
+
+## 2026-10-08 - [VERSION #79: atualização canônica + registro .ChatGPT]
+
+**Contexto:** Issue #79 — alinhar a versão interna ao ciclo de entrega de 08/10/2026 e registrar a mudança no repositório.
+
+**O que foi feito:**
+- Bump de `VERSION` `1.26.09.2026` → `1.8.10.2026`.
+- Criado `.ChatGPT/ChatGPT.md` para registrar a versão canônica, rastreabilidade e estado do release.
+- Nenhum código-fonte ou `.github/` foi alterado.
+
+**Decisão de versão:** mantido o padrão histórico `1.<dia>.<mês>.<ano>` usado pelo projeto; para 08/10/2026, a string adotada é `1.8.10.2026`.
+
+**Author:** Ameno — Agente Implementador
+**Status:** Implementação na branch `fix/79-version-2026-10-08-chatgpt-record`; PR será aberta para revisão. Merge e publicação do GitHub Release permanecem para decisão humana.
