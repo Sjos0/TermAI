@@ -187,4 +187,4 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 **Decisão de versão:** mantido o padrão histórico `1.<dia>.<mês>.<ano>` usado pelo projeto; para 08/10/2026, a string adotada é `1.8.10.2026`.
 
 **Author:** Ameno — Agente Implementador
-**Status:** Implementação na branch `fix/79-version-2026-10-08-chatgpt-record`; PR será aberta para revisão. Merge e publicação do GitHub Release permanecem para decisão humana.
+**Status:** Implementação na branch `fix/79-version-2026-10-08-chatgpt-record`; PR #80 aberta para revisão. Merge e publicação do GitHub Release permanecem para decisão humana.
