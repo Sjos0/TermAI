@@ -12,9 +12,9 @@ A versão canônica foi atualizada para `1.8.10.2026`, seguindo o padrão histó
 
 - Issue: #79
 - Branch: `fix/79-version-2026-10-08-chatgpt-record`
+- Pull Request: #80
 - Fonte canônica: `VERSION`
-- PR: será vinculada à Issue #79 nesta branch
 
 ## Estado do release
 
-O release/tag público correspondente deve espelhar `VERSION` como `v1.8.10.2026`. A publicação e o merge permanecem sujeitos à aprovação humana, conforme a função do Agente Implementador.
+O release/tag público correspondente deve espelhar `VERSION` como `v1.8.10.2026`. A publicação do release e o merge da PR permanecem sujeitos à aprovação humana, conforme a função do Agente Implementador.
