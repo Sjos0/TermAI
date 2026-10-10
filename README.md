@@ -79,6 +79,7 @@ Após a instalação, o entry point `main.lua` despacha subcomandos:
 |---------|----------|
 | `TermAI` | Exibe o menu de comandos disponíveis |
 | `TermAI tui` | Inicia o agente interativo (TUI) |
+| `TermAI run --prompt-file arquivo.md` | Executa um turno não interativo com ferramentas, útil para jobs/cron |
 | `TermAI config` | Configurações (timeout, hooks, modelos…) |
 | `TermAI models` | Gerenciar provedores e modelos de IA |
 | `TermAI status` | Status da sessão ativa |
@@ -95,6 +96,12 @@ TermAI models add-provider
 TermAI models list
 TermAI models set
 ```
+
+### Execução não interativa e fallback de modelos
+
+`TermAI run --prompt-file /caminho/prompt.md` executa uma tarefa sem abrir a TUI e retorna um código de saída, permitindo automação por cron. `--model provider/model` escolhe o modelo para aquela execução e `--max-iter N` limita as iterações.
+
+O provedor Kilo Gateway suporta as rotas gratuitas `kilo-auto/free` e `openrouter/free` pelo endpoint compatível com OpenAI `https://api.kilo.ai/api/gateway/chat/completions`. A configuração `agents.defaults.model.fallbacks` permite tentar o próximo modelo após esgotar `request.max_retries` no modelo atual. Os modelos gratuitos podem aplicar rate limits e suas condições de privacidade dependem do provedor; não envie segredos em prompts.
 
 ---
 

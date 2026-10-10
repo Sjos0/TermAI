@@ -60,11 +60,10 @@ local function strip_thinking_tags(text)
   return text
 end
 
--- Gera caminho de arquivo temporario usando TMPDIR (Termux-safe).
--- os.tmpname() usa /tmp hardcoded via mkstemp() no POSIX -- falha no Termux.
+-- Gera caminho temporário portável: respeita TMPDIR e usa /tmp como padrão POSIX.
 local function make_tmp_path()
   _tmp_seq = _tmp_seq + 1
-  local d = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+  local d = os.getenv("TMPDIR") or "/tmp"
   return d .. "/ta_payload_" .. tostring(os.time()) .. "_" .. tostring(_tmp_seq)
 end
 

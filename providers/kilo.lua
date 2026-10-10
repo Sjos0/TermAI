@@ -1,25 +1,31 @@
--- providers/kilo.lua — Kilo AI Gateway (OpenAI-compatible, 500+ modelos)
--- API key em: https://app.kilo.ai (API Keys)
--- Modelos no formato provider/model-name
--- Lista completa: https://api.kilo.ai/api/gateway/models
-
+-- Kilo AI Gateway: OpenAI-compatible endpoint, compatible with anonymous free routes.
+-- Endpoint: https://api.kilo.ai/api/gateway/chat/completions
+-- Catalog: https://api.kilo.ai/api/gateway/models
 return {
-  id        = "kilo",
-  name      = "Kilo Gateway",
-  baseUrl   = "https://api.kilo.ai/api/gateway",
-  api       = "openai-completions",
-  needs_key = true,
-  key_hint  = "kilo-...",
-  docs      = "https://app.kilo.ai",
-  models    = {
+  id = "kilo",
+  name = "Kilo Gateway (Free)",
+  baseUrl = "https://api.kilo.ai/api/gateway",
+  api = "openai-completions",
+  needs_key = false,
+  docs = "https://kilo.ai/docs/gateway/models-and-providers",
+  models = {
     {
-      id            = "kilo-auto/free",
-      name          = "Kilo Auto Free (gratuito)",
-      reasoning     = false,
-      input         = {"text"},
-      cost          = {input=0, output=0, cacheRead=0, cacheWrite=0},
+      id = "kilo-auto/free",
+      name = "Kilo Auto Free",
+      reasoning = false,
+      input = {"text"},
+      cost = {input=0, output=0, cacheRead=0, cacheWrite=0},
       contextWindow = 128000,
-      maxTokens     = 50000,
+      maxTokens = 8192,
+    },
+    {
+      id = "openrouter/free",
+      name = "OpenRouter Free (via Kilo Gateway)",
+      reasoning = false,
+      input = {"text"},
+      cost = {input=0, output=0, cacheRead=0, cacheWrite=0},
+      contextWindow = 128000,
+      maxTokens = 8192,
     },
   },
 }

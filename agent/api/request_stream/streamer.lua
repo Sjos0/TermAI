@@ -22,7 +22,7 @@ function M.pensar_stream(ctx, txt, role)
     return "[ERRO_OVERFLOW] Prompt excede a janela de contexto (local)", true, false, ""
   end
 
-  local flag_path = (os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp") .. "/termai_stream.flag"
+  local flag_path = (os.getenv("TMPDIR") or "/tmp") .. "/termai_stream.flag"
   os.remove(flag_path)
 
   local last_error
@@ -141,6 +141,44 @@ function M.pensar_stream(ctx, txt, role)
       ui.kill_spinner()
       ui.show_retry(attempt, rcfg.max_retries, last_error, 0)
     end
+  end
+
+  -- Fallback de modelo: cada modelo esgota seu próprio max_retries antes
+  -- de passar ao próximo. O modelo de fallback recebe o mesmo histórico,
+  -- sem duplicar a mensagem do usuário nem permitir recursão infinita.
+  if not ctx._fallback_suppress then
+    local model_cfg = ctx.cfg and ctx.cfg.agents and ctx.cfg.agents.defaults
+                      and ctx.cfg.agents.defaults.model or {}
+    local fallbacks = model_cfg.fallbacks or {}
+    local original_active = ctx.active
+    for _, ref in ipairs(fallbacks) do
+      if type(ref) == "string" and ref ~= "" and ref ~= original_active.ref then
+        local ok_models, models_mod = pcall(require, "models")
+        local resolved = nil
+        if ok_models then resolved = models_mod.resolve(ref) end
+        if resolved then
+          io.write("\n\27[38;5;220m[modelo] Falha em "
+            .. tostring(original_active.ref) .. "; tentando fallback "
+            .. tostring(ref) .. " após " .. tostring(rcfg.max_retries)
+            .. " tentativas.\27[0m\n")
+          io.flush()
+          ctx.active = resolved
+          ctx._fallback_suppress = true
+          local result = table.pack(M.pensar_stream(ctx, nil, role))
+          ctx._fallback_suppress = nil
+          if result[1] and not tostring(result[1]):match("^%[ERRO")
+             and result[2] ~= true then
+            io.write("\27[38;5;114m[modelo] Fallback ativo nesta sessão: "
+              .. tostring(ref) .. "\27[0m\n")
+            io.flush()
+            return table.unpack(result, 1, result.n)
+          end
+          last_error = "fallback " .. tostring(ref) .. " falhou: "
+                     .. tostring(result[1] or "sem resposta")
+        end
+      end
+    end
+    ctx.active = original_active
   end
 
   -- Não removemos a mensagem do usuário aqui: falha de rede não pode apagar
