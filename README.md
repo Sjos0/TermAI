@@ -77,17 +77,20 @@ Após a instalação, o entry point `main.lua` despacha subcomandos:
 
 | Comando | Descrição |
 |---------|----------|
-| `TermAI` | Exibe o menu de comandos disponíveis |
-| `TermAI tui` | Inicia o agente interativo (TUI) |
-| `TermAI run --prompt-file arquivo.md` | Executa um turno não interativo com ferramentas, útil para jobs/cron |
-| `TermAI config` | Configurações (timeout, hooks, modelos…) |
-| `TermAI models` | Gerenciar provedores e modelos de IA |
-| `TermAI status` | Status da sessão ativa |
-| `TermAI update` | Atualiza o TermAI a partir do GitHub (origin/main) |
-| `TermAI skills` | Instala e gerencia skills do agente |
-| `TermAI npx` | Alias de `skills` (instalador de skills) |
-| `TermAI restart` | Solicita restart do processo TermAI |
-| `TermAI help` | Ajuda detalhada |
+| TermAI | Exibe o menu de comandos disponíveis |
+| TermAI tui | Inicia o agente interativo (TUI) |
+| TermAI run --prompt-file arquivo.md | Executa um turno não interativo com ferramentas, útil para jobs/cron |
+| TermAI cron list | Lista os jobs TermAI no crontab do sistema |
+| TermAI cron run code-review | Executa manualmente um job usando o mesmo runner do cron |
+| TermAI cron runs code-review 10 | Mostra as últimas execuções e seus códigos de saída |
+| TermAI config | Configurações (timeout, hooks, modelos…) |
+| TermAI models | Gerenciar provedores e modelos de IA |
+| TermAI status | Status da sessão ativa |
+| TermAI update | Atualiza o TermAI a partir do GitHub (origin/main) |
+| TermAI skills | Instala e gerencia skills do agente |
+| TermAI npx | Alias de skills (instalador de skills) |
+| TermAI restart | Solicita restart do processo TermAI |
+| TermAI help | Ajuda detalhada |
 
 Exemplos de uso de `models`:
 
@@ -96,6 +99,10 @@ TermAI models add-provider
 TermAI models list
 TermAI models set
 ```
+
+### Jobs e cron do TermAI
+
+O comando TermAI cron usa o cron do sistema como backend leve, sem daemon residente: list inspeciona os agendamentos, run <job> executa o runner oficial imediatamente e runs <job> [limite] consulta os resumos persistidos. Jobs suportados nesta primeira versão: bugs-hunter e code-review. A instalação/edição de schedules continua sendo administrada pelo crontab; o comando não altera agendamentos.
 
 ### Execução não interativa e fallback de modelos
 

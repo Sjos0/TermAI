@@ -19,6 +19,7 @@ local commands = {
   status  = BASE .. "/commands/status.lua",
   models  = BASE .. "/commands/models.lua",
   run     = BASE .. "/commands/run.lua",
+  cron    = BASE .. "/commands/cron.lua",
   restart = BASE .. "/commands/restart.lua",
   config  = BASE .. "/commands/config_cli.lua",
   update  = BASE .. "/commands/update.lua",
@@ -42,6 +43,8 @@ if not arg_cmd or arg_cmd == "" then
     .. "       " .. D .. "Gerenciar provedores e modelos de IA\n" .. R)
   io.write("  " .. W .. "TermAI run" .. R
     .. "          " .. D .. "Executa uma tarefa sem abrir a TUI\n" .. R)
+  io.write("  " .. W .. "TermAI cron" .. R
+    .. "         " .. D .. "Lista, executa e consulta o histórico de jobs\n" .. R)
   io.write("  " .. W .. "TermAI status" .. R
     .. "       " .. D .. "Status da sessão ativa\n" .. R)
   io.write("  " .. W .. "TermAI update" .. R
