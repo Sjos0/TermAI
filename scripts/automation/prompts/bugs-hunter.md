@@ -61,3 +61,9 @@ Execute testes e reproduções controladas quando possível. Inclua casos advers
 Produza um relatório em português brasileiro, simples e detalhado, contendo: identidade **Ameno — Bugs Hunter**; PRs examinadas; Issues relevantes examinadas; testes e reproduções realizados (com resultados); bugs confirmados; bugs suspeitos; lacunas de cobertura; Issues criadas; comentários publicados; limitações e documentos/skills indisponíveis.
 
 Não exponha tokens, credenciais ou outros segredos. Não alegue ter criado Issues ou publicado comentários sem confirmar o resultado via GitHub CLI.
+
+## Hard early-exit gate for empty triage (required)
+
+Perform only the inexpensive GitHub triage first. Determine whether any open Issue has either input label (agent:needs-bugs-hunter or agent:needs-investigation). For each open PR, compare its current HEAD SHA with the existing Bugs Hunter marker; use a filtered gh api query that returns only marker matches rather than downloading all comment bodies.
+
+If there are zero eligible Issues and every open PR already has a marker for its current HEAD, immediately return a short no-action result and stop. Do not inspect diffs, commits, documentation, or repository files; do not repeat the same queries; do not spend further model iterations. This is a successful no-op, not a failure. The runner records the evidence and exit code.

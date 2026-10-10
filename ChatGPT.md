@@ -46,6 +46,7 @@ Nesta primeira versão, TermAI cron usa o cron do sistema como backend e não ma
 - PR #75: 47c2dcfca21555c7821d896ce8c8b2710c7bd2fc, labels finais incluem agent:code-review-reviewed e agent:bugs-hunter-reviewed.
 - PR #80: c8872425aaa36d9d957984a8bd5f5a8b4403311e, labels finais incluem agent:code-review-reviewed e agent:bugs-hunter-reviewed.
 - O primeiro teste de Code Review falhou por limite de iterações; o segundo foi interrompido para corrigir a publicação segura; a terceira execução concluiu. Esses resultados permanecem no histórico local para auditoria.
+- O comando TermAI cron run bugs-hunter foi testado após o commit 77ced76: o runner executou o fluxo completo e terminou com exit code 0. A triagem vazia demorou cerca de 2 min 35 s; por isso, o prompt do Bugs Hunter agora exige saída imediata quando não há Issues elegíveis e todas as PRs já estão marcadas para o HEAD atual.
 - RAM disponível na verificação final: aproximadamente 210 MiB de 954 MiB; o Kilo daemon não estava instalado/ativo.
 
 ## Referência OpenClaw instalada na VPS
