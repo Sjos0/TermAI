@@ -64,7 +64,8 @@ print("\n[TERMAI_RUN] model=" .. tostring(ctx.active.ref)
   .. " elapsed=" .. tostring(elapsed or 0)
   .. " stream_complete=" .. tostring(stream_complete)
   .. " overflow=" .. tostring(overflow))
-if result:match("^%[ERRO") or overflow then
+if result:match("^%[ERRO") or overflow or result == "" then
+  if result == "" then result = "Sem resposta final (limite de iterações ou resposta vazia)." end
   io.stderr:write("[TERMAI_RUN] Falha: " .. result .. "\n")
   os.exit(1)
 end
