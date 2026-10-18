@@ -1,6 +1,5 @@
 local M = {}
 
--- Gera N bytes aleatórios em hex (fallback: pseudo-random)
 local function hex_random(n)
   local f = io.open("/dev/urandom", "rb")
   if f then
@@ -24,22 +23,23 @@ local function hex_random(n)
   return r
 end
 
--- Session ID: "TUI:main:a3f9c2" (6 hex chars)
-function M.id()
-  return "TUI:main:" .. hex_random(3)
+-- Session ID: default "TUI:main:<6hex>" (invariante); aceita role/prefix opcional.
+function M.id(role, prefix)
+  role = role or "TUI"
+  prefix = prefix or "main"
+  return role .. ":" .. prefix .. ":" .. hex_random(3)
 end
 
--- Session key (fixo para TUI local — equivale ao routing key do OpenClaw)
-function M.key()
-  return "TUI:main"
+function M.key(role, prefix)
+  role = role or "TUI"
+  prefix = prefix or "main"
+  return role .. ":" .. prefix
 end
 
--- Entry ID para entradas no transcript (8 hex chars)
 function M.entry_id()
   return hex_random(4)
 end
 
--- "TUI:main:a3f9c2" → "TUI-main-a3f9c2.jsonl"
 function M.filename(id)
   return (id:gsub(":", "-")) .. ".jsonl"
 end

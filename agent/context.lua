@@ -15,7 +15,9 @@ local M = {}
 local HOME      = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local workspace = HOME .. "/.TermAI/workspace"
 
-function M.build()
+-- opts.agent_id opcional: usado por child runs; default permanece list[1].
+function M.build(opts)
+  opts = opts or {}
   local cfg = config_mod.load()
   models_mod.load()
 
@@ -40,12 +42,18 @@ function M.build()
   local session_cfg = cfg.agents.defaults.session or {}
   local reset_info  = session.init(session_cfg)
 
+  -- Subagents MVP (#81): runs órfãos de processo anterior → failed.
+  pcall(function()
+    require("tools.subagents.scheduler").reconcile_orphans()
+  end)
+
   local compaction = cfg.agents.defaults.compaction or {}
 
   -- Agente ativo: mesmo critério já usado no projeto (primeiro da lista ou id).
   -- Nunca hardcodar "main" no path de filtro (Issue #32).
-  local agent_id = (cfg.agents.list and cfg.agents.list[1] and
-                    cfg.agents.list[1].id) or "main"
+  local agent_id = opts.agent_id
+    or (cfg.agents.list and cfg.agents.list[1] and cfg.agents.list[1].id)
+    or "main"
   local agent_entry = config_mod.get_agent(agent_id)
   local disabled_list = (agent_entry and agent_entry.disabled_tools) or {}
   local disabled_set = {}
