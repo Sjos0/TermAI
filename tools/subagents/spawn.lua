@@ -52,6 +52,7 @@ function M.spawn(args, parent_ctx)
     model            = model_ref,
     status           = "queued",
     created_at       = now_iso(),
+    created_at_unix  = os.time(),
     updated_at       = now_iso(),
     timeout_seconds  = timeout,
     result_text      = nil,

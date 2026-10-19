@@ -1,4 +1,6 @@
 -- tools/subagents/child_ctx.lua — Constrói ctx isolado para child run.
+-- v2: msgs inicia só com system; a task entra uma única vez via loop.rodar
+--     (evita user duplicado — Issue #85).
 local policy = require("tools.subagents.policy")
 local M = {}
 
@@ -37,9 +39,9 @@ function M.build(run, parent_cfg)
     cfg            = cfg,
     active         = active,
     tokens         = 0,
+    -- Apenas system: a task é injetada uma vez por loop.rodar(ctx, task, "user").
     msgs           = {
       { role = "system", content = system_content },
-      { role = "user", content = run.task },
     },
     MAX_ITER       = math.min(max_iter, 8),
     workspace      = workspace,

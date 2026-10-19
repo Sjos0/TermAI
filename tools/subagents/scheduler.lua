@@ -29,6 +29,14 @@ function M.tick(parent_ctx)
   local cfg = parent_ctx and parent_ctx.cfg
   local caps = policy.defaults(cfg)
   local advanced = 0
+
+  -- Expira runs que já ultrapassaram runTimeoutSeconds (#84).
+  for _, r in ipairs(store.list()) do
+    if (r.status == "queued" or r.status == "running") and runner.is_timed_out(r) then
+      runner.mark_timeout(r)
+    end
+  end
+
   local active = 0
   for _, r in ipairs(store.list()) do
     if r.status == "running" then active = active + 1 end
@@ -38,7 +46,7 @@ function M.tick(parent_ctx)
     if active >= caps.maxConcurrent then break end
     runner.advance(r, cfg)
     advanced = advanced + 1
-    active = active + 1
+    if r.status == "running" then active = active + 1 end
   end
   return advanced
 end
