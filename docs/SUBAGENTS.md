@@ -9,10 +9,14 @@ Implementado nesta etapa:
 - Controle: `subagents_listar`, `subagents_info`, `subagents_log`, `subagents_matar`.
 - Limpeza: run entregue com `cleanup=delete` (padrão) é apagado do disco.
 
+Também implementado:
+- Comando `/subagents [list | info <id> | log <id> [n] | kill <id>]`, listado no menu de comandos.
+- Processo filho testado com modelo simulado (resultado, estouro, resposta vazia, kill concorrente).
+
 Pendente:
-- Bloco de subagentes na TUI e comando `/subagents`.
-- Teste real de processo filho com provedor (precisa do aparelho).
+- Bloco ao vivo na TUI (uma linha por run ativo, atualizada no lugar). Hoje a TUI mostra o cabeçalho do spawn e uma linha de status na conclusão.
 - Acordar o pai automaticamente quando um run termina (depende de entrada não bloqueante).
+- Teste do processo filho com um provedor real no aparelho e medição de memória por processo (para confirmar o padrão 5).
 
 ## 1. Decisões já tomadas
 
