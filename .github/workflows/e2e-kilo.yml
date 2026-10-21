@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   e2e:
@@ -64,6 +65,14 @@ jobs:
           cp -r "$TERMAI_HOME/.TermAI/logs" "$E2E_OUT/" 2>/dev/null || true
           cp -r "$TERMAI_HOME/.TermAI/subagents" "$E2E_OUT/" 2>/dev/null || true
           ls -laR "$E2E_OUT" | head -80
+
+      - name: Resumo e commit status (e2e-kilo)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 e2e/report.py /tmp/termai-e2e-out >> "$GITHUB_STEP_SUMMARY" || true
+          python3 e2e/report.py /tmp/termai-e2e-out --status > /dev/null || echo "status não publicado"
 
       - name: Enviar artefatos
         if: always()
