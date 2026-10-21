@@ -11,6 +11,7 @@ local function silent_sink()
     start  = function() buf = {} end,
     token  = function(tok) buf[#buf + 1] = tok end,
     finish = function() return table.concat(buf), "" end,
+    reasoning = function() end, -- raciocínio do clone não aparece na TUI
   }
 end
 

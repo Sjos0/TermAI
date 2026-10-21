@@ -6,12 +6,27 @@ local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
+-- Captura tudo que for escrito com io.write durante fn().
+local function capture(fn)
+  local buf, orig = {}, io.write
+  io.write = function(...) for _, v in ipairs({ ... }) do buf[#buf + 1] = tostring(v) end end
+  local ok, err = pcall(fn)
+  io.write = orig
+  assert(ok, err)
+  return table.concat(buf)
+end
+
 -- Stub do loop: simula um turno do clone e captura o que ele recebeu.
 local seen = {}
 package.loaded["agent.loop"] = {
   rodar = function(ctx, input, role, max_iter)
     seen.ctx, seen.input, seen.role, seen.max = ctx, input, role, max_iter
     seen.sink_active = require("ui.stream").get_sink() ~= nil
+    seen.leak = capture(function()
+      local st = require("ui.stream")
+      st.stream_reasoning("raciocínio interno")
+      st.stream_token("texto do clone")
+    end)
     return seen.reply or "resposta final", 0, false, seen.overflow or false, true, ""
   end,
 }
@@ -50,6 +65,7 @@ check(seen.ctx and seen.ctx.disabled_tools.sessions_spawn == true, "clone não v
 check(seen.max == 8, "MAX_ITER do clone limitado a 8")
 check(seen.input == "faça X" and seen.role == "user", "tarefa entra uma única vez como user")
 check(seen.sink_active == true, "sink silencioso ativo durante o clone")
+check(seen.leak == "", "texto e raciocínio do clone não aparecem na TUI")
 check(stream.get_sink() == before_sink, "sink original restaurado após o clone")
 check(subs.current() == parent, "vínculo do pai restaurado após o clone")
 check(#parent.msgs == 1, "contexto do pai não foi alterado pelo clone")
@@ -70,6 +86,15 @@ check(lines == 0, "sem ferramentas do clone, nenhuma linha extra")
 for _ = 1, 5 do ui_sub.child_start("Read | arquivo.lua") end
 check(ui_sub.finish_lines() == 4, "5 ferramentas = 3 visíveis + 1 contador")
 check(ui_sub.finish_lines() == 0, "contador zera após finish")
+
+local tui = require("ui.tools_init.executor")
+local shown = capture(function() tui.tool_end("Subagente | faça X", "RESPOSTA FINAL SECRETA", true) end)
+check(not shown:find("RESPOSTA FINAL SECRETA", 1, true), "resposta final do Subagente não aparece na TUI")
+local shown_err = capture(function() tui.tool_end("Subagente | faça X", "❌ falha grave\nlinha 2", false) end)
+check(shown_err:find("falha grave", 1, true) ~= nil and not shown_err:find("linha 2", 1, true),
+  "falha do Subagente mostra só a primeira linha")
+local shown_read = capture(function() tui.tool_end("Read | a.lua", "CONTEUDO_NORMAL", true) end)
+check(shown_read:find("CONTEUDO_NORMAL", 1, true) ~= nil, "tool comum continua mostrando o corpo")
 
 print(failures == 0 and "\nTODOS OS TESTES PASSARAM" or ("\n" .. failures .. " FALHA(S)"))
 os.exit(failures == 0 and 0 or 1)
