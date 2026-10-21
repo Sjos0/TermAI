@@ -63,9 +63,10 @@ def main():
 
     if publish:
         state = "success" if (smoke_ok and subs_ok) else "failure"
+        orch_state = "ok" if (orch and orch.get("passed")) else "nao"
         desc = (f"smoke={'ok' if smoke_ok else 'falhou'} subs={done}/{len(runs)} "
                 f"simul={(subs or {}).get('max_running_observed')} "
-                f"rss_filho={(subs or {}).get('max_child_rss_kb')}kB")[:140]
+                f"rss_filho={(subs or {}).get('max_child_rss_kb')}kB orq={orch_state}")[:140]
         repo, sha = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_SHA"]
         req = urllib.request.Request(
             f"https://api.github.com/repos/{repo}/statuses/{sha}",
