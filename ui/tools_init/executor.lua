@@ -33,6 +33,9 @@ function M.tool_end(cmd, out, ok)
   local name, arg = parser.parse_cmd(cmd)
   local vis_len   = header.header_vis_len(name, arg)
   local lines_up  = math.max(1, math.ceil(vis_len / tw))
+  if name == "Subagente" then
+    lines_up = lines_up + require("ui.subagent").finish_lines()
+  end
   io.write(string.format("\27[%dA\27[0J", lines_up))
 
   -- Sincroniza detecção de sucesso real (unificado via parser)

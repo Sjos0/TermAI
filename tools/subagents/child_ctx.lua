@@ -1,56 +1,42 @@
--- tools/subagents/child_ctx.lua — Constrói ctx isolado para child run.
--- v2: msgs inicia só com system; a task entra uma única vez via loop.rodar
---     (evita user duplicado — Issue #85).
-local policy = require("tools.subagents.policy")
+-- tools/subagents/child_ctx.lua — Monta o contexto efêmero do clone a partir do pai.
+local config = require("config")
+-- prompt e tools são carregados sob demanda: tools.lua importa esta cadeia (evita ciclo).
+
 local M = {}
+local MAX_CLONE_ITER = 8
 
-function M.build(run, parent_cfg)
-  local models_mod = require("models")
-  local prompt_module = require("prompt")
-  local tools = require("tools")
-  local config = require("config")
-
-  local cfg = parent_cfg or config.load()
-  local model_ref = run.model
-  if not model_ref or model_ref == "" then
-    model_ref = policy.resolve_model(nil, run.agentId, cfg)
+-- Tools que o clone não pode usar: sessions_spawn (profundidade 1) e as do próprio entry.
+local function disabled_for(agent_id)
+  local set = { sessions_spawn = true }
+  local entry = config.get_agent(agent_id)
+  for _, name in ipairs((entry and entry.disabled_tools) or {}) do
+    if type(name) == "string" then set[name] = true end
   end
-  local active = models_mod.resolve(model_ref)
-  if not active then
-    return nil, "modelo não resolvido: " .. tostring(model_ref)
-  end
+  return set
+end
 
+-- Retorna o contexto do clone. Nada aqui é gravado em disco.
+function M.build(parent)
+  local prompt = require("prompt")
+  local tools  = require("tools")
+  local cfg = parent.cfg or config.load()
   local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
-  local workspace = HOME .. "/.TermAI/workspace"
-  local entry = config.get_agent(run.agentId)
-  if entry and type(entry.workspace) == "string" and entry.workspace ~= "" then
-    if entry.workspace:sub(1, 1) == "/" then
-      workspace = entry.workspace
-    else
-      workspace = HOME .. "/.TermAI/" .. entry.workspace
-    end
-  end
+  local workspace = parent.workspace or (HOME .. "/.TermAI/workspace")
 
-  local disabled = policy.child_disabled_set(run.agentId)
-  local system_content = prompt_module.build(workspace, tools, run.childSessionKey, cfg)
-  local max_iter = (cfg.agents and cfg.agents.defaults and cfg.agents.defaults.maxIter) or 20
+  local parent_iter = tonumber(parent.MAX_ITER) or 0
+  local max_iter = (parent_iter > 0 and parent_iter < MAX_CLONE_ITER) and parent_iter or MAX_CLONE_ITER
 
   return {
     cfg            = cfg,
-    active         = active,
+    active         = parent.active,
     tokens         = 0,
-    -- Apenas system: a task é injetada uma vez por loop.rodar(ctx, task, "user").
-    msgs           = {
-      { role = "system", content = system_content },
-    },
-    MAX_ITER       = math.min(max_iter, 8),
+    msgs           = { { role = "system", content = prompt.build(workspace, tools, "subagent", cfg) } },
+    MAX_ITER       = max_iter,
     workspace      = workspace,
-    compaction     = (cfg.agents and cfg.agents.defaults and cfg.agents.defaults.compaction) or {},
-    agent_id       = run.agentId,
-    disabled_tools = disabled,
+    compaction     = parent.compaction,
+    agent_id       = parent.agent_id,
+    disabled_tools = disabled_for(parent.agent_id),
     is_subagent    = true,
-    subagent_runId = run.runId,
-    session_id     = run.childSessionKey,
   }
 end
 

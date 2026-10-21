@@ -1,146 +1,75 @@
--- tests/subagents_mvp_spec.lua — Sanidade do MVP de subagentes (#81).
+-- tests/subagents_mvp_spec.lua — Clone efêmero do agente (sessions_spawn).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
 local failures = 0
-local function assert_true(cond, msg)
-  if not cond then
-    failures = failures + 1
-    print("FAIL: " .. tostring(msg))
-  else
-    print("OK:   " .. tostring(msg))
-  end
+local function check(cond, msg)
+  if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local gen = require("session.generate")
-local id = gen.id()
-local key = gen.key()
-assert_true(id:match("^TUI:main:[0-9a-f]+$") ~= nil, "generate.id() default TUI:main:hex")
-assert_true(key == "TUI:main", "generate.key() default TUI:main")
-local id2 = gen.id("agent", "coder")
-assert_true(id2:match("^agent:coder:[0-9a-f]+$") ~= nil, "generate.id(role,prefix) parametrizado")
-
-local tools = require("tools")
-assert_true(tools.registry.sessions_spawn ~= nil, "registry sessions_spawn")
-assert_true(tools.registry.subagents_listar ~= nil, "registry subagents_listar")
-assert_true(tools.registry.subagents_status ~= nil, "registry subagents_status")
-assert_true(tools.registry.subagents_wait ~= nil, "registry subagents_wait")
-assert_true(tools.registry.sessoes_listar ~= nil, "sessoes_listar intacta")
-
-local policy = require("tools.subagents.policy")
-local ok_self = policy.is_agent_allowed("main", "main", { agents = { defaults = {} } })
-assert_true(ok_self, "allow próprio id")
-local ok_other, reason = policy.is_agent_allowed("main", "other", { agents = { defaults = {} } })
-assert_true(not ok_other, "nega agentId estrangeiro: " .. tostring(reason))
-local ok_star = policy.is_agent_allowed("main", "other", {
-  agents = { defaults = { subagents = { allowAgents = { "*" } } } }
-})
-assert_true(ok_star, "allowAgents * permite qualquer")
-
-local spawn = require("tools.subagents.spawn")
-local store = require("tools.subagents.store")
-local json = require("json")
-
-local parent_ctx = {
-  agent_id = "main",
-  cfg = {
-    agents = {
-      defaults = {
-        model = { primary = "" },
-        subagents = { maxConcurrent = 2, maxChildrenPerAgent = 3 },
-      },
-      list = { { id = "main" } },
-    },
-  },
-  is_subagent = false,
+-- Stub do loop: simula um turno do clone e captura o que ele recebeu.
+local seen = {}
+package.loaded["agent.loop"] = {
+  rodar = function(ctx, input, role, max_iter)
+    seen.ctx, seen.input, seen.role, seen.max = ctx, input, role, max_iter
+    seen.sink_active = require("ui.stream").get_sink() ~= nil
+    return seen.reply or "resposta final", 0, false, seen.overflow or false, true, ""
+  end,
 }
 
-local out = spawn.spawn({ task = "diga oi" }, parent_ctx)
-local okj, payload = pcall(json.decode, out)
-assert_true(okj and payload.runId ~= nil, "spawn retorna runId JSON: " .. tostring(out))
-assert_true(payload.status == "queued" or payload.status == "running", "status inicial")
-assert_true(payload.childSessionKey:match("^agent:main:subagent:") ~= nil, "childSessionKey namespace")
+local tools    = require("tools")
+local spawn    = require("tools.subagents.spawn")
+local subs     = require("tools.subagents")
+local display  = require("agent.loop.tool_runner.display")
+local ui_sub   = require("ui.subagent")
+local stream   = require("ui.stream")
 
-local found = false
-for _, r in ipairs(store.list()) do
-  if r.runId == payload.runId then found = true end
-end
-assert_true(found, "run aparece em store.list")
+check(tools.registry.sessions_spawn ~= nil, "registry tem sessions_spawn")
+check(tools.registry.subagents_wait == nil and tools.registry.subagents_listar == nil,
+  "subagents_* removidas do registry")
 
-local bad = spawn.spawn({ task = "x", agentId = "ghost" }, parent_ctx)
-assert_true(type(bad) == "string" and bad:match("policy") ~= nil, "spawn estrangeiro falha policy")
+check(display.tc_display({ name = "sessions_spawn", args = { task = "pesquisar X" } })
+  == "Subagente | pesquisar X", "tc_display mostra 'Subagente | tarefa'")
 
-local child_ctx = { agent_id = "main", is_subagent = true, cfg = parent_ctx.cfg }
-local depth = spawn.spawn({ task = "x" }, child_ctx)
-assert_true(type(depth) == "string" and depth:match("depth") ~= nil, "filho não spawna")
+check(spawn.spawn({}, {}):match("^❌") ~= nil, "task vazia é recusada")
+check(spawn.spawn({ task = "  " }, {}):match("^❌") ~= nil, "task só com espaços é recusada")
+check(spawn.spawn({ task = "x" }, nil):match("^❌") ~= nil, "sem pai ativo é recusado")
+check(spawn.spawn({ task = "x" }, { is_subagent = true }):match("profundidade") ~= nil,
+  "clone não pode criar outro clone")
 
-local dset = policy.child_disabled_set("main")
-assert_true(dset.sessions_spawn == true, "denylist sessions_spawn")
-assert_true(dset.sessoes_listar == true, "denylist sessoes_listar")
-
-local scheduler = require("tools.subagents.scheduler")
-local r = store.get(payload.runId)
-if r then r.status = "running"; store.upsert(r) end
-scheduler.reconcile_orphans()
-r = store.get(payload.runId)
-assert_true(r and r.status == "failed" and r.error == "process_exit", "orphan → failed process_exit")
-
-
-
--- ── Regressões Caçador PR #82 (#84 #85 #86) ───────────────────────────────
-local runner = require("tools.subagents.child_runner")
-local child_ctx = require("tools.subagents.child_ctx")
-local sm = require("agent.loop.system_messages")
-
--- #84: is_timed_out / mark_timeout
-local fake_run = {
-  runId = "timeouttest",
-  status = "running",
-  timeout_seconds = 1,
-  started_at_unix = os.time() - 5,
-  agentId = "main",
+local parent = {
+  cfg = { agents = { defaults = {} } }, active = { name = "m" }, MAX_ITER = 20,
+  agent_id = "main", workspace = "/tmp", msgs = { { role = "user", content = "oi" } },
 }
-assert_true(runner.is_timed_out(fake_run) == true, "#84 is_timed_out true quando elapsed > limit")
-local marked = runner.mark_timeout(fake_run)
-assert_true(marked.status == "timeout", "#84 mark_timeout → status timeout")
-assert_true(type(marked.error) == "string" and marked.error:match("runTimeoutSeconds") ~= nil, "#84 error menciona runTimeoutSeconds")
+local before_sink = stream.get_sink()
+subs.bind(parent)
+local out = spawn.spawn({ task = "faça X" }, parent)
 
-local fresh = {
-  runId = "fresh",
-  status = "running",
-  timeout_seconds = 300,
-  started_at_unix = os.time(),
-}
-assert_true(runner.is_timed_out(fresh) == false, "#84 is_timed_out false dentro do limite")
+check(out == "resposta final", "retorna a resposta final do clone")
+check(seen.ctx and seen.ctx.is_subagent == true, "clone roda com is_subagent=true")
+check(seen.ctx and seen.ctx.disabled_tools.sessions_spawn == true, "clone não vê sessions_spawn")
+check(seen.max == 8, "MAX_ITER do clone limitado a 8")
+check(seen.input == "faça X" and seen.role == "user", "tarefa entra uma única vez como user")
+check(seen.sink_active == true, "sink silencioso ativo durante o clone")
+check(stream.get_sink() == before_sink, "sink original restaurado após o clone")
+check(subs.current() == parent, "vínculo do pai restaurado após o clone")
+check(#parent.msgs == 1, "contexto do pai não foi alterado pelo clone")
 
--- #85: child_ctx não pré-insere user com a task
--- (sem models real, mockamos build parcial via inspeção do código de msgs)
--- Teste estrutural: build falha sem modelo, mas podemos verificar o contrato
--- inspecionando que a função documenta msgs só-system — validamos via spawn path:
--- após spawn o transcript tem 1 user; child_ctx.msgs não deve ter user prévio.
--- Aqui validamos a forma do módulo exportando build e que msgs esperadas são só system
--- quando resolvemos com stub mínimo via monkeypatch impossível em lua puro sem model.
--- Alternativa: ler arquivo fonte.
-local src = io.open("tools/subagents/child_ctx.lua", "r"):read("*a")
-assert_true(src:match('role = "user"') == nil or src:match("Apenas system") ~= nil,
-  "#85 child_ctx não pré-insere role=user (só system)")
-assert_true(src:match('role = "system"') ~= nil, "#85 child_ctx mantém system msg")
+seen.overflow = true
+local err = spawn.spawn({ task = "grande" }, parent)
+check(err:match("estourou") ~= nil, "overflow do clone vira erro legível")
+seen.overflow = false
 
--- #86: prepare_user_turn com is_subagent não consome first-turn nem injeta memória
-local flag_before = true
--- força um prepare no pai para gastar is_first_turn se ainda ativo
-local parent_like = { msgs = { {role="system", content="x"} }, is_subagent = false }
-sm.prepare_user_turn(parent_like, "hello parent", "user")
+seen.reply = ""
+local fallback_parent = { cfg = parent.cfg, active = parent.active, MAX_ITER = 20,
+  agent_id = "main", workspace = "/tmp", msgs = {} }
+check(spawn.spawn({ task = "y" }, fallback_parent) == "", "resposta vazia do clone não quebra")
 
-local child_like = { msgs = { {role="system", content="sys"} }, is_subagent = true }
-local out_text, spin = sm.prepare_user_turn(child_like, "task do filho", "user")
-assert_true(out_text == "task do filho", "#86 child não recebe injeção de system/memória: got " .. tostring(out_text))
-assert_true(spin == false, "#86 child não inicia spinner de memória")
+-- Bloco aninhado: 3 linhas visíveis, depois contador de ocultas.
+local lines = ui_sub.finish_lines()
+check(lines == 0, "sem ferramentas do clone, nenhuma linha extra")
+for _ = 1, 5 do ui_sub.child_start("Read | arquivo.lua") end
+check(ui_sub.finish_lines() == 4, "5 ferramentas = 3 visíveis + 1 contador")
+check(ui_sub.finish_lines() == 0, "contador zera após finish")
 
--- Após child, um segundo prepare de parent NÃO deve re-injetar boot (flag já consumida pelo parent acima)
-local parent2 = { msgs = { {role="system", content="x"}, {role="user", content="a"} }, is_subagent = false }
-local t2 = sm.prepare_user_turn(parent2, "segundo turno", "user")
-assert_true(t2:match("User has joined") == nil and t2:match("System has restarted") == nil,
-  "#86 is_first_turn não é resetado/reaplicado indevidamente após child")
-
-print("\n==== Resultado: " .. (failures == 0 and "PASS" or ("FAIL x" .. failures)) .. " ====")
+print(failures == 0 and "\nTODOS OS TESTES PASSARAM" or ("\n" .. failures .. " FALHA(S)"))
 os.exit(failures == 0 and 0 or 1)

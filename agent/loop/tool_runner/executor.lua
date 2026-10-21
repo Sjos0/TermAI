@@ -10,6 +10,19 @@ local suffix    = require("agent.loop.tool_runner.suffix")
 
 local M = {}
 
+local subagent_ui = require("ui.subagent")
+
+-- Clone não desenha corpo de ferramenta: manda o nome para o bloco aninhado.
+local function ui_start(ctx, disp)
+  if ctx and ctx.is_subagent then return subagent_ui.child_start(disp) end
+  return ui.tool_start(disp)
+end
+
+local function ui_end(ctx, disp, out, ok)
+  if ctx and ctx.is_subagent then return subagent_ui.child_end() end
+  return ui.tool_end(disp, out, ok)
+end
+
 local function get_wall_time()
   local f = io.open("/proc/uptime", "r")
   if not f then return os.time() end
@@ -44,24 +57,24 @@ local function executar_individual(ctx, tc)
   if not tc.name or tc.name == "" or not tools_mod.registry[tc.name] then
     local bad  = tostring(tc.name or "")
     local disp = "(inválida: '" .. bad .. "')"
-    ui.tool_start(disp)
+    ui_start(ctx, disp)
     local avail = {}
     for n in pairs(tools_mod.registry) do avail[#avail + 1] = n end
     table.sort(avail)
     result = "❌ Ferramenta '" .. bad .. "' não existe. Disponíveis: "
            .. table.concat(avail, ", ")
-    ui.tool_end(disp, result, false)
+    ui_end(ctx, disp, result, false)
   else
     local json_ok, args_str = pcall(json.encode, tc.args or {})
     local tc_sig = tc.name .. ":" .. (json_ok and args_str or "")
 
     if ctx.last_tool_sig == tc_sig and (tc.name == "Write" or tc.name == "Edit") then
       local display_str = display.tc_display(tc) .. " [REDUNDANTE]"
-      ui.tool_start(display_str)
+      ui_start(ctx, display_str)
       result = "⚠️ [Harness] Bloqueio de redundância: Esta mesma chamada de ferramenta (" .. tc.name
              .. ") com os mesmos argumentos exatos já foi executada na iteração anterior. "
              .. "Se você precisa verificar o resultado ou realizar outro ajuste, prossiga de outra forma."
-      ui.tool_end(display_str, result, false)
+      ui_end(ctx, display_str, result, false)
     else
       ctx.last_tool_sig = tc_sig
       local display_str = display.tc_display(tc)
@@ -72,9 +85,9 @@ local function executar_individual(ctx, tc)
       local allowed, reason = hooks_engine.run("PreToolUse", tc.name, arg_str)
 
       if not allowed then
-        ui.tool_start(display_str)
+        ui_start(ctx, display_str)
         result = "❌ [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
-        ui.tool_end(display_str, result, false)
+        ui_end(ctx, display_str, result, false)
         ctx.msgs[#ctx.msgs + 1] = {
           role         = "tool",
           tool_call_id = tc.id,
@@ -86,7 +99,7 @@ local function executar_individual(ctx, tc)
         return
       end
 
-      ui.tool_start(display_str)
+      ui_start(ctx, display_str)
 
       local start_t = get_wall_time()
       -- Issue #32 / #49: defesa em profundidade — schema já filtra, mas se
@@ -109,7 +122,7 @@ local function executar_individual(ctx, tc)
       end
 
       local success = not result:match("^❌")
-      ui.tool_end(display_str, result, success)
+      ui_end(ctx, display_str, result, success)
 
       if not ctx.tool_cancelled then
         tracker.track_file(ctx, tc.name, tc.args, success)
@@ -176,7 +189,7 @@ function M.run_batch(ctx, tool_calls)
   while i <= n do
     local tc      = tool_calls[i]
     local run_len = 1
-    if is_read_call(tc) then
+    if is_read_call(tc) and not ctx.is_subagent then
       local j = i
       while j <= n and is_read_call(tool_calls[j]) do j = j + 1 end
       run_len = j - i

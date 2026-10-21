@@ -26,15 +26,6 @@ local function defaults()
           anchor_token_cap = 8000,
           summary_max_tokens_ratio = 0.8,
         },
-        -- Subagents MVP (#81). Default seguro: allowAgents nil ⇒ só o próprio id.
-        subagents = {
-          maxConcurrent = 2,
-          maxChildrenPerAgent = 3,
-          maxSpawnDepth = 1,
-          model = nil,
-          runTimeoutSeconds = 300,
-          -- allowAgents = { "*" },  -- opt-in explícito; nil = só requester
-        },
       },
       list = {
         { id = "main", agentDir = "agents/main/agent", workspace = "workspace", model = { primary = "" } },

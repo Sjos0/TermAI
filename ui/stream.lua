@@ -12,6 +12,7 @@ local M = {}
 -- um sink alternativo via M.set_sink. Sem sink, comportamento inalterado.
 local sink = nil
 function M.set_sink(custom) sink = custom end
+function M.get_sink() return sink end
 
 local function get_thinking_mode()
   local ok, config_mod = pcall(require, "config")
