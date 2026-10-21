@@ -37,6 +37,7 @@ function M.rodar(ctx, input, role, max_iter)
   cur_text, spinner_started = system_messages.prepare_user_turn(ctx, cur_text, cur_role)
 
   while iter < limit do
+    require("tools.subagents").on_boundary(ctx)
     if not spinner_started and not quiet then ui.start_thinking() end
     spinner_started = false
     local resp, is_overflow, done_flag, reasoning, tool_calls =

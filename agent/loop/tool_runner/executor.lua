@@ -14,7 +14,10 @@ local subagent_ui = require("ui.subagent")
 
 -- Clone não desenha corpo de ferramenta: manda o nome para o bloco aninhado.
 local function ui_start(ctx, disp)
-  if ctx and ctx.is_subagent then return subagent_ui.child_start(disp) end
+  if ctx and ctx.is_subagent then
+    if ctx.run_id then require("tools.subagents.events").append(ctx.run_id, "tool", disp) end
+    return subagent_ui.child_start(disp)
+  end
   return ui.tool_start(disp)
 end
 

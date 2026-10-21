@@ -1,25 +1,54 @@
--- tools/subagents/spawn.lua — Handler de sessions_spawn: valida e delega ao runner.
-local runner = require("tools.subagents.runner")
-
+-- tools/subagents/spawn.lua — sessions_spawn: cria um run (clone ou agente independente) e responde na hora.
+local registry  = require("tools.subagents.registry")
+local scheduler = require("tools.subagents.scheduler")
+local config    = require("config")
+local json      = require("json")
 local M = {}
 
--- Retorna a resposta final do clone, ou uma mensagem de erro iniciada por ❌.
+-- args: task, agentId, label, model, cleanup ("delete"|"keep"), runTimeoutSeconds
 function M.spawn(args, parent)
   args = type(args) == "table" and args or {}
-  local task = args.task
-  if type(task) ~= "string" or task:match("^%s*$") then
-    return "❌ sessions_spawn: parâmetro 'task' (string) é obrigatório."
+  if type(args.task) ~= "string" or args.task:match("^%s*$") then
+    return "❌ sessions_spawn: 'task' (string) é obrigatório."
   end
-  if not parent then
-    return "❌ sessions_spawn: nenhum agente ativo para clonar."
-  end
+  if not parent then return "❌ sessions_spawn: nenhum agente ativo." end
   if parent.is_subagent then
-    return "❌ sessions_spawn: profundidade máxima=1; um clone não pode criar outro clone."
+    return "❌ sessions_spawn: um subagente não pode criar outro (profundidade 1)."
   end
 
-  local text, err = runner.run(parent, task)
-  if not text then return "❌ subagente: " .. tostring(err) end
-  return text
+  local cfg      = parent.cfg or config.load()
+  local lim      = scheduler.limits(cfg)
+  local agent_id = parent.agent_id or "main"
+  local kind     = "clone"
+  if type(args.agentId) == "string" and args.agentId ~= "" and args.agentId ~= agent_id then
+    if not config.get_agent(args.agentId) then
+      return "❌ sessions_spawn: agente '" .. args.agentId .. "' não existe em agents.list."
+    end
+    agent_id, kind = args.agentId, "agente"
+  end
+
+  local rec = {
+    runId            = registry.new_id(),
+    kind             = kind,
+    agentId          = agent_id,
+    task             = args.task,
+    label            = args.label,
+    model            = args.model,
+    cleanup          = args.cleanup == "keep" and "keep" or "delete",
+    timeout_seconds  = tonumber(args.runTimeoutSeconds) or lim.runTimeoutSeconds,
+    status           = "queued",
+    created_at       = os.time(),
+    parent_agent     = parent.agent_id or "main",
+    announce_pending = false,
+    announce_consumed = false,
+  }
+  local ok, err = scheduler.admit(rec, cfg)
+  if not ok then return "❌ sessions_spawn: " .. tostring(err) end
+
+  scheduler.tick(cfg)
+  local fresh = registry.load(rec.runId) or rec
+  return json.encode({ status = "accepted", runId = rec.runId, agentId = agent_id,
+                       kind = kind, state = fresh.status })
 end
 
 return M

@@ -15,11 +15,12 @@ local M = {}
 local HOME      = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local workspace = HOME .. "/.TermAI/workspace"
 
-function M.build()
+function M.build(opts)
+  opts = opts or {}
   local cfg = config_mod.load()
   models_mod.load()
 
-  local active = models_mod.resolve(cfg.agents.defaults.model.primary)
+  local active = models_mod.resolve(opts.model or cfg.agents.defaults.model.primary)
   if not active then
     print("\27[38;5;220m⚠️  Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
@@ -44,10 +45,24 @@ function M.build()
 
   -- Agente ativo: mesmo critério já usado no projeto (primeiro da lista ou id).
   -- Nunca hardcodar "main" no path de filtro (Issue #32).
-  local agent_id = (cfg.agents.list and cfg.agents.list[1] and
+  local agent_id = opts.agent_id or (cfg.agents.list and cfg.agents.list[1] and
                     cfg.agents.list[1].id) or "main"
   local agent_entry = config_mod.get_agent(agent_id)
   local disabled_list = (agent_entry and agent_entry.disabled_tools) or {}
+  -- Workspace do agente: caminho relativo a ~/.TermAI (igual ao "workspace" do main).
+  local ws = workspace
+  if agent_entry and type(agent_entry.workspace) == "string" and agent_entry.workspace ~= "" then
+    ws = agent_entry.workspace:sub(1, 1) == "/" and agent_entry.workspace
+         or (HOME .. "/.TermAI/" .. agent_entry.workspace)
+  end
+  -- Subagente (processo filho): sem criar outros subagentes nem agentes.
+  if opts.is_subagent then
+    local merged = {}
+    for _, name in ipairs(disabled_list) do merged[#merged + 1] = name end
+    merged[#merged + 1] = "sessions_spawn"
+    merged[#merged + 1] = "agents_criar"
+    disabled_list = merged
+  end
   local disabled_set = {}
   for _, name in ipairs(disabled_list) do
     if type(name) == "string" then disabled_set[name] = true end
@@ -58,18 +73,22 @@ function M.build()
     active          = active,
     tokens          = 0,
     msgs            = {{role = "system",
-                       content = prompt_module.build(workspace, tools, session.current(), cfg)}},
+                       content = prompt_module.build(ws, tools, session.current(), cfg)}},
     MAX_ITER        = cfg.agents.defaults.maxIter or 20,
-    workspace       = workspace,
+    workspace       = ws,
     compaction      = compaction,
     agent_id        = agent_id,
     disabled_tools  = disabled_set,
+    is_subagent     = opts.is_subagent == true,
+    run_id          = opts.run_id,
   }
 
   session.set_model(active.ref)
 
-  local agent_base = HOME .. "/.TermAI/agents/" .. agent_id
-  mf.init(agent_base, agent_id)
+  -- Subagente é efêmero: não inicializa memória de longo prazo.
+  if not opts.is_subagent then
+    mf.init(HOME .. "/.TermAI/agents/" .. agent_id, agent_id)
+  end
 
   return ctx, reset_info
 end

@@ -1,6 +1,18 @@
 # Subagentes — desenho v2 (concorrência estilo OpenClaw)
 
-Status: **proposta**, ainda sem implementação. Base: `feature/81-subagents-mvp` (commit 302a99c).
+Status: **núcleo implementado, UI pendente**. Base: `feature/81-subagents-mvp`.
+
+Implementado nesta etapa:
+- Agentes independentes (`agents_criar`): workspace próprio, `IDENTITY.md` (nome + identidade), `AGENTS.md` (funções), `USER.md` copiado do orquestrador, registro em `agents.list`. Exige `confirmado=true`.
+- Runtime assíncrono: `sessions_spawn` responde `accepted`; cada run roda em processo próprio (`TermAI run --worker <runId>`); fila com `maxConcurrent` e `maxChildrenPerAgent` (padrão 5); timeout; processo morto vira `failed/process_exit`.
+- Entrega: resposta final entra no contexto do pai no próximo ponto seguro (início de cada iteração do loop).
+- Controle: `subagents_listar`, `subagents_info`, `subagents_log`, `subagents_matar`.
+- Limpeza: run entregue com `cleanup=delete` (padrão) é apagado do disco.
+
+Pendente:
+- Bloco de subagentes na TUI e comando `/subagents`.
+- Teste real de processo filho com provedor (precisa do aparelho).
+- Acordar o pai automaticamente quando um run termina (depende de entrada não bloqueante).
 
 ## 1. Decisões já tomadas
 

@@ -2,6 +2,12 @@
 local config = require("config")
 local session = require("session")
 
+-- Modo filho de subagente: TermAI run --worker <run_id> (processo em background).
+if arg[2] == "--worker" then
+  require("tools.subagents.worker").run(arg[3])
+  return
+end
+
 local function read_file(path)
   local f, err = io.open(path, "r")
   if not f then return nil, err end
