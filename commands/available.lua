@@ -10,6 +10,7 @@ M.commands = {
   { name = "/clear",    desc = "Deletar a conversa atual e migrar para outra sessão" },
   { name = "/compact",  desc = "Compactação manual (opcional: /compact foque em X)" },
   { name = "/status",   desc = "Ver status do TermAI" },
+  { name = "/subagents", desc = "Listar, ver log, info ou encerrar subagentes" },
   { name = "/restart",  desc = "Reiniciar a TUI" },
   { name = "/help",     desc = "Mostrar ajuda dos slash commands" },
   { name = "/sair",     desc = "Encerrar o TermAI" },

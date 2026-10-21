@@ -14,6 +14,8 @@ local xml_path         = require("agent.loop.xml_path")
 local M = {}
 
 function M.rodar(ctx, input, role, max_iter)
+  require("tools.subagents").bind(ctx)
+  local quiet = ctx.is_subagent == true -- clone: sem spinner nem aviso de limite na TUI
   local cur_text   = input
   local cur_role   = role or "user"
   local iter       = 0
@@ -35,12 +37,21 @@ function M.rodar(ctx, input, role, max_iter)
   cur_text, spinner_started = system_messages.prepare_user_turn(ctx, cur_text, cur_role)
 
   while iter < limit do
-    if not spinner_started then ui.start_thinking() end
+    require("tools.subagents").on_boundary(ctx)
+    if not spinner_started and not quiet then ui.start_thinking() end
     spinner_started = false
     local resp, is_overflow, done_flag, reasoning, tool_calls =
       api.pensar_stream(ctx, cur_text, cur_role)
-    elapsed = elapsed + ui.stop_thinking()
+    elapsed = elapsed + (quiet and 0 or ui.stop_thinking())
     if done_flag ~= nil then stream_complete = done_flag end
+    do -- diagnóstico: uma linha por resposta do modelo (tool calls, tamanho, origem)
+      local n = tool_calls and #tool_calls or 0
+      local first = n > 0 and tool_calls[1] or nil
+      local nm = first and (first.name or (first["function"] and first["function"].name)) or nil
+      require("diag.log").info("model_turn", { iter = iter, tool_calls = n, tool_name = nm,
+        resp_chars = #tostring(resp or ""), stream_complete = stream_complete == true,
+        is_subagent = quiet, run_id = ctx.run_id })
+    end
     if is_overflow then
       return resp, elapsed, false, true, stream_complete, ""
     end
@@ -83,7 +94,7 @@ function M.rodar(ctx, input, role, max_iter)
     end
   end
 
-  ui.agent_limit(limit)
+  if not quiet then ui.agent_limit(limit) end
   return "", elapsed, false, false, stream_complete, ""
 end
 

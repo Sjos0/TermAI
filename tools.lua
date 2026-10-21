@@ -32,6 +32,8 @@ memory_mod.register(tools)
 require("tools.skills").register(tools)
 require("tools.restart").register(tools)
 require("tools.todo").register(tools)
+require("tools.subagents").register(tools)
+require("tools.agents").register(tools)
 
 -- Converte array ou set em tabela de lookup O(1). Aceita nil.
 local function to_disabled_set(disabled)

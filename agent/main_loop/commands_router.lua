@@ -8,6 +8,7 @@
 local commands_menu = require("commands.commands")
 local simple    = require("agent.main_loop.commands_router.simple")
 local lifecycle = require("agent.main_loop.commands_router.lifecycle")
+local subagents_cmd = require("agent.main_loop.commands_router.subagents")
 local M = {}
 
 local function route(input, ctx, flush_msgs_start)
@@ -38,6 +39,11 @@ local function route(input, ctx, flush_msgs_start)
       flush_msgs_start = sm.flush_msgs_start or flush_msgs_start,
       action           = sm.action,
     }
+  end
+
+  local sa = subagents_cmd.route(input, ctx, flush_msgs_start)
+  if sa.action then
+    return { input = input, flush_msgs_start = sa.flush_msgs_start, action = sa.action }
   end
 
   -- Nenhum comando correspondeu: segue para o input normal (bloco 5)

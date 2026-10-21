@@ -4,6 +4,18 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-21 - [Subagentes (PR #82): permissões headless, regressão #85/#86, versão e CONTEXT.md]
+**Contexto:** O e2e com modelo real (`e2e-kilo`) reportava `ORQUESTRADOR NÃO CONFIRMADO` porque o modelo chamava `Read` e o modo headless negava o diálogo de permissão (`ask`), deixando a resposta vazia. O job tem `continue-on-error`, então o check ficava verde mesmo assim. Em paralelo, a branch estava com `VERSION` atrás do `main` (PRs #75 e #80 já mergeadas) e as issues #84, #85 e #86 seguiam abertas sem teste de regressão para #85.
+**Files Modified:** `tools/exec/permissions/check.lua` (tools internas `sessions_spawn`, `subagents_listar`, `subagents_info` e `subagents_log` liberadas sem diálogo; `subagents_matar` e `agents_criar` continuam pedindo confirmação); `e2e/kilo_orchestrator.lua` (probe pré-aprova `Read` via `hooks.permissions.Read`, só na config da CI); `tests/subagents_permissions_spec.lua` (NOVO); `tests/subagent_task_once_spec.lua` (NOVO — regressão #85/#86); `VERSION` (`1.21.10.2026`); `docs/SUBAGENTS.md` (status atualizado, `--worker` no lugar de `--subagent`); `CONTEXT.md` (NOVO — contexto do repositório para outros agentes; não faz parte do runtime); merge de `origin/main` na branch (sem rebase).
+**Learning:** (1) Em headless qualquer tool fora de `Exec` cai em `ask` e é negada; ao testar capacidade de chamar tool na CI, pré-aprovar via `hooks.permissions`, sem mudar o comportamento do usuário. (2) `continue-on-error` esconde falha: confirmar sempre pelo texto do log (`ORQUESTRADOR OK` / `SUBAGENTES OK`), não pelo status do job. (3) O `~/TermAI` da VPS estava 16 commits atrás do `main`; atualizar com `TermAI update` antes de testar. (4) A branch da PR precisa receber o `main` por merge antes de mudar `VERSION`. (5) O desenho v2 não coloca a tarefa em `ctx.msgs` do filho (o `loop.rodar` a envia uma vez), o que resolve o #85; faltava só o teste.
+**Prevention:** Specs novas travam: tools internas sem diálogo e sensíveis com confirmação; `prepare_user_turn` de subagente devolve a tarefa intacta, não escreve em `ctx.msgs` e não consome `is_first_turn` do pai; `loop.rodar` de subagente chama `pensar_stream` uma única vez. Checagem de mutação feita: com o desvio de `is_subagent` removido, a spec falha (3 FAILs).
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** `subagents_permissions_spec` 7 checagens OK; `subagent_task_once_spec` 10 checagens OK; `subagents_runtime_spec` OK (cobre #84, timeout); VPS com provedor real (`kilo/kilo-auto/free`): `sessions_spawn` criou o run `sub-6ad8d436363e`, status `completed`, resultado `PONG`; CI no commit `5b4e47e`: `tests` e `e2e-kilo` success com `ORQUESTRADOR OK` e `SUBAGENTES OK`. Resultado da CI do commit final fica nos checks da PR #82.
+**PR:** #82 (`feature/81-subagents-mvp`).
+
+
+---
+
 ## 2026-08-22 - [Correção: edit.lua lista numerada (reuso de set.lua) em vez de referência digitada]
 **Contexto:** O `edit.lua` (opção 5) criado no patch anterior pedia a referência do modelo digitada em texto puro (`"Referência do modelo pra editar"`), copiando o estilo do `info.lua` antigo. O pedido original do Samuel era lista numerada pra escolher (igual à opção 2, `set.lua`), já que ele não decora o texto exato `provider/id`. Lacuna apontada pelo próprio Claude após revisão.
 **Files Modified:** `commands/models/models/edit.lua` — entrada de `M.edit` agora usa `models_mod.list()` pra listar todos os modelos com número (reusando exatamente o padrão de `set.lua`: header, lista `m.ref (ctx)`, `ui.is_cancel` no `0`, range check `1..#models`, `ref = models[idx].ref`). Remove o prompt de texto puro.

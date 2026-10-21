@@ -31,6 +31,12 @@ function M.prepare_user_turn(ctx, cur_text, cur_role)
   -- Proteção contra loops redundantes: reinicia assinatura ao novo prompt do usuário
   ctx.last_tool_sig = nil
 
+  -- Subagent isolado (#86): não consome is_first_turn, não injeta boot/restart
+  -- nem memória do ecossistema do pai. Apenas limpa last_tool_sig acima.
+  if ctx.is_subagent then
+    return cur_text, spinner_started
+  end
+
   local system_injections = {}
 
   -- 1. Detecção de Boot: primeira chamada de rede da sessão Lua atual

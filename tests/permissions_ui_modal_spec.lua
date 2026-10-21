@@ -34,7 +34,10 @@ local function install_io_mocks()
   end
   io.read = function()
     if #read_queue == 0 then return "c" end
-    return table.remove(read_queue, 1)
+    local v = table.remove(read_queue, 1)
+    -- Enter humano leva mais de 0,1 s; o diálogo ignora "" instantâneo (\n residual).
+    if v == "" then os.execute("sleep 0.2") end
+    return v
   end
   io.flush = function() return true end
 end

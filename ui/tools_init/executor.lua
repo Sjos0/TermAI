@@ -22,6 +22,14 @@ local function render_result_body(name, out, ok, tw)
   end
 end
 
+-- Subagente: a resposta final nunca aparece na TUI. Só uma linha de erro, se falhar.
+local function render_subagent_or_body(name, out, ok, tw)
+  if name ~= "Subagente" then return render_result_body(name, out, ok, tw) end
+  if ok then return end
+  local first = ((out or "") .. "\n"):match("^([^\n]*)") or ""
+  io.write(c.gray .. " └─ " .. c.red .. first:sub(1, tw - 8) .. c.reset .. "\n")
+end
+
 function M.tool_start(cmd)
   local name, arg = parser.parse_cmd(cmd)
   header.write_header(c.yellow, name, arg)
@@ -33,13 +41,16 @@ function M.tool_end(cmd, out, ok)
   local name, arg = parser.parse_cmd(cmd)
   local vis_len   = header.header_vis_len(name, arg)
   local lines_up  = math.max(1, math.ceil(vis_len / tw))
+  if name == "Subagente" then
+    lines_up = lines_up + require("ui.subagent").finish_lines()
+  end
   io.write(string.format("\27[%dA\27[0J", lines_up))
 
   -- Sincroniza detecção de sucesso real (unificado via parser)
   local actual_ok = parser.is_edit_success(out, ok)
 
   header.write_header(actual_ok and c.green or c.red, name, arg)
-  render_result_body(name, out, actual_ok, tw)
+  render_subagent_or_body(name, out, actual_ok, tw)
   io.write("\n"); io.flush()
 end
 
@@ -67,7 +78,7 @@ function M.tool_replay(cmd, out, ok)
     actual_ok = parser.is_edit_success(out, ok)
   end
   header.write_header(actual_ok and c.green or c.red, name, arg)
-  render_result_body(name, out, actual_ok, tw)
+  render_subagent_or_body(name, out, actual_ok, tw)
   io.write("\n"); io.flush()
 end
 
