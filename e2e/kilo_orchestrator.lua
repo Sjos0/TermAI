@@ -15,6 +15,9 @@ os.execute(string.format("mkdir -p '%s'", out_dir))
 
 config.set("agents.defaults.model.primary", MODEL)
 config.set("agents.defaults.subagents.maxConcurrent", 2)
+-- Probe headless: Read pré-aprovado só para testar a capacidade de chamar a tool,
+-- sem diálogo de permissão (que em CI sempre seria negado).
+config.set("hooks.permissions.Read", "always")
 
 local prompt = "Use a ferramenta sessions_spawn para criar um subagente com a tarefa: "
   .. "'Responda apenas com a palavra ORQ_SUB_OK.' Depois de criar o subagente, responda somente: ORQUESTRADOR_OK"
