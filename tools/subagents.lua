@@ -3,6 +3,7 @@ local tools_def = require("tools.subagents.tools_def")
 local scheduler = require("tools.subagents.scheduler")
 local announce  = require("tools.subagents.announce")
 local cleanup   = require("tools.subagents.cleanup")
+local registry  = require("tools.subagents.registry")
 
 local M = {}
 local bound_ctx = nil
@@ -10,6 +11,17 @@ local bound_ctx = nil
 -- Guarda o contexto do agente que está rodando o turno.
 function M.bind(ctx) bound_ctx = ctx end
 function M.current() return bound_ctx end
+
+-- Há resultado terminado ainda não entregue a este pai? (acorda o orquestrador quando ocioso)
+function M.has_pending(ctx)
+  if not ctx then return false end
+  for _, r in ipairs(registry.list()) do
+    if scheduler.is_terminal(r) and not r.announce_consumed and (r.parent_agent or "main") == (ctx.agent_id or "main") then
+      return true
+    end
+  end
+  return false
+end
 
 function M.register(tools)
   tools_def.register(tools, function() return bound_ctx end)

@@ -13,9 +13,12 @@ Também implementado:
 - Comando `/subagents [list | info <id> | log <id> [n] | kill <id>]`, listado no menu de comandos.
 - Processo filho testado com modelo simulado (resultado, estouro, resposta vazia, kill concorrente).
 
+Também implementado nesta etapa:
+- Bloco ao vivo acima do prompt (uma linha por subagente, última ferramenta, contador de excedentes). Redesenha no lugar só quando muda.
+- Acordar o orquestrador sozinho: a entrada da TUI faz polling a cada ~1 s (`stty min 0 time 10`); se nada foi digitado e há resultado terminado, o turno começa. Com texto parcial nunca acorda. Só ativo com terminal (stdin TTY).
+- Testes de pseudo-terminal (`tests/pty/input_poll_test.py`) rodam na CI.
+
 Pendente:
-- Bloco ao vivo na TUI (uma linha por run ativo, atualizada no lugar). Hoje a TUI mostra o cabeçalho do spawn e uma linha de status na conclusão.
-- Acordar o pai automaticamente quando um run termina (depende de entrada não bloqueante).
 - Teste do processo filho com um provedor real no aparelho e medição de memória por processo (para confirmar o padrão 5).
 
 ## 1. Decisões já tomadas

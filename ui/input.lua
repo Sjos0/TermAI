@@ -13,8 +13,20 @@ M.paste_counter = 0
 M.pasted_texts  = {}
 
 -- ── M.read ─────────────────────────────────────────────────────────────────
-function M.read()
-  os.execute("stty raw -echo 2>/dev/null")
+-- Buffer vazio (nada digitado): só então é seguro acordar o orquestrador.
+local function is_empty(segs)
+  return (seg.get_input(segs) or "") == ""
+end
+
+-- opts.on_idle(buffer_vazio) é chamado a cada ~1 s sem tecla. Devolver true acorda o orquestrador
+-- (M.read retorna "", {}, "", true). Sem opts, o comportamento é o bloqueante de sempre.
+function M.read(opts)
+  local poll = opts and opts.on_idle
+  if poll then
+    os.execute("stty raw -echo min 0 time 10 2>/dev/null")
+  else
+    os.execute("stty raw -echo 2>/dev/null")
+  end
 
   -- Ativa bracketed paste mode
   io.write("\27[?2004h")
@@ -24,7 +36,9 @@ function M.read()
 
   local segments   = {}
   local prev_lines = 0
+  -- Largura 0 (terminal sem tamanho) faria a divisão virar infinito no redesenho.
   local tw = core.tw()
+  if not tw or tw < 20 then tw = 80 end
 
   local function redraw()
     local display = seg.get_display(segments)
@@ -39,12 +53,20 @@ function M.read()
     prev_lines = math.max(0, math.floor((total - 1) / tw))
   end
 
+  local wake = false
   local ok, _ = pcall(function()
     redraw()
 
     while true do
       local byte = io.read(1)
-      if not byte then break end
+      if not byte and poll then
+        -- Acordar só com buffer vazio: nunca descarta o que o usuário está digitando.
+        local empty = is_empty(segments)
+        if poll(empty) and empty then wake = true; break end
+      elseif not byte then
+        break
+      end
+      if byte then
       local code = byte:byte()
 
       if code == 13 or code == 10 then
@@ -94,6 +116,7 @@ function M.read()
         seg.append_char(segments, char)
         redraw()
       end
+      end
     end
   end)
 
@@ -109,6 +132,7 @@ function M.read()
   os.execute("stty sane 2>/dev/null")
 
   if not ok then return "", {}, "" end
+  if wake then return "", {}, "", true end
   local raw = seg.get_input(segments)
 
   -- Clona os pasted_texts para persistência física isolada

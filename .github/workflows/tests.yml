@@ -25,10 +25,12 @@ jobs:
           done < <(git ls-files '*.lua')
           exit $fail
 
+      - name: Teste de terminal (pty) do polling da entrada
+        run: python3 tests/pty/input_poll_test.py
+
       - name: Rodar specs
         run: |
-          # Falhas pré-existentes no main (não causadas por PRs). Remover daqui ao corrigir.
-          KNOWN_FAILING="tests/exec_permissions_extended.lua tests/exec_permissions_spec.lua tests/permissions_ui_modal_spec.lua"
+          KNOWN_FAILING=""
           fail=0
           for t in tests/*.lua; do
             log="/tmp/$(basename "$t").log"

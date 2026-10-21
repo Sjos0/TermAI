@@ -9,6 +9,17 @@ local ag_loop     = require("agent.loop")
 local input_mod   = require("ui.input")
 local restart_mod = require("agent.restart")
 local session     = require("session")
+local subagents   = require("tools.subagents")
+local scheduler   = require("tools.subagents.scheduler")
+local sub_block   = require("ui.subagent_block")
+
+-- Mesmo prompt de ui/input.lua (o bloco reimprime o prompt ao redesenhar).
+local PROMPT_TEXT = "\27[1m\27[38;5;39m❯\27[0m "
+
+-- Polling de teclado só faz sentido com terminal; em pipe, nil seria EOF.
+local function is_tty()
+  return os.execute("test -t 0") == true
+end
 
 local timestamp    = require("agent.main_loop.timestamp")
 local persistence  = require("agent.main_loop.persistence")
@@ -44,8 +55,25 @@ function M.run(ctx)
 
     if restart_mod.check() then goto continue end
 
-    -- 2. LER INPUT DO USUÁRIO
-    local input, pasted_texts, raw_input = input_mod.read()
+    -- 2. LER INPUT DO USUÁRIO (com bloco de subagentes ao vivo; acorda quando um terminar)
+    local last_tick = 0
+    local function on_idle(buffer_empty)
+      if os.time() - last_tick >= 2 then
+        last_tick = os.time()
+        pcall(scheduler.tick, ctx.cfg)
+      end
+      sub_block.refresh(sub_block.render(ctx.agent_id), true, PROMPT_TEXT)
+      return buffer_empty and subagents.has_pending(ctx)
+    end
+    sub_block.refresh(sub_block.render(ctx.agent_id), false)
+    local input, pasted_texts, raw_input, wake =
+      input_mod.read(is_tty() and { on_idle = on_idle } or nil)
+    sub_block.finish()
+    if wake then
+      input      = "↻ subagentes concluídos"
+      raw_input  = "[sistema] Os subagentes terminaram. Leia as mensagens do sistema e continue."
+      pasted_texts = {}
+    end
     if not input then print("\nSaindo..."); break end
     if input == "" then goto continue end
 

@@ -44,6 +44,14 @@ function M.rodar(ctx, input, role, max_iter)
       api.pensar_stream(ctx, cur_text, cur_role)
     elapsed = elapsed + (quiet and 0 or ui.stop_thinking())
     if done_flag ~= nil then stream_complete = done_flag end
+    do -- diagnóstico: uma linha por resposta do modelo (tool calls, tamanho, origem)
+      local n = tool_calls and #tool_calls or 0
+      local first = n > 0 and tool_calls[1] or nil
+      local nm = first and (first.name or (first["function"] and first["function"].name)) or nil
+      require("diag.log").info("model_turn", { iter = iter, tool_calls = n, tool_name = nm,
+        resp_chars = #tostring(resp or ""), stream_complete = stream_complete == true,
+        is_subagent = quiet, run_id = ctx.run_id })
+    end
     if is_overflow then
       return resp, elapsed, false, true, stream_complete, ""
     end

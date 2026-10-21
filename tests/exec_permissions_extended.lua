@@ -152,6 +152,9 @@ T("Ferramenta sem status no config: pede permissão (reason = ask)",
   check_non_exec.allowed == false and check_non_exec.reason == "ask")
 
 -- Ferramenta não-exec COM status 'always' no config é auto-aprovada
+require("config.store").PATH = (os.getenv("TMPDIR") or "/tmp") .. "/termai_perm_spec_" .. tostring(os.time()) .. ".json"
+require("config.store")._data = nil
+require("config").set("hooks.permissions.Read", "always")
 local check_read = perms.check("Read", "/some/file")
 T("Ferramenta Read (always no config): auto-aprovada", 
   check_read.allowed == true)
@@ -166,7 +169,7 @@ sec("7. Prioridade Deny > Allow")
 perms.add_rule("test_cmd *", "allow", false)
 perms.add_rule("test_cmd *", "deny", false)
 
-local check_priority = perms.check("exec", "test_cmd something")
+local check_priority = perms.check("Exec", "test_cmd something")
 T("Deny tem prioridade sobre allow", 
   check_priority.allowed == false and check_priority.reason == "deny")
 
@@ -181,11 +184,11 @@ perms.remove_rule("test_cmd *", "deny", false)
 sec("8. Edge Cases no Check")
 
 -- Comando nil
-local check_nil = perms.check("exec", nil)
+local check_nil = perms.check("Exec", nil)
 T("Check com comando nil: não crasha", check_nil ~= nil)
 
 -- Comando vazio
-local check_empty = perms.check("exec", "")
+local check_empty = perms.check("Exec", "")
 T("Check com comando vazio: retorna allowed (sem subcomandos)", 
   check_empty.allowed == true)
 
@@ -237,17 +240,17 @@ sec("11. Integração Security + Permissions")
 perms.set_mode("default")
 
 -- Comando seguro (safe command) deve passar direto
-local integration_safe = perms.check("exec", "echo hello")
+local integration_safe = perms.check("Exec", "echo hello")
 T("Integração: echo é auto-aprovado (safe command)", integration_safe.allowed == true)
 
 -- Comando perigoso sem regra deve pedir permissão
-local integration_danger = perms.check("exec", "rm -rf /tmp/test")
+local integration_danger = perms.check("Exec", "rm -rf /tmp/test")
 T("Integração: rm sem regra pede permissão", 
   integration_danger.allowed == false and integration_danger.reason == "ask")
 
 -- Comando perigoso com deny rule deve ser bloqueado
 perms.add_rule("rm -rf *", "deny", false)
-local integration_denied = perms.check("exec", "rm -rf /tmp/test")
+local integration_denied = perms.check("Exec", "rm -rf /tmp/test")
 T("Integração: rm com deny rule é bloqueado", 
   integration_denied.allowed == false and integration_denied.reason == "deny")
 perms.remove_rule("rm -rf *", "deny", false)
