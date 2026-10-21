@@ -1,10 +1,10 @@
-local M = {}
+local skills_utils = require("tools.skills.utils")
 
-local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
+local M = {}
 
 -- Extrai um .tgz e instala a skill na pasta de destino
 function M.install_from_tarball(tarball_path, skill_name, dest_dir)
-  dest_dir = dest_dir or HOME .. "/.TermAI/skills"
+  dest_dir = dest_dir or skills_utils.get_global_skills_dir()
   os.execute('mkdir -p "' .. dest_dir .. '"')
   local tmp_extract = (os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp")
     .. "/termai_extract_" .. tostring(os.time())
@@ -42,7 +42,7 @@ end
 -- files_list: lista de paths do repositorio
 -- skill_name: nome da skill
 function M.install_from_files(files_map, files_list, skill_name, dest_dir)
-  dest_dir = dest_dir or HOME .. "/.TermAI/skills"
+  dest_dir = dest_dir or skills_utils.get_global_skills_dir()
   local final_dir = dest_dir .. "/" .. skill_name
   os.execute('rm -rf "' .. final_dir .. '"')
 
