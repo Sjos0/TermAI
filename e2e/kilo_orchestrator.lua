@@ -73,9 +73,15 @@ local pf2 = io.open(out_dir .. "/probe.log", "r")
 probe_out = pf2 and pf2:read("*a") or ""
 if pf2 then pf2:close() end
 local probe_tool = probe_out:find("Read |", 1, true) ~= nil
+-- Sinais de erro de rede/limite no log (ex.: 429 do gateway, tentativas esgotadas).
+local error_signals = {}
+for _, k in ipairs({ "429", "Sem resposta", "Tentativa 10/10", "ERRO", "rate limit" }) do
+  if (orch_out .. probe_out):find(k, 1, true) then error_signals[#error_signals + 1] = k end
+end
 
 local report = { check = "orquestrador", model = MODEL, exit_code = code,
   tool_headers_in_orchestrator = tool_calls_seen, probe_read_tool_called = probe_tool,
+  error_signals = error_signals,
   probe_answer_ok = probe_out:find("PROBE_OK", 1, true) ~= nil,
   orchestrator_answer_ok = orch_ok_text, spawned = #spawned, sub_completed_ok = sub_ok,
   passed = orch_ok_text and sub_ok, runs = details, output_head = orch_out:sub(1, 300) }
