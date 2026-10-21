@@ -53,6 +53,11 @@ def main():
         head = (r.get("result_head") or "").replace("|", "\\|").replace("\n", " ")
         lines.append(f"| {r.get('label')} | {r.get('agent')} | {r.get('status')} | "
                      f"{'ok' if r.get('token_ok') else 'faltou'} | {r.get('duration_s')} | {head[:60]} |")
+    orch = load(os.path.join(out, "orchestrator.json"))
+    if orch:
+        lines += ["", f"- Orquestrador (não bloqueante): **{'OK' if orch.get('passed') else 'não confirmado'}** "
+                  f"(resposta={orch.get('orchestrator_answer_ok')}, subagentes criados={orch.get('spawned')}, "
+                  f"concluído com token={orch.get('sub_completed_ok')})"]
     markdown = "\n".join(lines) + "\n"
     print(markdown)
 
