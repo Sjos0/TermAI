@@ -45,6 +45,12 @@ jobs:
           HOME: ${{ env.TERMAI_HOME }}
         run: lua5.4 e2e/kilo_smoke.lua
 
+      - name: Orquestrador decide criar subagente (não bloqueante)
+        continue-on-error: true
+        env:
+          HOME: ${{ env.TERMAI_HOME }}
+        run: lua5.4 e2e/kilo_orchestrator.lua
+
       - name: Subagentes reais (clone, agente independente e fila)
         env:
           HOME: ${{ env.TERMAI_HOME }}
@@ -58,12 +64,6 @@ jobs:
           lua5.4 e2e/kilo_subagents.lua || RC=$?
           kill $SAMP 2>/dev/null || true
           exit $RC
-
-      - name: Orquestrador decide criar subagente (não bloqueante)
-        continue-on-error: true
-        env:
-          HOME: ${{ env.TERMAI_HOME }}
-        run: lua5.4 e2e/kilo_orchestrator.lua
 
       - name: Coletar logs de funcionamento e RAM
         if: always()

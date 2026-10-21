@@ -21,6 +21,8 @@ local prompt = "Use a ferramenta sessions_spawn para criar um subagente com a ta
 local pf = io.open(out_dir .. "/orch_prompt.txt", "w"); pf:write(prompt); pf:close()
 
 local t0 = os.time()
+local function log_lines() return #log.tail(1000000) end
+local lines_before = log_lines()
 local cmd = string.format("lua5.4 '%s/TermAI/main.lua' run --prompt-file '%s/orch_prompt.txt' --max-iter 6 > '%s/orchestrator.log' 2>&1",
   home, out_dir, out_dir)
 local _, _, code = os.execute(cmd)
@@ -28,7 +30,8 @@ local orch_ok_text = false
 local f = io.open(out_dir .. "/orchestrator.log", "r")
 local orch_out = f and f:read("*a") or ""
 if f then f:close() end
-orch_ok_text = orch_out:find("ORQUESTRADOR_OK", 1, true) ~= nil
+local orch_echoless = orch_out:gsub(prompt, "")  -- o run pode ecoar o prompt, que contém a palavra-chave
+orch_ok_text = orch_echoless:find("ORQUESTRADOR_OK", 1, true) ~= nil
 
 -- Runs criados pelo orquestrador desde o início deste teste.
 local spawned = {}
@@ -39,7 +42,7 @@ end
 local cfg = config.load()
 local deadline = os.time() + 600
 local all_done = #spawned > 0
-while os.time() < deadline do
+while #spawned > 0 and os.time() < deadline do
   scheduler.tick(cfg)
   all_done = true
   for _, r in ipairs(spawned) do
@@ -63,6 +66,7 @@ end
 local tool_calls_seen = 0
 for _ in orch_out:gmatch("%u[%a_]+ | ") do tool_calls_seen = tool_calls_seen + 1 end
 local probe_out = ""
+local lines_mid = log_lines()
 local t_probe = os.time()
 local pp = io.open(out_dir .. "/probe_prompt.txt", "w")
 pp:write("Use a ferramenta Read para ler o arquivo README.md e responda somente: PROBE_OK")
@@ -82,10 +86,14 @@ end
 
 -- Turnos do modelo do ORQUESTRADOR (entre t0 e a sonda): quantos tiveram tool call, e quais.
 local tool_turns, total_turns, tool_names = 0, 0, {}
-for _, line in ipairs(log.tail(500)) do
+-- Janela por linhas do log (não por relógio): turnos do orquestrador são as linhas entre o início e a sonda.
+local all_turns = 0
+local all_lines = log.tail(1000000)
+for i, line in ipairs(all_lines) do
   local ok_ev, ev = pcall(json.decode, line)
+  if ok_ev and type(ev) == "table" and ev.event == "model_turn" and i > lines_before then all_turns = all_turns + 1 end
   if ok_ev and type(ev) == "table" and ev.event == "model_turn" and not ev.is_subagent
-     and (ev.t or 0) >= t0 and (ev.t or 0) < t_probe then
+     and i > lines_before and i <= lines_mid then
     total_turns = total_turns + 1
     if (ev.tool_calls or 0) > 0 then
       tool_turns = tool_turns + 1
@@ -96,6 +104,7 @@ end
 
 local report = { check = "orquestrador", model = MODEL, exit_code = code,
   model_turns = total_turns, model_turns_with_tools = tool_turns, tool_names = tool_names,
+  model_turns_any = all_turns, run_exit = code, run_output_has_result = orch_out:find("TERMAI_RUN", 1, true) ~= nil,
   tool_headers_in_orchestrator = tool_calls_seen, probe_read_tool_called = probe_tool,
   error_signals = error_signals,
   probe_answer_ok = probe_out:find("PROBE_OK", 1, true) ~= nil,
