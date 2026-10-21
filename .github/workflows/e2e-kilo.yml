@@ -3,6 +3,14 @@ name: e2e-kilo
 # Testes reais com o modelo Kilo (kilo-auto/free, sem chave). Manual ou diário.
 on:
   workflow_dispatch:
+  push:
+    branches: [feature/81-subagents-mvp]
+    paths:
+      - "e2e/**"
+      - "tools/subagents/**"
+      - "tools/agents/**"
+      - "agent/context.lua"
+      - ".github/workflows/e2e-kilo.yml"
   schedule:
     - cron: "17 5 * * *"
 
