@@ -59,7 +59,24 @@ for _, r in ipairs(spawned) do
   if cur.status == "completed" and res:upper():find("ORQ_SUB_OK", 1, true) then sub_ok = true end
 end
 
+-- Diagnóstico: o modelo chama QUALQUER tool? (cabeçalho "⬤ <Nome> |" aparece no log)
+local tool_calls_seen = 0
+for _ in orch_out:gmatch("%u[%a_]+ | ") do tool_calls_seen = tool_calls_seen + 1 end
+local probe_out = ""
+local pp = io.open(out_dir .. "/probe_prompt.txt", "w")
+pp:write("Use a ferramenta Read para ler o arquivo README.md e responda somente: PROBE_OK")
+pp:close()
+local pc = string.format("lua5.4 '%s/TermAI/main.lua' run --prompt-file '%s/probe_prompt.txt' --max-iter 4 > '%s/probe.log' 2>&1",
+  home, out_dir, out_dir)
+os.execute(pc)
+local pf2 = io.open(out_dir .. "/probe.log", "r")
+probe_out = pf2 and pf2:read("*a") or ""
+if pf2 then pf2:close() end
+local probe_tool = probe_out:find("Read |", 1, true) ~= nil
+
 local report = { check = "orquestrador", model = MODEL, exit_code = code,
+  tool_headers_in_orchestrator = tool_calls_seen, probe_read_tool_called = probe_tool,
+  probe_answer_ok = probe_out:find("PROBE_OK", 1, true) ~= nil,
   orchestrator_answer_ok = orch_ok_text, spawned = #spawned, sub_completed_ok = sub_ok,
   passed = orch_ok_text and sub_ok, runs = details, output_head = orch_out:sub(1, 300) }
 f = io.open(out_dir .. "/orchestrator.json", "w"); f:write(json.encode(report)); f:close()
