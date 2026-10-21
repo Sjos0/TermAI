@@ -1,6 +1,6 @@
 # Subagentes — desenho v2 (concorrência estilo OpenClaw)
 
-Status: **núcleo implementado, UI pendente**. Base: `feature/81-subagents-mvp`.
+Status: **implementado e validado com provedor real na VPS** (UI, acordar o orquestrador e `/subagents` incluídos). Base: `feature/81-subagents-mvp`.
 
 Implementado nesta etapa:
 - Agentes independentes (`agents_criar`): workspace próprio, `IDENTITY.md` (nome + identidade), `AGENTS.md` (funções), `USER.md` copiado do orquestrador, registro em `agents.list`. Exige `confirmado=true`.
@@ -18,12 +18,16 @@ Também implementado nesta etapa:
 - Acordar o orquestrador sozinho: a entrada da TUI faz polling a cada ~1 s (`stty min 0 time 10`); se nada foi digitado e há resultado terminado, o turno começa. Com texto parcial nunca acorda. Só ativo com terminal (stdin TTY).
 - Testes de pseudo-terminal (`tests/pty/input_poll_test.py`) rodam na CI.
 
+Validado:
+- VPS com provedor real (kilo/kilo-auto/free): o orquestrador chama `sessions_spawn`, o filho termina e entrega o resultado. O e2e `e2e-kilo` passa na CI.
+- Regressões #84 (timeout), #85 (tarefa entra uma vez) e #86 (isolamento de `prepare_user_turn`) cobertas por specs.
+
 Pendente:
-- Teste do processo filho com um provedor real no aparelho e medição de memória por processo (para confirmar o padrão 5).
+- Teste no aparelho e medição de memória por processo (para confirmar o padrão 5).
 
 ## 1. Decisões já tomadas
 
-- Subagente roda como **processo próprio** (`TermAI run --subagent <runId>`). Motivo: o Lua do TermAI é single-thread; sem processo separado não há concorrência real.
+- Subagente roda como **processo próprio** (`TermAI run --worker <runId>`). Motivo: o Lua do TermAI é single-thread; sem processo separado não há concorrência real.
 - `sessions_spawn` é **assíncrono**: retorna `{status="accepted", runId}` na hora. O resultado chega depois, como anúncio (igual ao OpenClaw).
 - **Clone** usa o workspace do agente pai. **Não cria pasta nova.**
 - **Agente independente** tem workspace próprio, criado em `~/.TermAI/agents/<id>/` (`SOUL.md`, `IDENTITY.md`, `USER.md`). Entra em `agents.list` no config e fica reutilizável.
@@ -60,7 +64,7 @@ Onde podemos superar: admissão consciente de RAM e de cota da API, para aceitar
 
 ## 4. Ciclo de vida
 
-1. **spawn**: grava `run.json` como `queued`. Se houver vaga, inicia o processo: `io.popen("lua5.4 ... run --subagent <id> >stderr.log 2>&1 & echo $!")` e grava o pid.
+1. **spawn**: grava `run.json` como `queued`. Se houver vaga, inicia o processo: `io.popen("lua5.4 ... run --worker <id> >stderr.log 2>&1 & echo $!")` e grava o pid.
 2. **scheduler**: roda no ponto seguro do pai (fim de tool/turno e antes de pedir input). Confere `kill -0 <pid>`, avança filas, aplica `runTimeoutSeconds`.
 3. **fim**: o filho escreve `result.txt` e `status`. O pai lê uma vez e injeta o anúncio.
 4. **kill**: `kill -TERM <pid>`; o pai marca `killed`. O Lua não captura sinais, então o estado é definido pelo pai.
