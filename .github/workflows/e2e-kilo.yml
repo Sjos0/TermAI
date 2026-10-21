@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      TERMAI_HOME: ${{ runner.temp }}/home
-      E2E_OUT: ${{ runner.temp }}/e2e-out
+      TERMAI_HOME: /tmp/termai-home
+      E2E_OUT: /tmp/termai-e2e-out
     steps:
       - uses: actions/checkout@v4
 
@@ -70,5 +70,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: termai-e2e-${{ github.run_id }}
-          path: ${{ runner.temp }}/e2e-out
+          path: /tmp/termai-e2e-out
           retention-days: 14
