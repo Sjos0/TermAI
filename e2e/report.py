@@ -67,6 +67,7 @@ def main():
                       f"nao(resp{int(bool(orch.get('orchestrator_answer_ok')))}"
                       f",spawn{orch.get('spawned')},read{int(bool(orch.get('probe_read_tool_called')))}"
                       f",tc{orch.get('model_turns_with_tools')}/{orch.get('model_turns')}"
+                      f"[{'+'.join(str(x)[:10] for x in (orch.get('tool_names') or [])[:2])}]"
                       f",erro{'+'.join(orch.get('error_signals') or ['none'])})") if orch else "sem"
         desc = (f"smoke={'ok' if smoke_ok else 'falhou'} subs={done}/{len(runs)} "
                 f"simul={(subs or {}).get('max_running_observed')} "

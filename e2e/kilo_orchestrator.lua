@@ -63,6 +63,7 @@ end
 local tool_calls_seen = 0
 for _ in orch_out:gmatch("%u[%a_]+ | ") do tool_calls_seen = tool_calls_seen + 1 end
 local probe_out = ""
+local t_probe = os.time()
 local pp = io.open(out_dir .. "/probe_prompt.txt", "w")
 pp:write("Use a ferramenta Read para ler o arquivo README.md e responda somente: PROBE_OK")
 pp:close()
@@ -79,18 +80,22 @@ for _, k in ipairs({ "429", "Sem resposta", "Tentativa 10/10", "ERRO", "rate lim
   if (orch_out .. probe_out):find(k, 1, true) then error_signals[#error_signals + 1] = k end
 end
 
--- Turnos do modelo do orquestrador (do log): quantos tiveram tool call.
-local tool_turns, total_turns = 0, 0
+-- Turnos do modelo do ORQUESTRADOR (entre t0 e a sonda): quantos tiveram tool call, e quais.
+local tool_turns, total_turns, tool_names = 0, 0, {}
 for _, line in ipairs(log.tail(500)) do
   local ok_ev, ev = pcall(json.decode, line)
-  if ok_ev and type(ev) == "table" and ev.event == "model_turn" and (ev.t or 0) >= t0 and not ev.is_subagent then
+  if ok_ev and type(ev) == "table" and ev.event == "model_turn" and not ev.is_subagent
+     and (ev.t or 0) >= t0 and (ev.t or 0) < t_probe then
     total_turns = total_turns + 1
-    if (ev.tool_calls or 0) > 0 then tool_turns = tool_turns + 1 end
+    if (ev.tool_calls or 0) > 0 then
+      tool_turns = tool_turns + 1
+      tool_names[#tool_names + 1] = tostring(ev.tool_name)
+    end
   end
 end
 
 local report = { check = "orquestrador", model = MODEL, exit_code = code,
-  model_turns = total_turns, model_turns_with_tools = tool_turns,
+  model_turns = total_turns, model_turns_with_tools = tool_turns, tool_names = tool_names,
   tool_headers_in_orchestrator = tool_calls_seen, probe_read_tool_called = probe_tool,
   error_signals = error_signals,
   probe_answer_ok = probe_out:find("PROBE_OK", 1, true) ~= nil,
