@@ -63,7 +63,9 @@ def main():
 
     if publish:
         state = "success" if (smoke_ok and subs_ok) else "failure"
-        orch_state = "ok" if (orch and orch.get("passed")) else "nao"
+        orch_state = ("ok" if orch.get("passed") else
+                      f"nao(resp{int(bool(orch.get('orchestrator_answer_ok')))}"
+                      f",spawn{orch.get('spawned')},sub{int(bool(orch.get('sub_completed_ok')))})") if orch else "sem"
         desc = (f"smoke={'ok' if smoke_ok else 'falhou'} subs={done}/{len(runs)} "
                 f"simul={(subs or {}).get('max_running_observed')} "
                 f"rss_filho={(subs or {}).get('max_child_rss_kb')}kB orq={orch_state}")[:140]
