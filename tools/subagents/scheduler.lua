@@ -1,6 +1,7 @@
 -- tools/subagents/scheduler.lua — Fila, admissão e ciclo de vida dos runs (um processo por run).
 local registry = require("tools.subagents.registry")
 local launcher = require("tools.subagents.launcher")
+local log      = require("diag.log")
 local M = {}
 
 local TERMINAL = { completed = true, failed = true, killed = true, timeout = true }
@@ -45,6 +46,8 @@ local function finish(run_id, status, err)
   cur.status, cur.error, cur.finished_at = status, err, os.time()
   cur.announce_pending = true
   registry.save(cur)
+  log.info("run_finish", { run_id = run_id, status = status, reason = err,
+    duration_s = cur.started_at and (os.time() - cur.started_at) or nil })
 end
 
 local function timed_out(r, lim)
@@ -57,6 +60,7 @@ function M.tick(cfg)
   local lim = M.limits(cfg)
   for _, r in ipairs(registry.list()) do
     if r.status == "running" then
+      log.info("run_rss", { run_id = r.runId, child_pid = r.pid, child_rss_kb = log.rss_kb(r.pid) })
       if timed_out(r, lim) then
         launcher.kill(r.pid)
         finish(r.runId, "timeout", "runTimeoutSeconds excedido")

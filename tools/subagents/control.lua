@@ -4,6 +4,7 @@ local scheduler = require("tools.subagents.scheduler")
 local launcher  = require("tools.subagents.launcher")
 local events    = require("tools.subagents.events")
 local json      = require("json")
+local log       = require("diag.log")
 local M = {}
 
 function M.listar(args)
@@ -39,6 +40,7 @@ function M.matar(args)
   r.status, r.error, r.finished_at = "killed", "morto pelo usuário", os.time()
   r.announce_pending = true
   registry.save(r)
+  log.info("run_killed_by_user", { run_id = r.runId })
   return "✓ " .. r.runId .. " encerrado."
 end
 

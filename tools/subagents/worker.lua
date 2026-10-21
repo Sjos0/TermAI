@@ -1,6 +1,7 @@
 -- tools/subagents/worker.lua — Processo filho: roda o run em um turno e grava resultado e status.
 local registry = require("tools.subagents.registry")
 local events   = require("tools.subagents.events")
+local log      = require("diag.log")
 local M = {}
 
 local function finish(run_id, status, err)
@@ -14,6 +15,9 @@ end
 function M.execute(run_id)
   local rec = registry.load(run_id)
   if not rec then return false, "run não encontrado: " .. tostring(run_id) end
+  local t0 = os.time()
+  log.info("worker_start", { run_id = run_id, agent = rec.agentId, kind = rec.kind,
+    model = rec.model or "default", rss_kb = log.rss_kb() })
 
   local ok, err = pcall(function()
     local context = require("agent.context")
@@ -28,13 +32,18 @@ function M.execute(run_id)
     registry.write_result(run_id, text)
   end)
 
+  local elapsed = os.time() - t0
   if ok then
     finish(run_id, "completed", nil)
     events.append(run_id, "final", "ok")
+    log.info("worker_end", { run_id = run_id, status = "completed", duration_s = elapsed,
+      result_chars = #(registry.read_result(run_id) or ""), rss_kb = log.rss_kb() })
     return true
   end
   finish(run_id, "failed", tostring(err))
   events.append(run_id, "final", "falha: " .. tostring(err))
+  log.error("worker_end", { run_id = run_id, status = "failed", duration_s = elapsed,
+    reason = tostring(err), rss_kb = log.rss_kb() })
   return false, tostring(err)
 end
 

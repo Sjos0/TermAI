@@ -1,6 +1,7 @@
 -- tools/subagents/cleanup.lua — Apaga o run depois de anunciado, salvo se cleanup == "keep".
 local registry  = require("tools.subagents.registry")
 local scheduler = require("tools.subagents.scheduler")
+local log       = require("diag.log")
 local M = {}
 
 function M.sweep()
@@ -8,6 +9,7 @@ function M.sweep()
   for _, rec in ipairs(registry.list()) do
     if scheduler.is_terminal(rec) and rec.announce_consumed and rec.cleanup ~= "keep" then
       registry.remove(rec.runId)
+      log.info("cleanup_removed", { run_id = rec.runId })
       n = n + 1
     end
   end

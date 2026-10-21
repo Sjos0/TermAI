@@ -3,6 +3,7 @@ local registry  = require("tools.subagents.registry")
 local scheduler = require("tools.subagents.scheduler")
 local config    = require("config")
 local json      = require("json")
+local log       = require("diag.log")
 local M = {}
 
 -- args: task, agentId, label, model, cleanup ("delete"|"keep"), runTimeoutSeconds
@@ -45,6 +46,8 @@ function M.spawn(args, parent)
   local ok, err = scheduler.admit(rec, cfg)
   if not ok then return "❌ sessions_spawn: " .. tostring(err) end
 
+  log.info("spawn_accepted", { run_id = rec.runId, kind = kind, agent = agent_id,
+    task_chars = #args.task, cleanup = rec.cleanup })
   scheduler.tick(cfg)
   local fresh = registry.load(rec.runId) or rec
   return json.encode({ status = "accepted", runId = rec.runId, agentId = agent_id,

@@ -1,0 +1,66 @@
+name: e2e-kilo
+
+# Testes reais com o modelo Kilo (kilo-auto/free, sem chave). Manual ou diário.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      TERMAI_HOME: ${{ runner.temp }}/home
+      E2E_OUT: ${{ runner.temp }}/e2e-out
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Lua 5.4, curl e procps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4 curl procps
+          lua5.4 -v
+
+      - name: HOME isolado com link para o repositório
+        run: |
+          mkdir -p "$TERMAI_HOME" "$E2E_OUT"
+          ln -sfn "$GITHUB_WORKSPACE" "$TERMAI_HOME/TermAI"
+          ls -la "$TERMAI_HOME"
+
+      - name: Smoke do modelo Kilo
+        env:
+          HOME: ${{ env.TERMAI_HOME }}
+        run: lua5.4 e2e/kilo_smoke.lua
+
+      - name: Subagentes reais (clone, agente independente e fila)
+        env:
+          HOME: ${{ env.TERMAI_HOME }}
+        run: |
+          ( while true; do
+              ps -C lua5.4 -o pid=,rss=,args= 2>/dev/null | sed "s/^/$(date +%s) /" >> "$E2E_OUT/ram_ps.log"
+              sleep 2
+            done ) &
+          SAMP=$!
+          RC=0
+          lua5.4 e2e/kilo_subagents.lua || RC=$?
+          kill $SAMP 2>/dev/null || true
+          exit $RC
+
+      - name: Coletar logs de funcionamento e RAM
+        if: always()
+        run: |
+          cp -r "$TERMAI_HOME/.TermAI/logs" "$E2E_OUT/" 2>/dev/null || true
+          cp -r "$TERMAI_HOME/.TermAI/subagents" "$E2E_OUT/" 2>/dev/null || true
+          ls -laR "$E2E_OUT" | head -80
+
+      - name: Enviar artefatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: termai-e2e-${{ github.run_id }}
+          path: ${{ runner.temp }}/e2e-out
+          retention-days: 14

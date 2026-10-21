@@ -1,6 +1,7 @@
 -- tools/subagents/announce.lua — Entrega ao pai o resultado de cada run terminado (uma vez).
 local registry  = require("tools.subagents.registry")
 local scheduler = require("tools.subagents.scheduler")
+local log       = require("diag.log")
 local M = {}
 
 local function body(rec)
@@ -22,6 +23,8 @@ function M.inject(ctx)
       local mark = rec.status == "completed" and "✓" or "✗"
       io.write(string.format("\27[90m%s subagente %s %s\27[0m\n", mark, rec.runId, rec.status))
       rec.announce_consumed, rec.announce_pending = true, false
+      log.info("announce_delivered", { run_id = rec.runId, status = rec.status,
+        result_chars = #body(rec) })
       registry.save(rec)
       n = n + 1
     end
