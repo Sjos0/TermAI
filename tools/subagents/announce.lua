@@ -23,8 +23,7 @@ function M.inject(ctx)
         content = string.format("[subagente %s status=%s agente=%s]\n%s",
           rec.runId, rec.status, tostring(rec.agentId), body(rec)),
       }
-      local mark = rec.status == "completed" and "✓" or "✗"
-      io.write(string.format("\27[90m%s subagente %s %s\27[0m\n", mark, rec.runId, rec.status))
+      io.write(require("ui.subagent_block").end_line(rec), "\n")
       rec.announce_consumed, rec.announce_pending = true, false
       log.info("announce_delivered", { run_id = rec.runId, status = rec.status,
         result_chars = #body(rec) })
