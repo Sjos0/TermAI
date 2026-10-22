@@ -105,3 +105,20 @@ Hoje `ui/input.lua` lê com `io.read(1)` bloqueante. Enquanto o usuário não di
 2. **Entrega:** começar pela opção A (no próximo ponto seguro) e deixar a B para depois?
 3. **Padrões:** `maxConcurrent = 3` e profundidade `1` no MVP?
 4. **Agente independente criado pelo orquestrador:** precisa da sua confirmação antes de gravar arquivos e alterar o config?
+
+## Falhas e recuperação
+
+| Situação | Comportamento |
+|---|---|
+| Requisição falha | O filho tenta com a configuração do usuário (`max_retries`, modo e espera) e usa os fallbacks de modelo, como o agente principal. Cada tentativa que falha vira um evento `retry` em `subagents_log`. |
+| Tentativas esgotadas | O run vira `failed` com o motivo (por exemplo `[ERRO] Falha apos 5 tentativas - ...`). Nunca vira `completed`. |
+| Stream cortado | O run vira `failed` com `partial=true`; o texto parcial fica em `result.txt` e o pai recebe o motivo e o parcial. |
+| Contexto estourou, resposta vazia | `failed` com o motivo. |
+| Prazo (`runTimeoutSeconds`) | O sistema operacional impõe o prazo (`timeout`, com 30 s de folga) mesmo que o pai morra. O pai marca `timeout` ao passar do prazo. Sem o comando `timeout` no sistema, só o pai impõe o prazo. |
+| Filho morre | `failed` com `process_exit` no próximo `tick`. |
+| PID reaproveitado | O pid só conta como vivo, e só recebe kill, se a linha de comando for `--worker <runId>`. Se a identidade não puder ser lida, vale o `kill -0` de antes. |
+| Orquestrador morre | O estado fica em `run.json` (gravação atômica). Filhos já iniciados continuam e gravam o resultado; o anúncio é entregue na próxima sessão, uma vez só. Runs ainda na fila só avançam quando uma sessão volta a rodar o scheduler. |
+| `run.json` corrompido | Ignorado na listagem; não derruba o pai. |
+| O pai recebe uma falha | O anúncio diz o motivo, inclui o parcial e orienta: tentar de novo (no máximo uma vez), assumir a tarefa ou avisar o usuário. |
+
+Cobertura: `tests/subagents_failures_spec.lua`.

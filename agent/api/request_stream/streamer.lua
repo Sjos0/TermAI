@@ -135,6 +135,7 @@ function M.pensar_stream(ctx, txt, role)
       local wait = utils.wait_time(attempt, rcfg)
       ui.kill_spinner()
       ui.show_retry(attempt, rcfg.max_retries, last_error, wait)
+      require("tools.subagents.events").retry(ctx, attempt, rcfg.max_retries, last_error, wait)
       os.execute(string.format("sleep %d", wait))
       ui.restart_spinner()
     else

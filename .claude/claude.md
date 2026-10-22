@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-21 - [Subagentes: falhas de requisição, stream cortado, prazo do SO e pid reaproveitado]
+**Contexto:** Quando as tentativas de requisição esgotavam, o `pensar_stream` devolvia a string `[ERRO] Falha apos N tentativas...` e o worker a gravava como resultado com status `completed`; um stream cortado também virava `completed`. O pai recebia erro como se fosse resposta. Além disso, o pid do filho podia ser reaproveitado por outro programa (e receber kill), e nada impunha o prazo se o pai morresse.
+**Files Modified:** `tools/subagents/worker.lua` (classifica a saída: `[ERRO`, vazia, contexto estourado ou stream cortado viram `failed`; parcial preservado com `partial=true`); `tools/subagents/launcher.lua` (identidade do pid por `/proc` ou `ps`, `timeout` do SO no `start`); `tools/subagents/scheduler.lua` e `control.lua` (passam `runId` e prazo); `tools/subagents/announce.lua` (motivo, parcial e orientação ao pai); `tools/subagents/events.lua` e `agent/api/request_stream/streamer.lua` (evento `retry` por tentativa do filho); `tests/subagents_failures_spec.lua` (NOVO); `docs/SUBAGENTS.md` (seção Falhas e recuperação); `CONTEXT.md`.
+**Learning:** (1) Retorno em string `[ERRO...]` não é exceção: quem consome precisa classificar. (2) Fase vermelha antes da correção: a spec nova falhou 11 checks no código antigo e passou depois. (3) Prazo imposto só pelo pai não vale se o pai morre; o SO precisa impor.
+**Prevention:** Spec cobre requisição esgotada, stream cortado, resposta normal, pid reaproveitado, `timeout` do SO, retomada após morte do pai (anúncio único), `run.json` corrompido, anúncio de falha e eventos `retry`.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** `subagents_failures_spec` e specs existentes de subagentes passam localmente; resultado da CI nos checks da PR.
+
+
+---
+
 ## 2026-10-21 - [Subagentes (PR #82): permissões headless, regressão #85/#86, versão e CONTEXT.md]
 **Contexto:** O e2e com modelo real (`e2e-kilo`) reportava `ORQUESTRADOR NÃO CONFIRMADO` porque o modelo chamava `Read` e o modo headless negava o diálogo de permissão (`ask`), deixando a resposta vazia. O job tem `continue-on-error`, então o check ficava verde mesmo assim. Em paralelo, a branch estava com `VERSION` atrás do `main` (PRs #75 e #80 já mergeadas) e as issues #84, #85 e #86 seguiam abertas sem teste de regressão para #85.
 **Files Modified:** `tools/exec/permissions/check.lua` (tools internas `sessions_spawn`, `subagents_listar`, `subagents_info` e `subagents_log` liberadas sem diálogo; `subagents_matar` e `agents_criar` continuam pedindo confirmação); `e2e/kilo_orchestrator.lua` (probe pré-aprova `Read` via `hooks.permissions.Read`, só na config da CI); `tests/subagents_permissions_spec.lua` (NOVO); `tests/subagent_task_once_spec.lua` (NOVO — regressão #85/#86); `VERSION` (`1.21.10.2026`); `docs/SUBAGENTS.md` (status atualizado, `--worker` no lugar de `--subagent`); `CONTEXT.md` (NOVO — contexto do repositório para outros agentes; não faz parte do runtime); merge de `origin/main` na branch (sem rebase).

@@ -6,7 +6,10 @@ local M = {}
 
 local function body(rec)
   if rec.status == "completed" then return registry.read_result(rec.runId) or "" end
-  return "erro: " .. tostring(rec.error or rec.status)
+  local out = "erro: " .. tostring(rec.error or rec.status)
+  local partial = rec.partial and registry.read_result(rec.runId) or ""
+  if partial ~= "" then out = out .. "\n[resultado parcial, incompleto]\n" .. partial end
+  return out .. "\nO trabalho do subagente NÃO foi concluído. Decida: tentar de novo (no máximo uma vez), assumir a tarefa você mesmo ou avisar o usuário."
 end
 
 -- Injeta no contexto do pai as respostas finais. A TUI só mostra uma linha de status.

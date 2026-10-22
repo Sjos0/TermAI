@@ -36,7 +36,7 @@ function M.matar(args)
   local r = registry.load(args.runId)
   if not r then return "❌ run não encontrado: " .. tostring(args.runId) end
   if scheduler.is_terminal(r) then return "Run já terminado: " .. r.status end
-  launcher.kill(r.pid)
+  launcher.kill(r.pid, r.runId)
   r.status, r.error, r.finished_at = "killed", "morto pelo usuário", os.time()
   r.announce_pending = true
   registry.save(r)

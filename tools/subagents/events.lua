@@ -11,6 +11,13 @@ function M.append(run_id, kind, text)
   return true
 end
 
+-- Registra no run do filho cada tentativa de requisição que falhou (o pai não grava nada).
+function M.retry(ctx, attempt, max, err, wait)
+  if not (ctx and ctx.is_subagent and ctx.run_id) then return false end
+  return M.append(ctx.run_id, "retry", string.format("tentativa %d/%d falhou: %s (próxima em %ds)",
+    attempt, max, tostring(err), wait or 0))
+end
+
 -- Últimas n linhas do log (padrão 20).
 function M.tail(run_id, n)
   local lines = {}
