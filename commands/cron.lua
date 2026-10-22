@@ -1,6 +1,7 @@
 -- TermAI cron: inspect and manually execute OS-cron jobs without a resident scheduler.
-local BIN_DIR = os.getenv("TERMAI_CRON_BIN_DIR") or "/home/ubuntu/.local/bin"
-local STATE_DIR = os.getenv("TERMAI_CRON_STATE_DIR") or "/home/ubuntu/.local/state/termai/jobs"
+local HOME_DIR = os.getenv("HOME") or "/data/data/com.termux/files/home"
+local BIN_DIR = os.getenv("TERMAI_CRON_BIN_DIR") or (HOME_DIR .. "/.local/bin")
+local STATE_DIR = os.getenv("TERMAI_CRON_STATE_DIR") or (HOME_DIR .. "/.local/state/termai/jobs")
 local CRONTAB_FILE = os.getenv("TERMAI_CRONTAB_FILE")
 
 local JOBS = {

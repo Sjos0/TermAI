@@ -68,8 +68,8 @@ O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. C
 ## Versionamento e atualização
 
 - `VERSION` segue `1.<dia>.<mês>.<ano>` (exemplo: `1.21.10.2026`).
-- `TermAI update` faz `git fetch origin main` e `git reset --hard origin/main`. Recusa árvore de trabalho suja, a menos que use `--force`. Ou seja, atualiza pelo `main`, não por releases.
-- A única release publicada no GitHub é `v1.2.0` (24/07/2026), desatualizada em relação ao `VERSION` (issue #74).
+- `TermAI update` atualiza para a última release (tag verificada: precisa estar no `main`). `--main` segue a branch; `--rollback` volta ao commit anterior.
+- Release atual: `v1.22.10.2026`, publicada no fim da PR de release. A antiga `v1.2.0` foi substituída (issue #74).
 
 ## Registros de contribuição
 

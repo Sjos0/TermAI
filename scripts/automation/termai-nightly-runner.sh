@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 umask 077
-export HOME="/home/ubuntu"
-export PATH="/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin"
+export HOME="${HOME:-/root}"
+export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
 export TMPDIR="/tmp"
 JOB="$1"
 case "$JOB" in
-  bugs-hunter) PROMPT="/home/ubuntu/projects/TermAI/scripts/automation/prompts/bugs-hunter.md"; MAX_ITER=32 ;;
-  code-review) PROMPT="/home/ubuntu/projects/TermAI/scripts/automation/prompts/code-review.md"; MAX_ITER=64 ;;
+  bugs-hunter) PROMPT="$HOME/projects/TermAI/scripts/automation/prompts/bugs-hunter.md"; MAX_ITER=32 ;;
+  code-review) PROMPT="$HOME/projects/TermAI/scripts/automation/prompts/code-review.md"; MAX_ITER=64 ;;
   *) echo "Uso: termai-nightly-runner.sh bugs-hunter|code-review" >&2; exit 2 ;;
 esac
-HOME_DIR="/home/ubuntu"
-REPO="/home/ubuntu/projects/TermAI"
-STATE="/home/ubuntu/.local/state/termai"
+HOME_DIR="$HOME"
+REPO="${TERMAI_REPO:-$HOME/projects/TermAI}"
+STATE="$HOME/.local/state/termai"
 STAMP="$(date +%Y%m%dT%H%M%S%z)"
 RUN_DIR="$STATE/jobs/$JOB/$STAMP"
 mkdir -p "$RUN_DIR" "$STATE/locks"
 exec 9>"$STATE/locks/$JOB.lock"
 flock -n 9 || { echo "[$(date -Is)] $JOB já está em execução; saída sem duplicar."; exit 0; }
-exec 8>"/home/ubuntu/.local/state/termai-nightly.lock"
+exec 8>"$HOME/.local/state/termai-nightly.lock"
 flock -w 7200 8 || { echo "[$(date -Is)] Timeout esperando lock global; nenhum job executado."; exit 75; }
 LOG="$RUN_DIR/run.log"
 exec > >(tee -a "$LOG") 2>&1
@@ -79,5 +79,5 @@ git pull --ff-only origin main
 snapshot before
 echo "[$(date -Is)] Executando TermAI run com fallback por modelo (3 tentativas/modelo)."
 timeout --signal=TERM --kill-after=30s 3600s env HOME="$HOME_DIR" TMPDIR=/tmp \
-  /home/ubuntu/.local/bin/TermAI run --model kilo/kilo-auto/free \
+  $HOME/.local/bin/TermAI run --model kilo/kilo-auto/free \
   --prompt-file "$PROMPT" --max-iter "$MAX_ITER"

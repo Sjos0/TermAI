@@ -2,8 +2,8 @@
 
 ## Ambiente TermAI na VPS e acesso sem vazamento de metadados
 - O agente executado é TermAI, em modo não interativo (comando TermAI run), não Codex/Kilo CLI.
-- Primeiro leia somente o system prompt canônico via API semântica: /home/ubuntu/.local/bin/termai-vault read "Agents/ChatGPT/Workspace/Agents Person/Ag. Bugs Hunter.md".
-- Para localizar referências use /home/ubuntu/.local/bin/termai-vault search "termo" "pasta" 5; para listar use /home/ubuntu/.local/bin/termai-vault list "pasta".
+- Primeiro leia somente o system prompt canônico via API semântica: ~/.local/bin/termai-vault read "Agents/ChatGPT/Workspace/Agents Person/Ag. Bugs Hunter.md".
+- Para localizar referências use ~/.local/bin/termai-vault search "termo" "pasta" 5; para listar use ~/.local/bin/termai-vault list "pasta".
 - O helper imprime somente conteúdo/caminhos/trechos relevantes e remove o bloco global de memória/configuração que a API anexa a cada resposta. Não use filesystem/RDC para ler o Vault nem imprima a resposta JSON bruta da API.
 
 
@@ -32,10 +32,10 @@ Antes de analisar o repositório, leia integralmente e nesta ordem:
 5. `1. Projetos/3. Project TermAI/Mapa_mental_do_projeto.md`
 6. `1. Projetos/3. Project TermAI/Diretriz_de_arquitetura.md`
 
-Esses documentos estão no Vault Obsidiana, cuja raiz é `/home/ubuntu/Device/backup/Storage/Documents/Obsidiana`. Para ler o conteúdo do Vault, use exclusivamente a API semântica local em `http://127.0.0.1:8766`, com POST para `/read` e JSON `{"path":"CAMINHO_RELATIVO_DO_VAULT"}`. Extraia e leia integralmente `result.content` da resposta. Não leia nem modifique notas do Vault diretamente pelo sistema de arquivos. Se um arquivo obrigatório não puder ser lido pela API, registre precisamente a falha e não presuma seu conteúdo.
+Esses documentos estão no Vault Obsidiana, cuja raiz é `~/Device/backup/Storage/Documents/Obsidiana`. Para ler o conteúdo do Vault, use exclusivamente a API semântica local em `http://127.0.0.1:8766`, com POST para `/read` e JSON `{"path":"CAMINHO_RELATIVO_DO_VAULT"}`. Extraia e leia integralmente `result.content` da resposta. Não leia nem modifique notas do Vault diretamente pelo sistema de arquivos. Se um arquivo obrigatório não puder ser lido pela API, registre precisamente a falha e não presuma seu conteúdo.
 
 ## 2. Skill de diagnóstico
-Antes da investigação, procure e leia integralmente a skill `diagnosing-bugs`, se estiver instalada. Verifique primeiro o caminho global do usuário `/home/ubuntu/.agents/skills/diagnosing-bugs/SKILL.md` (instalação canônica atual). Se não existir, procure também nos demais diretórios de skills do TermAI/usuário fora do Vault. Para procurar dentro do Vault, use somente a API semântica local (consulte primeiro `Agents/ChatGPT/skills/chatgpt-persistent-memory/references/vault-tools.md` para confirmar o contrato da API; prefira `POST /search` com `{"query":"diagnosing-bugs","folder":"Agents/ChatGPT/Workspace/skills","limit":50}` para evitar listar a Vault inteira. Se precisar listar, `POST /list` recebe `{"folder":"Agents/ChatGPT/Workspace/skills"}` — o parâmetro é `folder`, não `path`. Para ler um arquivo encontrado, use `POST /read` com `{"path":"CAMINHO_RELATIVO_DO_ARQUIVO"}`.); nunca procure nem leia o conteúdo do Vault diretamente pelo sistema de arquivos. Se não existir, registre que não estava disponível; não invente conteúdo.
+Antes da investigação, procure e leia integralmente a skill `diagnosing-bugs`, se estiver instalada. Verifique primeiro o caminho global do usuário `~/.agents/skills/diagnosing-bugs/SKILL.md` (instalação canônica atual). Se não existir, procure também nos demais diretórios de skills do TermAI/usuário fora do Vault. Para procurar dentro do Vault, use somente a API semântica local (consulte primeiro `Agents/ChatGPT/skills/chatgpt-persistent-memory/references/vault-tools.md` para confirmar o contrato da API; prefira `POST /search` com `{"query":"diagnosing-bugs","folder":"Agents/ChatGPT/Workspace/skills","limit":50}` para evitar listar a Vault inteira. Se precisar listar, `POST /list` recebe `{"folder":"Agents/ChatGPT/Workspace/skills"}` — o parâmetro é `folder`, não `path`. Para ler um arquivo encontrado, use `POST /read` com `{"path":"CAMINHO_RELATIVO_DO_ARQUIVO"}`.); nunca procure nem leia o conteúdo do Vault diretamente pelo sistema de arquivos. Se não existir, registre que não estava disponível; não invente conteúdo.
 
 ## 3. GitHub e escopo
 Use o GitHub CLI (`gh`) autenticado na VPS para consultar e investigar **somente** `Sjos0/TermAI`. Confirme o repositório atual antes de executar comandos. Não use outros repositórios, integrações ou serviços para esta tarefa.

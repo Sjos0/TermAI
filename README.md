@@ -58,7 +58,7 @@ TermAI help     # ajuda detalhada
 O instalador:
 
 - Instala `lua54`, `git` e `curl` se ainda não estiverem presentes.
-- Clona ou atualiza o repositório em `$HOME/TermAI`.
+- Não clona o repositório: antes do instalador, rode `git clone https://github.com/Sjos0/TermAI.git ~/TermAI`.
 - Escreve o wrapper `$PREFIX/bin/TermAI` que invoca `lua5.4 $HOME/TermAI/main.lua` com loop de restart (exit code 123).
 - O pacote Termux é `lua54`; o binário é `lua5.4`.
 
@@ -86,7 +86,7 @@ Após a instalação, o entry point `main.lua` despacha subcomandos:
 | TermAI config | Configurações (timeout, hooks, modelos…) |
 | TermAI models | Gerenciar provedores e modelos de IA |
 | TermAI status | Status da sessão ativa |
-| TermAI update | Atualiza o TermAI a partir do GitHub (origin/main) |
+| TermAI update | Atualiza para a última release publicada. `--main` segue a branch main; `--rollback` volta ao commit anterior |
 | TermAI skills | Instala e gerencia skills do agente |
 | TermAI npx | Alias de skills (instalador de skills) |
 | TermAI restart | Solicita restart do processo TermAI |
@@ -171,7 +171,7 @@ Lista canônica em `commands/available.lua` (e tratada pelo router em `agent/mai
 
 - `TermAI tui` — inicia o agente
 - `TermAI models add-provider` — configura provedor
-- `TermAI update` — atualiza a partir do GitHub
+- `TermAI update` — atualiza para a última release publicada
 - `TermAI help` — ajuda detalhada
 
 ---
