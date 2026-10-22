@@ -1,7 +1,9 @@
--- ui/subagent_block.lua — Subagentes na TUI aparecem como uma tool: uma linha amarela ao iniciar
--- e uma linha verde (ou vermelha) ao terminar. Só ACRESCENTA linhas: nunca sobe o cursor nem
--- redesenha. No Termux a largura quebra linhas, então o antigo ESC[nA apagava o lugar errado
--- e deixava resíduos empilhados. Não mostra as tools internas do filho.
+-- ui/subagent_block.lua — Subagente lançado aparece na TUI como uma linha amarela.
+-- O término NÃO é impresso aqui: a linha verde (ou vermelha) sai junto com o aviso ao pai
+-- (tools/subagents/announce.lua), no ponto em que o pai é acordado. Assim a bolinha verde
+-- significa "terminou e o orquestrador foi avisado", não "o lançamento foi confirmado".
+-- Só ACRESCENTA linhas: nunca sobe o cursor (no Termux a largura quebra linhas e o ESC[nA
+-- deixava resíduos). Não mostra as tools internas do filho.
 local core     = require("ui.core")
 local registry = require("tools.subagents.registry")
 local redact   = require("tools.subagents.redact")
@@ -9,7 +11,7 @@ local c        = core.c
 
 local M = {}
 
-local started, ended = {}, {}   -- runId -> true, já anunciados nesta sessão
+local seen = {}                 -- runId -> true, já anunciado (amarela) nesta sessão
 local baselined = false
 local DONE = { completed = true, failed = true, timeout = true, killed = true }
 
@@ -21,25 +23,22 @@ end
 
 -- Primeira chamada: runs que já existiam antes da TUI abrir não são anunciados de novo.
 local function baseline(runs)
-  for _, r in ipairs(runs) do
-    started[r.runId] = true
-    if DONE[r.status] then ended[r.runId] = true end
-  end
+  for _, r in ipairs(runs) do seen[r.runId] = true end
   baselined = true
 end
 
-local function end_line(r)
-  local id = r.runId
+-- Linha de término: verde ao concluir, vermelha com o motivo. Usada no aviso ao pai.
+function M.end_line(r)
   if r.status == "completed" then
-    return c.green .. "✓" .. c.reset .. " Subagente " .. id .. c.gray
-      .. " · concluído · resultado já está no contexto do pai" .. c.reset
+    return c.green .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray
+      .. " · concluído · resultado entregue ao orquestrador" .. c.reset
   end
   local why = r.status
   if r.status == "failed" then why = trim(redact.clean(r.error or "falhou"), 70) end
-  return c.red .. "✗" .. c.reset .. " Subagente " .. id .. c.gray .. " · " .. why .. c.reset
+  return c.red .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray .. " · " .. why .. c.reset
 end
 
--- Linhas novas para o agente pai. Cada evento sai uma única vez.
+-- Linhas amarelas de lançamento para o agente pai. Cada lançamento sai uma única vez.
 function M.pending_lines(agent_id)
   local parent = agent_id or "main"
   local mine = {}
@@ -50,14 +49,13 @@ function M.pending_lines(agent_id)
 
   local out = {}
   for _, r in ipairs(mine) do
-    if not started[r.runId] and (r.status == "running" or r.status == "queued") then
-      started[r.runId] = true
-      out[#out + 1] = c.yellow .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray
-        .. " · " .. trim(redact.clean(r.task or ""), 60) .. c.reset
-    end
-    if DONE[r.status] and not ended[r.runId] then
-      started[r.runId], ended[r.runId] = true, true
-      out[#out + 1] = end_line(r)
+    if not seen[r.runId] then
+      seen[r.runId] = true
+      -- Só o lançamento é mostrado aqui; um run que já terminou antes de ser visto não é anunciado por aqui.
+      if r.status == "running" or r.status == "queued" then
+        out[#out + 1] = c.yellow .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray
+          .. " · lançado pelo orquestrador · " .. trim(redact.clean(r.task or ""), 50) .. c.reset
+      end
     end
   end
   return out

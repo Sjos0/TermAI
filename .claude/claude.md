@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-22 - [Subagentes na TUI: verde só junto com o aviso ao pai]
+**Contexto:** O usuário viu a bolinha amarela e, logo depois, a verde, como se fosse confirmação de criação. O `flush` do tick de idle imprimia a verde assim que o filho terminava, sem o pai ter sido acordado, e o aviso (`announce.inject`) imprimia outra linha cinza, duplicando o evento.
+**Files Modified:** `ui/subagent_block.lua` (só imprime a amarela de lançamento; `end_line` exportado para o aviso); `tools/subagents/announce.lua` (a linha verde/vermelha sai no momento em que o pai é acordado, no mesmo estilo da amarela); `tests/subagent_block_spec.lua` (reescrito: nada antes do aviso, aviso uma vez, não interrompe quem digita, pendência por pai).
+**Learning:** (1) Um evento que cabe em dois lugares do código vira duas mensagens; o término tem que sair só do ponto que acorda o pai. (2) Mutação que não cai no caminho de teste não prova nada: o primeiro mutante passou porque o run já estava em `seen`; o mutante do defeito real (verde pelo flush) é o que a spec pega.
+**Prevention:** Spec falha se o verde sair antes do aviso, se o aviso repetir, se a pendência de um pai acordar outro, ou se tools do filho aparecerem.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** `subagent_block_spec` OK; mutação do defeito real falha a spec (rc 1); demais specs de subagentes e de update passam.
+
+
+---
+
 ## 2026-10-22 - [Subagentes na TUI: bloco ao vivo vira tool (issue #88) e mascaramento de segredos]
 **Contexto:** No aparelho, o bloco ao vivo redesenhava com `ESC[nA` a cada 2 s e mostrava a última tool de cada filho. No Termux a quebra de linha por largura fazia o cursor subir pouco, e os cabeçalhos ficavam empilhados. Além disso, o `curl` de um subagente imprimia `Authorization: token ghp_…` na tela e no `events.jsonl`.
 **Files Modified:** `ui/subagent_block.lua` (reescrito: só acrescenta uma linha amarela ao iniciar e uma verde ou vermelha ao terminar; não reescreve; não mostra tools do filho; não interrompe quem digita; ignora runs anteriores à TUI); `tools/subagents/redact.lua` (NOVO: mascara `Authorization`, `Bearer`, `ghp_`, `github_pat_`, `sk-`); `tools/subagents/events.lua` (grava texto mascarado); `agent/main_loop.lua` (usa `flush` no lugar de `refresh`/`render`/`finish`); `tests/subagent_block_spec.lua` (reescrito, 17 checagens); `docs/SUBAGENTS.md` (seção de exibição na TUI).
