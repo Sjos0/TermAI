@@ -52,7 +52,7 @@ if g then g:close() end
 
 -- (6) Versão: formato 1.<dia>.<mês>.<ano> e data de hoje (22/10/2026).
 local v = (io.open("VERSION"):read("*a") or ""):gsub("%s", "")
-check(v == "1.22.10.2026", "VERSION é 1.22.10.2026 (data de hoje)")
+check(v == "1.23.10.2026", "VERSION é 1.23.10.2026 (data de hoje)")
 
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
 os.exit(failures == 0 and 0 or 1)
