@@ -242,18 +242,18 @@ else
 end
 
 if update_src then
-  T("update.lua usa reset --hard origin/main",
-    update_src:find("reset %-%-hard origin/main") ~= nil)
+  T("update.lua aplica reset --hard no alvo (release ou origin/main)",
+    update_src:find("reset --hard \" .. target_ref", 1, true) ~= nil)
   T("update.lua NÃO usa git pull como caminho principal",
     update_src:find("git .- pull") == nil)
   T("update.lua define BASE_Q (quoting)",
     update_src:find("BASE_Q") ~= nil
     and update_src:find("gsub") ~= nil)
-  T("update.lua tem read_remote_version",
-    update_src:find("read_remote_version") ~= nil
-    and update_src:find("show origin/main:VERSION") ~= nil)
-  T("update.lua imprime label Remoto: no --check",
-    update_src:find("Remoto:") ~= nil)
+  T("update.lua consulta a última release e valida a tag no main",
+    update_src:find("releases/latest", 1, true) ~= nil
+    and update_src:find("merge-base --is-ancestor", 1, true) ~= nil)
+  T("update.lua imprime label Alvo: no --check",
+    update_src:find("Alvo:", 1, true) ~= nil)
   T("update.lua nunca referencia ~/.TermAI/",
     update_src:find("%.TermAI") == nil
     and update_src:find("~/.TermAI") == nil)
