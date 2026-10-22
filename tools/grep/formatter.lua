@@ -2,7 +2,9 @@ local M = {}
 
 function M.format(result, pattern)
   if not result or result.match_count == 0 then
-    return "🔍 Nenhum resultado encontrado para o padrão: '" .. pattern .. "'"
+    local msg = "🔍 Nenhum resultado encontrado para o padrão: '" .. pattern .. "'"
+    if result and result.hint then msg = msg .. "\n⚠️ " .. result.hint end
+    return msg
   end
 
   local out = {}
