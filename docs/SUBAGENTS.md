@@ -122,3 +122,8 @@ Hoje `ui/input.lua` lê com `io.read(1)` bloqueante. Enquanto o usuário não di
 | O pai recebe uma falha | O anúncio diz o motivo, inclui o parcial e orienta: tentar de novo (no máximo uma vez), assumir a tarefa ou avisar o usuário. |
 
 Cobertura: `tests/subagents_failures_spec.lua`.
+
+## Exibição na TUI (issue #88)
+
+Cada subagente aparece como uma tool do pai: uma linha amarela ao iniciar e uma linha verde (ou vermelha, com o motivo) ao terminar, uma única vez cada. A TUI só acrescenta linhas; não redesenha nem sobe o cursor, porque no Termux a largura quebra linhas e o redesenho deixava resíduos. As tools internas do filho não são mostradas. Segredos (tokens, `Authorization`, `Bearer`, `sk-`) são mascarados pelo módulo `tools/subagents/redact.lua`, tanto na tela quanto no `events.jsonl`. Enquanto o usuário digita, as linhas ficam pendentes. Runs que já existiam antes da TUI abrir não são anunciados de novo.
+Cobertura: `tests/subagent_block_spec.lua`.

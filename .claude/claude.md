@@ -4,6 +4,18 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-22 - [Subagentes na TUI: bloco ao vivo vira tool (issue #88) e mascaramento de segredos]
+**Contexto:** No aparelho, o bloco ao vivo redesenhava com `ESC[nA` a cada 2 s e mostrava a última tool de cada filho. No Termux a quebra de linha por largura fazia o cursor subir pouco, e os cabeçalhos ficavam empilhados. Além disso, o `curl` de um subagente imprimia `Authorization: token ghp_…` na tela e no `events.jsonl`.
+**Files Modified:** `ui/subagent_block.lua` (reescrito: só acrescenta uma linha amarela ao iniciar e uma verde ou vermelha ao terminar; não reescreve; não mostra tools do filho; não interrompe quem digita; ignora runs anteriores à TUI); `tools/subagents/redact.lua` (NOVO: mascara `Authorization`, `Bearer`, `ghp_`, `github_pat_`, `sk-`); `tools/subagents/events.lua` (grava texto mascarado); `agent/main_loop.lua` (usa `flush` no lugar de `refresh`/`render`/`finish`); `tests/subagent_block_spec.lua` (reescrito, 17 checagens); `docs/SUBAGENTS.md` (seção de exibição na TUI).
+**Learning:** (1) Redesenho com cursor para cima não sobrevive a quebra de linha por largura: prefira só acrescentar linhas. (2) Um texto que o agente mostra pode conter segredo; a redação tem que ficar no ponto único de escrita (events) e na exibição, não só num dos dois. (3) A mutação na redação foi pega pela spec (rc 1), e restaurada (rc 0).
+**Prevention:** A spec trava: uma linha por evento, sem tools do filho, sem `ESC[nA`, espera o campo esvaziar, mascara segredo na tela e no log.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** `subagent_block_spec` 17 checagens OK; mutação na redação falha a spec; resultado da CI nos checks da PR.
+**PR:** #88 (`fix/88-subagents-tui-block`).
+
+
+---
+
 ## 2026-10-21 - [Subagentes: falhas de requisição, stream cortado, prazo do SO e pid reaproveitado]
 **Contexto:** Quando as tentativas de requisição esgotavam, o `pensar_stream` devolvia a string `[ERRO] Falha apos N tentativas...` e o worker a gravava como resultado com status `completed`; um stream cortado também virava `completed`. O pai recebia erro como se fosse resposta. Além disso, o pid do filho podia ser reaproveitado por outro programa (e receber kill), e nada impunha o prazo se o pai morresse.
 **Files Modified:** `tools/subagents/worker.lua` (classifica a saída: `[ERRO`, vazia, contexto estourado ou stream cortado viram `failed`; parcial preservado com `partial=true`); `tools/subagents/launcher.lua` (identidade do pid por `/proc` ou `ps`, `timeout` do SO no `start`); `tools/subagents/scheduler.lua` e `control.lua` (passam `runId` e prazo); `tools/subagents/announce.lua` (motivo, parcial e orientação ao pai); `tools/subagents/events.lua` e `agent/api/request_stream/streamer.lua` (evento `retry` por tentativa do filho); `tests/subagents_failures_spec.lua` (NOVO); `docs/SUBAGENTS.md` (seção Falhas e recuperação); `CONTEXT.md`.

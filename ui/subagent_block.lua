@@ -1,79 +1,79 @@
--- ui/subagent_block.lua — Bloco ao vivo dos subagentes, logo acima do prompt. Reescreve só quando muda.
-local core      = require("ui.core")
-local registry  = require("tools.subagents.registry")
-local events    = require("tools.subagents.events")
-local json      = require("json")
-local c         = core.c
+-- ui/subagent_block.lua — Subagentes na TUI aparecem como uma tool: uma linha amarela ao iniciar
+-- e uma linha verde (ou vermelha) ao terminar. Só ACRESCENTA linhas: nunca sobe o cursor nem
+-- redesenha. No Termux a largura quebra linhas, então o antigo ESC[nA apagava o lugar errado
+-- e deixava resíduos empilhados. Não mostra as tools internas do filho.
+local core     = require("ui.core")
+local registry = require("tools.subagents.registry")
+local redact   = require("tools.subagents.redact")
+local c        = core.c
 
 local M = {}
 
-local MAX_ROWS = 5
-local drawn = 0          -- linhas do bloco atualmente na tela
-local last_text = nil    -- conteúdo da última escrita (evita redesenho à toa)
+local started, ended = {}, {}   -- runId -> true, já anunciados nesta sessão
+local baselined = false
+local DONE = { completed = true, failed = true, timeout = true, killed = true }
 
--- Texto curto (em caracteres UTF-8, não bytes) para não quebrar a linha.
+-- Texto curto em caracteres UTF-8 (não bytes), para não quebrar a linha.
 local function trim(s, n)
   if utf8.len(s) == nil or utf8.len(s) <= n then return s end
   return s:sub(1, utf8.offset(s, n + 1) - 1) .. "…"
 end
 
--- Última ferramenta usada pelo subagente, lida do log de eventos.
-local function last_tool(run_id)
-  local lines = events.tail(run_id, 30)
-  for i = #lines, 1, -1 do
-    local ok, ev = pcall(json.decode, lines[i])
-    if ok and type(ev) == "table" and ev.kind == "tool" and ev.text then return ev.text end
+-- Primeira chamada: runs que já existiam antes da TUI abrir não são anunciados de novo.
+local function baseline(runs)
+  for _, r in ipairs(runs) do
+    started[r.runId] = true
+    if DONE[r.status] then ended[r.runId] = true end
   end
-  return nil
+  baselined = true
 end
 
--- Linhas do bloco para o agente pai. Vazio quando não há subagente ativo.
-function M.render(agent_id)
+local function end_line(r)
+  local id = r.runId
+  if r.status == "completed" then
+    return c.green .. "✓" .. c.reset .. " Subagente " .. id .. c.gray
+      .. " · concluído · resultado já está no contexto do pai" .. c.reset
+  end
+  local why = r.status
+  if r.status == "failed" then why = trim(redact.clean(r.error or "falhou"), 70) end
+  return c.red .. "✗" .. c.reset .. " Subagente " .. id .. c.gray .. " · " .. why .. c.reset
+end
+
+-- Linhas novas para o agente pai. Cada evento sai uma única vez.
+function M.pending_lines(agent_id)
   local parent = agent_id or "main"
-  local active, running, queued = {}, 0, 0
+  local mine = {}
   for _, r in ipairs(registry.list()) do
-    if (r.status == "running" or r.status == "queued") and (r.parent_agent or "main") == parent then
-      active[#active + 1] = r
-      if r.status == "running" then running = running + 1 else queued = queued + 1 end
-    end
+    if (r.parent_agent or "main") == parent then mine[#mine + 1] = r end
   end
-  if #active == 0 then return {} end
+  if not baselined then baseline(mine); return {} end
 
-  local rows = { c.yellow .. "⬤" .. c.reset .. c.bold .. " Subagentes" .. c.reset
-    .. c.gray .. string.format(" · %d ativo(s) · %d na fila", running, queued) .. c.reset }
-  for i, r in ipairs(active) do
-    if i > MAX_ROWS then
-      rows[#rows + 1] = c.gray .. string.format("  … +%d", #active - MAX_ROWS) .. c.reset
-      break
+  local out = {}
+  for _, r in ipairs(mine) do
+    if not started[r.runId] and (r.status == "running" or r.status == "queued") then
+      started[r.runId] = true
+      out[#out + 1] = c.yellow .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray
+        .. " · " .. trim(redact.clean(r.task or ""), 60) .. c.reset
     end
-    local dot = r.status == "running" and c.yellow or c.gray
-    local what = r.status == "queued" and "aguardando na fila" or (last_tool(r.runId) or "iniciando…")
-    rows[#rows + 1] = string.format("  %s⬤%s %s · %s · %s", dot, c.reset,
-      r.runId, tostring(r.agentId), trim(what, 48))
+    if DONE[r.status] and not ended[r.runId] then
+      started[r.runId], ended[r.runId] = true, true
+      out[#out + 1] = end_line(r)
+    end
   end
-  return rows
+  return out
 end
 
--- Desenha (ou redesenha no lugar) o bloco. prompt_visible: o cursor está na linha do prompt,
--- então o bloco é reescrito acima dela e o prompt é reimpresso.
-function M.refresh(rows, prompt_visible, prompt_text)
-  local text = table.concat(rows, "\n")
-  if text == last_text then return false end
-  last_text = text
-  if drawn > 0 then io.write(string.format("\27[%dA\r\27[J", drawn)) end
-  for _, row in ipairs(rows) do io.write(row, "\27[K\n") end
-  drawn = #rows
-  if prompt_visible and prompt_text then io.write(prompt_text) end
+-- Escreve as linhas pendentes acima do prompt. Não escreve enquanto o usuário digita
+-- (buffer_empty falso): as linhas ficam pendentes e saem quando o campo estiver vazio.
+function M.flush(agent_id, buffer_empty, prompt_text)
+  if buffer_empty == false then return false end
+  local lines = M.pending_lines(agent_id)
+  if #lines == 0 then return false end
+  io.write("\r\27[K")
+  for _, l in ipairs(lines) do io.write(l, "\27[K\n") end
+  if prompt_text then io.write(prompt_text) end
   io.flush()
   return true
 end
-
--- Chamado quando o prompt termina: o bloco fica no histórico e o próximo começa do zero.
-function M.finish()
-  drawn, last_text = 0, nil
-end
-
--- Linhas desenhadas agora (para testes).
-function M.drawn_lines() return drawn end
 
 return M

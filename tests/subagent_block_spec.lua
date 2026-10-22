@@ -1,4 +1,6 @@
--- tests/subagent_block_spec.lua — Bloco ao vivo dos subagentes (render, redesenho no lugar, acordar).
+-- tests/subagent_block_spec.lua — Subagentes na TUI como tool (issue #88):
+-- uma linha ao iniciar, uma ao terminar, nada de tools do filho, nada que sobe o cursor,
+-- não interrompe quem digita, não mostra o que já existia e mascara segredos.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
 local failures = 0
@@ -12,15 +14,16 @@ require("tools.agents.paths").base_override = root
 
 local registry = require("tools.subagents.registry")
 local events   = require("tools.subagents.events")
+local redact   = require("tools.subagents.redact")
 local block    = require("ui.subagent_block")
-local subs     = require("tools.subagents")
 
-local function run(id, status, agent, parent)
-  registry.save({ runId = id, kind = "clone", agentId = agent or "main", task = "t", status = status,
+local function run(id, status, task, parent, error_text)
+  registry.save({ runId = id, kind = "clone", agentId = "main", task = task or "t", status = status,
     created_at = os.time(), parent_agent = parent or "main", cleanup = "keep",
-    announce_consumed = false })
+    announce_consumed = false, error = error_text })
 end
 
+-- Captura tudo que o bloco escreve no terminal durante fn().
 local function capture(fn)
   local buf, orig = {}, io.write
   io.write = function(...) for _, v in ipairs({ ... }) do buf[#buf + 1] = tostring(v) end end
@@ -30,56 +33,67 @@ local function capture(fn)
   return table.concat(buf), res
 end
 
--- Sem subagentes: bloco vazio.
-check(#block.render("main") == 0, "sem subagentes ativos, o bloco não tem linhas")
-
-run("sub-aaa111", "running", "main")
-run("sub-bbb222", "queued", "main")
-run("sub-ccc333", "completed", "main")   -- terminado não aparece no bloco
-run("sub-ddd444", "running", "other", "outro-pai")    -- de outro pai não aparece
-events.append("sub-aaa111", "tool", "Read | arquivo.lua")
-events.append("sub-aaa111", "tool", "Grep | foo")
-
-local rows = block.render("main")
-local joined = table.concat(rows, "\n")
-check(#rows == 3, "cabeçalho + 2 subagentes do pai")
-check(joined:find("1 ativo(s)", 1, true) ~= nil and joined:find("1 na fila", 1, true) ~= nil,
-  "cabeçalho conta ativos e fila")
-check(joined:find("sub-aaa111", 1, true) ~= nil and joined:find("Grep | foo", 1, true) ~= nil,
-  "linha mostra a última ferramenta do subagente")
-check(joined:find("aguardando na fila", 1, true) ~= nil, "subagente na fila mostra 'aguardando na fila'")
-check(joined:find("sub-ccc333", 1, true) == nil and joined:find("sub-ddd444", 1, true) == nil,
-  "terminados e de outro pai ficam fora do bloco")
-
--- Muitas linhas: limita a 5 e mostra o contador.
-for i = 1, 7 do run(string.format("sub-e%03d", i), "queued", "main") end
-local many = block.render("main")
-check(table.concat(many, "\n"):find("… +", 1, true) ~= nil, "mais de 5 subagentes mostram '… +N'")
-
--- Redesenho: só escreve quando o conteúdo muda; sobe exatamente o número de linhas antigas.
-block.finish()
-local first = capture(function() block.refresh(rows, false) end)
-check(first:find("\27[", 1, true) ~= nil and not first:match("\27%[%d+A"), "primeiro desenho não sobe o cursor")
-local same = capture(function() block.refresh(rows, true, "P> ") end)
-check(same == "", "mesmo conteúdo não redesenha")
-local changed_rows = { rows[1], rows[2] }
-local redraw = capture(function() block.refresh(changed_rows, true, "P> ") end)
-check(redraw:find("\27[3A", 1, true) ~= nil, "redesenho sobe as 3 linhas do bloco antigo")
-check(redraw:find("P> ", 1, true) ~= nil, "redesenho reimprime o prompt no fim")
-check(block.drawn_lines() == 2, "contagem de linhas atualizada após redesenho")
-block.finish()
-check(block.drawn_lines() == 0, "finish zera o bloco para o próximo prompt")
-
--- Acordar: só quando há resultado terminado não anunciado para este pai.
-local ctx = { agent_id = "main", msgs = {} }
-for _, r in ipairs(registry.list()) do   -- terminados anteriores já foram entregues
-  if r.status == "completed" then r.announce_consumed = true; registry.save(r) end
+local all_output = {}
+local function flush(buffer_empty)
+  local out = capture(function() block.flush("main", buffer_empty == nil and true or buffer_empty, nil) end)
+  all_output[#all_output + 1] = out
+  return out
 end
-check(subs.has_pending(ctx) == false, "sem resultado pendente, não acorda")
-run("sub-fff555", "completed", "main")
-local rec = registry.load("sub-fff555"); rec.announce_consumed = false; registry.save(rec)
-check(subs.has_pending(ctx) == true, "resultado terminado e não anunciado acorda o pai")
-check(subs.has_pending({ agent_id = "outro", msgs = {} }) == false, "resultado de outro pai não acorda")
 
-print(failures == 0 and "\nTODOS OS TESTES PASSARAM" or ("\n" .. failures .. " FALHA(S)"))
+-- (0) Runs que já existiam antes da TUI abrir não são anunciados de novo.
+run("sub-old001", "completed", "tarefa antiga", "main")
+check(flush() == "", "runs que já existiam antes da TUI não são anunciados")
+
+-- (1) Ao iniciar: uma linha amarela, com runId e tarefa.
+run("sub-aaa111", "running", "Grep | foo")
+local start = flush()
+check(start:find("⬤", 1, true) and start:find("sub-aaa111", 1, true) and start:find("Grep | foo", 1, true),
+      "início: linha amarela com runId e tarefa")
+check(flush() == "", "início: não repete a mesma linha")
+
+-- (2) Tools internas do filho não aparecem.
+events.append("sub-aaa111", "tool", "Exec | curl -s https://api.github.com/repos")
+events.append("sub-aaa111", "tool", "Read | README.md")
+check(flush() == "", "tools internas do filho não geram linhas")
+
+-- (3) Ao terminar: uma linha verde, uma única vez, sem cursor para cima.
+run("sub-aaa111", "completed", "Grep | foo")
+local done = flush()
+check(done:find("✓", 1, true) and done:find("sub-aaa111", 1, true), "fim com sucesso: linha verde ✓")
+check(flush() == "", "fim: não repete a linha de conclusão")
+
+-- (4) Falha: linha vermelha com o motivo, e o segredo do motivo fica mascarado.
+run("sub-bbb222", "failed", "tarefa", "main", "[ERRO] Falha apos 5 tentativas - token ghp_SECRET123")
+local fail = flush()
+check(fail:find("✗", 1, true) and fail:find("sub-bbb222", 1, true), "falha: linha vermelha ✗")
+check(not fail:find("SECRET123", 1, true), "falha: segredo no motivo não aparece na tela")
+
+-- (5) Só os runs do próprio pai.
+run("sub-ccc333", "running", "outro pai", "outro")
+check(flush() == "", "run de outro pai não aparece")
+
+-- (6) Não interrompe quem está digitando: segura e mostra quando o campo esvaziar.
+run("sub-ddd444", "running", "tarefa segura")
+check(flush(false) == "", "com o usuário digitando, nada é escrito")
+check(flush(true):find("sub-ddd444", 1, true) ~= nil, "campo vazio: a linha pendente aparece")
+
+-- (7) Segredo na tarefa ou no comando é mascarado na tela e no log de eventos.
+run("sub-eee555", "running", 'curl -H "Authorization: token ghp_SECRET999"')
+local sec = flush()
+check(not sec:find("SECRET999", 1, true), "segredo na tarefa não aparece na tela")
+events.append("sub-eee555", "tool", 'Exec | curl -H "Authorization: token ghp_SECRET999"')
+local logged = table.concat(events.tail("sub-eee555", 10), "\n")
+check(not logged:find("SECRET999", 1, true), "segredo não é gravado no events.jsonl")
+
+-- (8) Nunca sobe o cursor nem redesenha.
+local cursor_up = false
+for _, out in ipairs(all_output) do if out:find("\27%[%d*A") then cursor_up = true end end
+check(not cursor_up, "nenhuma saída usa ESC[nA (cursor para cima)")
+
+-- (9) Redação: padrões isolados.
+check(redact.clean("Bearer abc123") == "Bearer ***", "redact: Bearer")
+check(redact.clean("chave sk-ABCdef12") == "chave sk-***", "redact: sk-")
+check(redact.clean("ola mundo") == "ola mundo", "redact: texto sem segredo fica igual")
+
+print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
 os.exit(failures == 0 and 0 or 1)
