@@ -50,7 +50,7 @@ Permissões ficam em `tools/exec/permissions/`. Ferramentas que não são `Exec`
 
 ## Subagentes
 
-O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. Cada subagente roda em um processo próprio (`TermAI run --worker <runId>`), com fila (`maxConcurrent`, `maxChildrenPerAgent`) e timeout (`runTimeoutSeconds`). O resultado entra no contexto do pai no próximo ponto seguro. A TUI mostra um bloco ao vivo e o comando `/subagents` controla as execuções. Um subagente não cria outros subagentes nem agentes. Desenho completo em `docs/SUBAGENTS.md`.
+O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. Cada subagente roda em um processo próprio (`TermAI run --worker <runId>`), com fila (`maxConcurrent`, `maxChildrenPerAgent`) e timeout (`runTimeoutSeconds`). O resultado entra no contexto do pai no próximo ponto seguro. A TUI mostra um bloco ao vivo e o comando `/subagents` controla as execuções. Um subagente não cria outros subagentes nem agentes. Falhas e recuperação (requisição esgotada, stream cortado, prazo, pid reaproveitado, pai que morre) estão em `docs/SUBAGENTS.md`.
 
 ## Convenções do projeto
 

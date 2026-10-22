@@ -62,9 +62,9 @@ function M.tick(cfg)
     if r.status == "running" then
       log.info("run_rss", { run_id = r.runId, child_pid = r.pid, child_rss_kb = log.rss_kb(r.pid) })
       if timed_out(r, lim) then
-        launcher.kill(r.pid)
+        launcher.kill(r.pid, r.runId)
         finish(r.runId, "timeout", "runTimeoutSeconds excedido")
-      elseif not launcher.alive(r.pid) then
+      elseif not launcher.alive(r.pid, r.runId) then
         finish(r.runId, "failed", "process_exit")
       end
     end
@@ -75,7 +75,7 @@ function M.tick(cfg)
   for _, r in ipairs(runs) do
     if running >= lim.maxConcurrent then break end
     if r.status == "queued" then
-      local pid = launcher.start(r.runId)
+      local pid = launcher.start(r.runId, tonumber(r.timeout_seconds) or lim.runTimeoutSeconds)
       local cur = registry.load(r.runId)
       if cur and cur.status == "queued" then
         if pid then
