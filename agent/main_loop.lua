@@ -62,13 +62,12 @@ function M.run(ctx)
         last_tick = os.time()
         pcall(scheduler.tick, ctx.cfg)
       end
-      sub_block.refresh(sub_block.render(ctx.agent_id), true, PROMPT_TEXT)
+      sub_block.flush(ctx.agent_id, buffer_empty, PROMPT_TEXT)
       return buffer_empty and subagents.has_pending(ctx)
     end
-    sub_block.refresh(sub_block.render(ctx.agent_id), false)
+    sub_block.flush(ctx.agent_id, true, nil)
     local input, pasted_texts, raw_input, wake =
       input_mod.read(is_tty() and { on_idle = on_idle } or nil)
-    sub_block.finish()
     if wake then
       input      = "↻ subagentes concluídos"
       raw_input  = "[sistema] Os subagentes terminaram. Leia as mensagens do sistema e continue."

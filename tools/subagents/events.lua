@@ -6,7 +6,7 @@ local M = {}
 function M.append(run_id, kind, text)
   local f = io.open(registry.dir(run_id) .. "/events.jsonl", "a")
   if not f then return false end
-  f:write(json.encode({ t = os.time(), kind = kind, text = tostring(text or "") }) .. "\n")
+  f:write(json.encode({ t = os.time(), kind = kind, text = require("tools.subagents.redact").clean(text) }) .. "\n")
   f:close()
   return true
 end
