@@ -19,7 +19,7 @@ function M.register(tools, helpers)
   tools.register("Grep",
     "High-performance recursive content search to locate references, function definitions, variables, classes, specific code snippets, or terms across multiple files.\n"
     .. "ALWAYS use this when you need to scan the project to map where something is implemented. It is hundreds of times faster and saves over 95% of tokens compared to reading files sequentially or listing directories.\n"
-    .. "Automatically ignores hidden data/control folders (.git, .TermAI) and binary files.",
+    .. "Ignores binary files, .git and sensitive files (config.json, tokens, keys). Lua patterns only: | is literal, not alternation.",
     function(arg)
       local opts = {}
       if type(arg) == "table" then
@@ -49,7 +49,7 @@ function M.register(tools, helpers)
       properties = {
         pattern = {
           type = "string",
-          description = "Search pattern (accepts Lua Patterns, the native equivalent of regex). Ex: 'function M%..*' or 'class %w+'."
+          description = "Search pattern (NOT regex: Lua patterns only. No alternation with |, no \\d or \\w (use %d and %w), escape magic chars with %. Ex: 'function M%.' or 'class %w+'."
         },
         path = {
           type = "string",
