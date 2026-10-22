@@ -108,7 +108,7 @@ local function route(input, ctx, flush_msgs_start)
   if input == "/models" then
     io.write("\n\27[38;5;114m⚙  Abrindo configurações de modelos...\27[0m\n")
     io.write("\27[38;5;243mA TUI vai reiniciar ao terminar.\27[0m\n\n")
-    os.execute("lua " .. BASE .. "/main.lua models")
+    os.execute("lua5.4 " .. BASE .. "/main.lua models")
     restart_mod.restart_now()
     -- Sem goto continue no original: se restart_now() retornar,
     -- o input "/models" cai para o bloco 5 (requisição normal à API).

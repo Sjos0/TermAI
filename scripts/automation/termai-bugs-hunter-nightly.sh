@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-exec /home/ubuntu/.local/bin/termai-nightly-runner.sh bugs-hunter
+exec $HOME/.local/bin/termai-nightly-runner.sh bugs-hunter

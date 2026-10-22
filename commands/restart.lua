@@ -1,1 +1,1 @@
-require("agent.restart").request()
+require("agent.restart").restart_now()
