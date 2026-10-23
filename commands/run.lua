@@ -16,16 +16,17 @@ local function read_file(path)
   return content
 end
 
-local model_ref, prompt_file, prompt_text, max_iter
+local model_ref, prompt_file, prompt_text, max_iter, wait_seconds
 local i = 2
 while i <= #arg do
   local a = arg[i]
   if a == "--model" then model_ref = arg[i+1]; i = i + 2
   elseif a == "--prompt-file" then prompt_file = arg[i+1]; i = i + 2
   elseif a == "--prompt" then prompt_text = arg[i+1]; i = i + 2
+  elseif a:match("^%-%-wait%-subagents") then wait_seconds = tonumber(a:match("=(%d+)")) or 600; i = i + 1
   elseif a == "--max-iter" then max_iter = tonumber(arg[i+1]); i = i + 2
   elseif a == "--help" or a == "-h" then
-    print("Uso: TermAI run --prompt-file /caminho/prompt.md [--model provider/model] [--max-iter N]")
+    print("Uso: TermAI run --prompt-file /caminho/prompt.md [--model provider/model] [--max-iter N] [--wait-subagents[=SEGUNDOS]]")
     return
   else
     io.stderr:write("Argumento desconhecido: " .. tostring(a) .. "\n")
@@ -64,6 +65,20 @@ local response, elapsed, _, overflow, stream_complete, reasoning =
 
 persistence.save_exchange(ctx, before, reasoning or "", prompt_text,
   ctx.tokens_fresh, {}, stream_complete)
+
+-- --wait-subagents: sem TUI não há aviso automático. Espera os filhos e imprime os resultados.
+if wait_seconds then
+  local hw = require("tools.subagents.headless_wait")
+  local parent = ctx.agent_id or "main"
+  local status, pending = hw.run(cfg, parent, wait_seconds)
+  for _, text in ipairs(hw.print_results(parent)) do print("\n" .. text) end
+  if status == "timeout" then
+    local ids = {}
+    for _, r in ipairs(pending) do ids[#ids + 1] = r.runId end
+    io.stderr:write("[TERMAI_RUN] Espera esgotada; ainda rodando: " .. table.concat(ids, ", ") .. "\n")
+    os.exit(3)
+  end
+end
 
 local result = tostring(response or "")
 print("\n[TERMAI_RUN] model=" .. tostring(ctx.active.ref)
