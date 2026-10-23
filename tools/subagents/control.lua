@@ -5,6 +5,8 @@ local launcher  = require("tools.subagents.launcher")
 local events    = require("tools.subagents.events")
 local announce  = require("tools.subagents.announce")
 local json      = require("json")
+local card      = require("tools.subagents.card")
+local redact    = require("tools.subagents.redact")
 local log       = require("diag.log")
 local M = {}
 
@@ -47,13 +49,24 @@ function M.listar(args)
   return table.concat(lines, "\n")
 end
 
+-- Cartão de detalhes (formato OpenClaw). formato="json" devolve o registro redigido, para depuração.
 function M.info(args)
-  local r = registry.load(args.runId)
-  if not r then return "❌ run não encontrado: " .. tostring(args.runId) end
-  local out = {}
-  for k, v in pairs(r) do out[k] = v end
-  if not scheduler.is_terminal(r) then out.progresso = M.progress(r) end
-  return json.encode(out)
+  local id = tostring(args.runId or "")
+  local r = registry.load(id)
+  if not r then return card.unknown(id) end
+  if args.formato == "json" then
+    local out = {}
+    for k, v in pairs(r) do out[k] = type(v) == "string" and redact.clean(v) or v end
+    return json.encode(out)
+  end
+  local extra = { tools = count_tools(r.runId), events_path = registry.dir(r.runId) .. "/events.jsonl" }
+  if scheduler.is_terminal(r) then
+    extra.result = registry.read_result(r.runId)
+  else
+    local p = M.progress(r)
+    extra.elapsed, extra.last_event = p.decorrido_s, p.ultimo_evento
+  end
+  return card.build(r, extra)
 end
 
 -- Espera UM run terminar (até timeoutSeconds, máx. 300) e devolve o resultado.
