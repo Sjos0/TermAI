@@ -5,6 +5,7 @@ local log      = require("diag.log")
 local M = {}
 
 local TERMINAL = { completed = true, failed = true, killed = true, timeout = true }
+local rss_logged_at = {}   -- runId -> último log de RSS (no máximo a cada 60 s)
 
 function M.is_terminal(rec)
   return TERMINAL[rec.status] == true
@@ -40,11 +41,12 @@ function M.admit(rec, cfg)
 end
 
 -- Recarrega antes de gravar: o processo filho pode ter escrito o estado enquanto isso.
-local function finish(run_id, status, err)
+local function finish(run_id, status, err, extra)
   local cur = registry.load(run_id)
   if not cur or M.is_terminal(cur) then return end
   cur.status, cur.error, cur.finished_at = status, err, os.time()
   cur.announce_pending = true
+  for k, v in pairs(extra or {}) do cur[k] = v end
   registry.save(cur)
   log.info("run_finish", { run_id = run_id, status = status, reason = err,
     duration_s = cur.started_at and (os.time() - cur.started_at) or nil })
@@ -60,12 +62,18 @@ function M.tick(cfg)
   local lim = M.limits(cfg)
   for _, r in ipairs(registry.list()) do
     if r.status == "running" then
-      log.info("run_rss", { run_id = r.runId, child_pid = r.pid, child_rss_kb = log.rss_kb(r.pid) })
+      local now_s = os.time()
+      if (rss_logged_at[r.runId] or 0) + 60 <= now_s then
+        rss_logged_at[r.runId] = now_s
+        log.info("run_rss", { run_id = r.runId, child_pid = r.pid, child_rss_kb = log.rss_kb(r.pid) })
+      end
       if timed_out(r, lim) then
         launcher.kill(r.pid, r.runId)
-        finish(r.runId, "timeout", "runTimeoutSeconds excedido")
+        local salvaged = registry.promote_partial(r.runId)
+        finish(r.runId, "timeout", "runTimeoutSeconds excedido", { error_class = "timeout", partial = salvaged or nil })
       elseif not launcher.alive(r.pid, r.runId) then
-        finish(r.runId, "failed", "process_exit")
+        local salvaged = registry.promote_partial(r.runId)
+        finish(r.runId, "failed", "process_exit", { error_class = "killed", partial = salvaged or nil })
       end
     end
   end

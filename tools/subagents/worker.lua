@@ -1,6 +1,7 @@
 -- tools/subagents/worker.lua — Processo filho: roda o run em um turno e grava resultado e status.
 local registry = require("tools.subagents.registry")
 local events   = require("tools.subagents.events")
+local error_class = require("tools.subagents.error_class")
 local log      = require("diag.log")
 local M = {}
 
@@ -55,7 +56,9 @@ function M.execute(run_id)
       result_chars = #(registry.read_result(run_id) or ""), rss_kb = log.rss_kb() })
     return true
   end
-  finish(run_id, "failed", tostring(err), partial and { partial = true } or nil)
+  local extra = { error_class = error_class.of(tostring(err)) }
+  if partial then extra.partial = true end
+  finish(run_id, "failed", tostring(err), extra)
   events.append(run_id, "final", "falha: " .. tostring(err))
   log.error("worker_end", { run_id = run_id, status = "failed", duration_s = elapsed,
     reason = tostring(err), partial = partial, rss_kb = log.rss_kb() })

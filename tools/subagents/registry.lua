@@ -70,4 +70,24 @@ function M.read_result(run_id)
   return content
 end
 
+-- Snapshot parcial enquanto o filho roda (issue #93). Já sai redigido.
+function M.write_partial(run_id, text)
+  local f = io.open(M.dir(run_id) .. "/result.partial.txt", "w")
+  if not f then return false end
+  f:write(text or "")
+  f:close()
+  return true
+end
+
+-- Sem result.txt (morreu ou estourou o prazo), promove o parcial a resultado. Devolve true se promoveu.
+function M.promote_partial(run_id)
+  if M.read_result(run_id) ~= nil then return false end
+  local f = io.open(M.dir(run_id) .. "/result.partial.txt", "r")
+  if not f then return false end
+  local text = f:read("*a") or ""
+  f:close()
+  if text == "" then return false end
+  return M.write_result(run_id, text)
+end
+
 return M
