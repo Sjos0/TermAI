@@ -17,6 +17,10 @@ end
 
 function M.run(args)
   local parsed = parser.parse(args)
+  if parsed.error then
+    io.write(RED .. "Erro: " .. parsed.error .. "\n" .. RESET)
+    return
+  end
 
   -- Validar argumentos
   if not parsed.source then
