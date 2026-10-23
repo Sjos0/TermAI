@@ -25,6 +25,32 @@ local function get_example(name)
   return (ex ~= nil) and ex or "argumento"
 end
 
+-- Nomes de tools registradas agora (fonte única: tools.registry). Lista fixa desatualizava (#66).
+local function available_names()
+  local ok, tools = pcall(require, "tools")
+  if not ok or type(tools) ~= "table" or type(tools.registry) ~= "table" then return {} end
+  local names = {}
+  for name in pairs(tools.registry) do names[#names + 1] = name end
+  table.sort(names)
+  return names
+end
+
+-- Junta os nomes em linhas de até ~64 colunas, com a indentação do bloco de erro.
+local function wrap_names(names)
+  local lines, line = {}, ""
+  for _, n in ipairs(names) do
+    local piece = (line == "" and n or (", " .. n))
+    if #line + #piece > 64 then
+      lines[#lines + 1] = line .. ","
+      line = n
+    else
+      line = line .. piece
+    end
+  end
+  if line ~= "" then lines[#lines + 1] = line end
+  return "      " .. table.concat(lines, "\n      ")
+end
+
 -- Gera string de feedback formatada para uma lista de erros.
 -- Retorna "" se nao houver erros.
 function M.generate(errors)
@@ -44,11 +70,9 @@ function M.generate(errors)
       else
         msg = string.format(
           "❌ Ferramenta '%s' nao existe no sistema.\n"
-          .. "   📋 Disponiveis: Exec, Read, Write, Edit, Find, List,\n"
-          .. "      calcular, memory_search, pesquisar_web, skill,\n"
-          .. "      sessoes_listar, sessao_status, sessoes_historico, restart\n"
+          .. "   📋 Disponiveis:\n%s\n"
           .. "   💡 Formato: <tool><name>NOME</name><arg>ARG</arg></tool>",
-          err.tool_name
+          err.tool_name, wrap_names(available_names())
         )
       end
     elseif err.type == "empty_arg" then
