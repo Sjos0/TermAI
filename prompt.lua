@@ -45,7 +45,7 @@ function M.build(workspace, tools, session_id, cfg)
            .."\n\n"..ler(workspace.."/IDENTITY.md",  "")
            .."\n\n"..ler(workspace.."/STRUCTURE.md", "")
            .."\n\n"..ler(workspace.."/AGENTS.md",    "")
-           .."\n\n"..available.get_docs()  -- restaurado: informa modelo sobre /config /models etc.
+           .."\n\n"..available.get_docs()  -- comandos da TUI (não são ferramentas): available.get_docs lista M.commands (#70)
            .."\n\n### MEMÓRIA DE LONGO PRAZO\n"..ler(workspace.."/MEMORY.md", "")
            .."\n\n"..ler(workspace.."/USER.md", "")
 
