@@ -4,6 +4,13 @@
 --       get_schema() com ordem estável e determinística.
 -- v3.2: call_structured(name, args, opts) com opts.skip_pretool.
 -- v3.3: get_schema/get_docs aceitam disabled_set (Issue #32); defesa em call*.
+-- Contrato de nomes (issue #71; decisão do Arquiteto: NÃO renomear). Três famílias coexistem:
+--   PascalCase EN (filesystem/shell): Exec, Read, Grep, Find, List, Write, Edit
+--   snake_case PT (sessão, cálculo, web): pesquisar_web, calcular, sessoes_listar, sessoes_historico, sessao_status
+--   minúsculo (misto): web_fetch, memory_search, skill, restart, todo_write
+-- Fonte de verdade: tools.registry. Listas manuais de nomes são o problema da #66.
+-- Tool NOVA: filesystem/shell -> PascalCase EN; sessão/cálculo/web -> snake_case PT; description coerente.
+-- Renomear quebra native calling, XML, disabled_tools e hooks: exige issue própria com alias.
 local json   = require("json")
 local tools  = {}
 tools.registry = {}
@@ -82,6 +89,29 @@ function tools.call(cmd_string, disabled_tools)
   return res
 end
 
+-- Formatação do argumento primário que alimenta PreToolUse/PostToolUse (issue #52).
+-- Dono único: call_structured e o runner (executor) usam esta função; não duplicar.
+function tools.format_arg_str(name, args)
+  if type(args) == "table" then
+    local primary
+    if name == "Grep" then
+      primary = string.format('"%s" in %s', args.pattern or "", args.path or ".")
+    elseif name == "Read" and args.start_line then
+      primary = string.format('%s:%s-%s', args.path or "", args.start_line, args.end_line or args.start_line)
+    else
+      primary = args.command or args.path  or args.query
+             or args.expression or args.name or args.arg
+             or args.session_id
+    end
+    if primary and type(primary) == "string" then
+      return primary
+    end
+    local ok_j, enc = pcall(json.encode, args)
+    return ok_j and enc or tostring(args)
+  end
+  return tostring(args or "")
+end
+
 function tools.call_structured(name, args, opts)
   opts = opts or {}
   local dset = to_disabled_set(opts.disabled_tools)
@@ -102,27 +132,7 @@ function tools.call_structured(name, args, opts)
   end
 
   local hooks_engine = require("agent.hooks.engine")
-  local arg_str
-  if type(args) == "table" then
-    local primary
-    if name == "Grep" then
-      primary = string.format('"%s" in %s', args.pattern or "", args.path or ".")
-    elseif name == "Read" and args.start_line then
-      primary = string.format('%s:%s-%s', args.path or "", args.start_line, args.end_line or args.start_line)
-    else
-      primary = args.command or args.path  or args.query
-             or args.expression or args.name or args.arg
-             or args.session_id
-    end
-    if primary and type(primary) == "string" then
-      arg_str = primary
-    else
-      local ok_j, enc = pcall(json.encode, args)
-      arg_str = ok_j and enc or tostring(args)
-    end
-  else
-    arg_str = tostring(args or "")
-  end
+  local arg_str = tools.format_arg_str(name, args)
 
   if not opts.skip_pretool then
     local allowed, reason = hooks_engine.run("PreToolUse", name, arg_str)

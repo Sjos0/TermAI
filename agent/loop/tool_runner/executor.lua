@@ -38,22 +38,6 @@ local function is_read_call(tc)
   return tc.name == "Read" and tools_mod.registry[tc.name] ~= nil
 end
 
-local function build_arg_str(name, args)
-  if type(args) ~= "table" then return tostring(args or "") end
-  local primary
-  if name == "Grep" then
-    primary = string.format('"%s" in %s', args.pattern or "", args.path or ".")
-  elseif name == "Read" and args.start_line then
-    primary = string.format('%s:%s-%s', args.path or "", args.start_line, args.end_line or args.start_line)
-  else
-    primary = args.command or args.path or args.query
-           or args.expression or args.name or args.arg
-           or args.session_id
-  end
-  if primary and type(primary) == "string" then return primary end
-  local ok_j, enc = pcall(json.encode, args)
-  return ok_j and enc or tostring(args)
-end
 
 local function executar_individual(ctx, tc)
   local result
@@ -84,7 +68,7 @@ local function executar_individual(ctx, tc)
 
       -- PreToolUse ANTES de tool_start: evita bolinha amarela órfã
       local hooks_engine = require("agent.hooks.engine")
-      local arg_str = build_arg_str(tc.name, tc.args)
+      local arg_str = tools_mod.format_arg_str(tc.name, tc.args)
       local allowed, reason = hooks_engine.run("PreToolUse", tc.name, arg_str)
 
       if not allowed then
@@ -148,14 +132,29 @@ local function executar_individual(ctx, tc)
 end
 
 local function executar_grupo_read(ctx, tcs)
+  -- Contrato (issue #51, veredito do Arquiteto): PreToolUse ANTES da UI de grupo, igual ao
+  -- caminho individual. Negada não executa; o resto do lote segue.
+  local hooks_engine = require("agent.hooks.engine")
+  local denied = {}
+  for i, tc in ipairs(tcs) do
+    local allowed, reason = hooks_engine.run("PreToolUse", tc.name, tools_mod.format_arg_str(tc.name, tc.args))
+    if not allowed then denied[i] = reason or "Ferramenta bloqueada." end
+  end
   ui.tool_group_read_start(#tcs)
   local names, oks = {}, {}
-  for _, tc in ipairs(tcs) do
+  for i, tc in ipairs(tcs) do
     local start_t = get_wall_time()
-    -- Mesmo filtro de desativação do path individual (#32 / #49).
-    local result = tools_mod.call_structured(tc.name, tc.args, {
-      disabled_tools = ctx.disabled_tools,
-    })
+    local result
+    if denied[i] then
+      result = "❌ [PERMISSÃO NEGADA] " .. denied[i]
+      if denied[i]:find("negada pelo usuário") then ctx.tool_cancelled = true end
+    else
+      -- skip_pretool: o PreToolUse já rodou acima; não rodar de novo. Filtro de desativação mantido (#32/#49).
+      result = tools_mod.call_structured(tc.name, tc.args, {
+        skip_pretool = true,
+        disabled_tools = ctx.disabled_tools,
+      })
+    end
     local elapsed_ms = math.max(0, math.floor((get_wall_time() - start_t) * 1000))
 
     local bp = require("agent.hooks.bash_patterns")
