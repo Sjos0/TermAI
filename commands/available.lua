@@ -30,14 +30,16 @@ function M.filter(prefix)
   return results
 end
 
+-- Bloco do system prompt com os comandos da TUI (issue #70; decisão do Arquiteto: fonte = M.commands).
+-- São comandos digitados pelo usuário, NÃO ferramentas: o modelo não os executa via Exec.
 function M.get_docs()
-  if #M.agent_commands == 0 then return "" end
-  local doc = "### COMANDOS DO SISTEMA\n"
-  doc = doc .. "Além das ferramentas acima, você pode executar estes comandos especiais via Exec:\n\n"
-  for _, cmd in ipairs(M.agent_commands) do
-    doc = doc .. "- " .. cmd.name .. ": " .. cmd.desc .. "\n"
-    doc = doc .. "  Quando usar: " .. cmd.when .. "\n"
-    doc = doc .. "  Como chamar: <tool><name>Exec</name><arg>" .. cmd.how .. "</arg></tool>\n\n"
+  if not M.commands or #M.commands == 0 then return "" end
+  local doc = "### COMANDOS DA TUI\n"
+  doc = doc .. "Comandos que o usuário digita na TUI (não são ferramentas; você não os executa):\n"
+  for _, cmd in ipairs(M.commands) do
+    local name = type(cmd) == "table" and (cmd.name or cmd.cmd or cmd[1]) or cmd
+    local desc = type(cmd) == "table" and (cmd.desc or cmd.description) or nil
+    doc = doc .. "- " .. tostring(name) .. ((desc and desc ~= "") and (": " .. tostring(desc)) or "") .. "\n"
   end
   return doc
 end
