@@ -5,7 +5,7 @@ local M = {}
 
 function M.register(tools, get_parent)
   tools.register("sessions_spawn",
-    "Cria um subagente em background e responde na hora com runId. Sem agentId, clona este agente. "
+    "Cria um subagente em background e responde na hora com runId. Não faça polling: em TTY o aviso chega sozinho; fora de TTY use subagents_wait. Sem agentId, clona este agente. "
       .. "Com agentId, roda um agente independente. Clones e agentes rodam em processos próprios, "
       .. "até o limite de simultâneos; o resultado chega depois como mensagem do sistema.",
     function(arg)
@@ -32,6 +32,10 @@ function M.register(tools, get_parent)
     function(arg) return control.log(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
     { type = "object", properties = { runId = { type = "string" }, linhas = { type = "number" } },
       required = { "runId" } })
+
+  tools.register("subagents_wait", "Espera UM subagente terminar (até timeoutSeconds, máx. 300) e devolve o resultado. Use quando o aviso automático não puder chegar (ex.: execução fora da TUI). Não faça polling com subagents_info.",
+    function(arg) return control.esperar(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
+    { type = "object", properties = { runId = { type = "string" }, timeoutSeconds = { type = "number" } }, required = { "runId" } })
 
   tools.register("subagents_matar", "Encerra um subagente em execução.",
     function(arg) return control.matar(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,

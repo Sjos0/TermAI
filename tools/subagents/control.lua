@@ -1,11 +1,38 @@
--- tools/subagents/control.lua — Comandos de controle: listar, ver detalhes, log e matar um run.
+-- tools/subagents/control.lua — Comandos de controle: listar, detalhes com progresso, esperar, log e matar.
 local registry  = require("tools.subagents.registry")
 local scheduler = require("tools.subagents.scheduler")
 local launcher  = require("tools.subagents.launcher")
 local events    = require("tools.subagents.events")
+local announce  = require("tools.subagents.announce")
 local json      = require("json")
 local log       = require("diag.log")
 local M = {}
+
+M.MAX_WAIT = 300                                              -- teto de espera de subagents_wait (s)
+M.tick  = function(cfg) return scheduler.tick(cfg) end        -- injetável nos testes
+M.sleep = function(s) os.execute("sleep " .. tostring(s)) end -- injetável nos testes
+
+local function count_tools(run_id)
+  local f = io.open(registry.dir(run_id) .. "/events.jsonl", "r")
+  if not f then return 0 end
+  local n = 0
+  for line in f:lines() do
+    if line:find('"kind"%s*:%s*"tool"') then n = n + 1 end
+  end
+  f:close()
+  return n
+end
+
+-- Progresso de um run em execução: tempo decorrido, tools usadas e o último evento.
+function M.progress(rec)
+  local last = events.tail(rec.runId, 1)[1] or ""
+  return {
+    status = rec.status,
+    decorrido_s = rec.started_at and (os.time() - rec.started_at) or 0,
+    tools_usadas = count_tools(rec.runId),
+    ultimo_evento = last:sub(1, 200),
+  }
+end
 
 function M.listar(args)
   args = type(args) == "table" and args or {}
@@ -23,7 +50,37 @@ end
 function M.info(args)
   local r = registry.load(args.runId)
   if not r then return "❌ run não encontrado: " .. tostring(args.runId) end
-  return json.encode(r)
+  local out = {}
+  for k, v in pairs(r) do out[k] = v end
+  if not scheduler.is_terminal(r) then out.progresso = M.progress(r) end
+  return json.encode(out)
+end
+
+-- Espera UM run terminar (até timeoutSeconds, máx. 300) e devolve o resultado.
+-- Marca como entregue: o aviso automático não repete o mesmo resultado depois.
+function M.esperar(args)
+  local id = tostring(args.runId or "")
+  local r = registry.load(id)
+  if not r then return "❌ run não encontrado: " .. id end
+  local secs = math.min(tonumber(args.timeoutSeconds) or 60, M.MAX_WAIT)
+  local cfg = require("config").load()
+  local deadline = os.time() + secs
+  while true do
+    M.tick(cfg)
+    r = registry.load(id)
+    if scheduler.is_terminal(r) then
+      r.announce_consumed, r.announce_pending = true, false
+      r.announced_at = os.time()
+      registry.save(r)
+      return announce.summary(r)
+    end
+    if os.time() >= deadline then
+      local p = M.progress(r)
+      return string.format("⏳ %s ainda rodando após %ds (tools=%d; último evento: %s). Espere de novo ou use subagents_info.",
+        id, secs, p.tools_usadas, p.ultimo_evento)
+    end
+    M.sleep(1)
+  end
 end
 
 function M.log(args)
