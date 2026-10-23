@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-23 - [subagents_info no formato OpenClaw; seção de subagentes no README (#100)]
+**Contexto:** `subagents_info` devolvia JSON cru, com o texto inteiro e sem redação. A pesquisa no OpenClaw mostrou o formato de referência: status com nome fixo (completed, failed, timed out, unknown), tempos, notas, resultado truncado com sinalizador e redação de credenciais. O README não mencionava subagentes (issue #100).
+**Files Modified:** `tools/subagents/card.lua` (NOVO, cartão puro); `tools/subagents/control.lua` (info usa o cartão; `formato="json"` para depuração, redigido); `tests/subagents_info_card_spec.lua` (NOVO, 10 grupos); `tests/subagents_wait_spec.lua` (checagem de progresso atualizada para o cartão); `README.md` (seção Subagentes).
+**Learning:** (1) Checagem de texto formatado não deve depender do número de espaços do alinhamento: normalizar espaços antes de comparar. (2) Mutação na redação da tarefa falha a spec (rc 1); restaurado, passa. (3) O cartão declara "Tokens: não registrados" em vez de inventar contagem.
+**Prevention:** A spec trava redação na tarefa e no erro, truncamento com UTF-8 e status unknown para run inexistente.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** 13 specs de subagentes, grep e update passam; mutação na redação falha a spec.
+
+
+---
+
 ## 2026-10-23 - [Espera de subagentes: subagents_wait (#95) e --wait-subagents (#92)]
 **Contexto:** Sem TUI, nada acorda o pai quando um filho termina, e o orquestrador fazia polling. Em `TermAI run` headless o filho virava órfão. Os planos e as decisões estão em `docs/plans/PLANO_ISSUES_2026-10-22.md`.
 **Files Modified:** `tools/subagents/control.lua` (esperar com teto de 300 s; progresso no info); `tools/subagents/announce.lua` (summary reutilizável); `tools/subagents/tools_def.lua` (subagents_wait; orientação anti-polling em sessions_spawn); `tools/exec/permissions/check.lua` (subagents_wait interna); `tools/subagents/headless_wait.lua` (NOVO, espera dos filhos do pai); `commands/run.lua` (--wait-subagents[=N], código 3 no timeout); `docs/SUBAGENTS.md`.
