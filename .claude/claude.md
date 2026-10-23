@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-23 - [Espera de subagentes: subagents_wait (#95) e --wait-subagents (#92)]
+**Contexto:** Sem TUI, nada acorda o pai quando um filho termina, e o orquestrador fazia polling. Em `TermAI run` headless o filho virava órfão. Os planos e as decisões estão em `docs/plans/PLANO_ISSUES_2026-10-22.md`.
+**Files Modified:** `tools/subagents/control.lua` (esperar com teto de 300 s; progresso no info); `tools/subagents/announce.lua` (summary reutilizável); `tools/subagents/tools_def.lua` (subagents_wait; orientação anti-polling em sessions_spawn); `tools/exec/permissions/check.lua` (subagents_wait interna); `tools/subagents/headless_wait.lua` (NOVO, espera dos filhos do pai); `commands/run.lua` (--wait-subagents[=N], código 3 no timeout); `docs/SUBAGENTS.md`.
+**Learning:** (1) Teste que espera um conjunto de runs pega todos os runs do pai: um run deixado ativo num passo anterior travou o seguinte. Cada passo deve encerrar o que criou. (2) A mutação que faz a espera devolver `ok` sempre derruba a spec (rc 1).
+**Prevention:** Specs com tick e sleep injetados, para o teste nunca lançar processo real.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** 12 specs de subagentes, grep e update passam; mutação na espera falha a spec.
+
+
+---
+
 ## 2026-10-22 - [Subagentes na TUI: verde só junto com o aviso ao pai]
 **Contexto:** O usuário viu a bolinha amarela e, logo depois, a verde, como se fosse confirmação de criação. O `flush` do tick de idle imprimia a verde assim que o filho terminava, sem o pai ter sido acordado, e o aviso (`announce.inject`) imprimia outra linha cinza, duplicando o evento.
 **Files Modified:** `ui/subagent_block.lua` (só imprime a amarela de lançamento; `end_line` exportado para o aviso); `tools/subagents/announce.lua` (a linha verde/vermelha sai no momento em que o pai é acordado, no mesmo estilo da amarela); `tests/subagent_block_spec.lua` (reescrito: nada antes do aviso, aviso uma vez, não interrompe quem digita, pendência por pai).

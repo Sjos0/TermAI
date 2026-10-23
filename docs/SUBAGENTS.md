@@ -127,3 +127,10 @@ Cobertura: `tests/subagents_failures_spec.lua`.
 
 Cada subagente aparece como uma tool do pai: uma linha amarela ao iniciar e uma linha verde (ou vermelha, com o motivo) ao terminar, uma única vez cada. A TUI só acrescenta linhas; não redesenha nem sobe o cursor, porque no Termux a largura quebra linhas e o redesenho deixava resíduos. As tools internas do filho não são mostradas. Segredos (tokens, `Authorization`, `Bearer`, `sk-`) são mascarados pelo módulo `tools/subagents/redact.lua`, tanto na tela quanto no `events.jsonl`. Enquanto o usuário digita, as linhas ficam pendentes. Runs que já existiam antes da TUI abrir não são anunciados de novo.
 Cobertura: `tests/subagent_block_spec.lua`.
+
+## Espera: subagents_wait e --wait-subagents (issues #95 e #92)
+
+- **`subagents_wait`** (tool): espera UM subagente terminar, com teto de 300 s, e devolve o resultado. Marca o resultado como entregue. Se o prazo estourar, devolve o progresso (tools usadas e último evento) em vez de travar. Não pede diálogo, porque só espera.
+- **`subagents_info`** mostra o progresso de um run em execução (tempo decorrido, tools usadas, último evento). Não mostra iteração do modelo: esse dado não é gravado.
+- **`TermAI run --wait-subagents[=SEGUNDOS]`**: execução headless não tem aviso automático. Com a flag, espera os filhos do agente, imprime os resultados e sai com 0. Sem a flag, o comportamento não muda. Teto de 900 s. Se o prazo estourar, sai com código 3 e lista o que ficou pendente.
+- Cobertura: `tests/subagents_wait_spec.lua` e `tests/subagents_headless_spec.lua`. A mutação que faz a espera devolver `ok` sempre falha a spec.

@@ -14,7 +14,7 @@ require("config.store")._data = nil
 local permcheck = require("tools.exec.permissions.check")
 
 -- Internas: liberadas sem diálogo (inclusive headless).
-for _, name in ipairs({ "sessions_spawn", "subagents_listar", "subagents_info", "subagents_log" }) do
+for _, name in ipairs({ "sessions_spawn", "subagents_listar", "subagents_info", "subagents_log", "subagents_wait" }) do
   local r = permcheck.check(name, nil)
   check(r.allowed == true, name .. " liberada sem diálogo")
 end

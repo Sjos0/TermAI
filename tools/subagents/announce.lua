@@ -56,6 +56,11 @@ local function header(rec)
 end
 
 -- Injeta no contexto do pai as respostas finais. A TUI mostra a linha verde ou vermelha.
+-- Resumo de um run para quem espera por ele (subagents_wait, --wait-subagents). Não escreve na tela.
+function M.summary(rec)
+  return header(rec) .. "\n" .. body(rec)
+end
+
 function M.inject(ctx)
   if not ctx or not ctx.msgs then return 0 end
   local n = 0
