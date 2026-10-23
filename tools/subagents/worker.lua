@@ -33,6 +33,7 @@ function M.execute(run_id)
     model = rec.model or "default", rss_kb = log.rss_kb() })
 
   local partial = false
+  local run_usage = nil
   local ok, err = pcall(function()
     local context = require("agent.context")
     local loop    = require("agent.loop")
@@ -40,6 +41,7 @@ function M.execute(run_id)
                                 is_subagent = true, run_id = run_id })
     events.append(run_id, "start", rec.task)
     local resp, _, _, overflow, complete = loop.rodar(ctx, rec.task, "user", ctx.MAX_ITER)
+    run_usage = ctx.usage_acc
     local text, reason, part = classify(resp, overflow, complete)
     if not text then
       if part then registry.write_result(run_id, part); partial = true end
@@ -50,7 +52,7 @@ function M.execute(run_id)
 
   local elapsed = os.time() - t0
   if ok then
-    finish(run_id, "completed", nil)
+    finish(run_id, "completed", nil, { usage = run_usage })
     events.append(run_id, "final", "ok")
     log.info("worker_end", { run_id = run_id, status = "completed", duration_s = elapsed,
       result_chars = #(registry.read_result(run_id) or ""), rss_kb = log.rss_kb() })
@@ -58,6 +60,7 @@ function M.execute(run_id)
   end
   local extra = { error_class = error_class.of(tostring(err)) }
   if partial then extra.partial = true end
+  extra.usage = run_usage
   finish(run_id, "failed", tostring(err), extra)
   events.append(run_id, "final", "falha: " .. tostring(err))
   log.error("worker_end", { run_id = run_id, status = "failed", duration_s = elapsed,

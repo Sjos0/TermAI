@@ -1,8 +1,10 @@
 -- agent/api/request_stream/tokens.lua — Validador de queda e atualização de tokens da API.
 local utils = require("agent.api.utils")
+local usage_mod = require("agent.api.usage")
 local M = {}
 
 function M.process_tokens(ctx, chunk)
+  if chunk.usage then ctx.usage_acc = usage_mod.add(ctx.usage_acc, chunk.usage) end
   if not (chunk.usage and chunk.usage.total_tokens) then
     return false
   end

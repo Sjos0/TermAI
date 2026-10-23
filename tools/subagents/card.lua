@@ -67,7 +67,13 @@ function M.build(rec, extra)
   if extra.events_path then
     add("Arquivos", "eventos: " .. extra.events_path)
   end
-  add("Tokens", "não registrados por filho")
+  if rec.usage then
+    local u = rec.usage
+    add("Tokens", string.format("entrada %d · saída %d · total %d (%d chamadas, somado por chamada)",
+      u.prompt or 0, u.completion or 0, u.total or 0, u.calls or 0))
+  else
+    add("Tokens", "não registrados (sem uso reportado pelo provedor neste run)")
+  end
   return table.concat(lines, "\n")
 end
 
