@@ -72,9 +72,9 @@ check(control.MAX_WAIT == 300, "esperar: teto de 300 s")
 
 -- (6) subagents_info: run em execução traz progresso; run concluído não.
 local info = control.info({ runId = "sub-c2" })
-check(info:find("progresso", 1, true) ~= nil and info:find("tools_usadas", 1, true) ~= nil,
+check(info:find("Progresso:", 1, true) ~= nil and info:find("tools=2", 1, true) ~= nil,
   "info: run em execução mostra progresso (tools usadas)")
-check(control.info({ runId = "sub-c1" }):find("progresso", 1, true) == nil,
+check(control.info({ runId = "sub-c1" }):find("Progresso:", 1, true) == nil,
   "info: run concluído não mostra progresso")
 
 os.execute("rm -rf '" .. root .. "'")

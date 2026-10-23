@@ -112,6 +112,20 @@ O provedor Kilo Gateway suporta as rotas gratuitas `kilo-auto/free` e `openroute
 
 ---
 
+## Subagentes
+
+O orquestrador pode criar subagentes em background (`sessions_spawn`). Cada um roda num processo próprio, com fila (até 5 ao mesmo tempo e 5 por agente pai) e prazo padrão de 600 s.
+
+- Na TUI, o subagente aparece como uma linha amarela ao iniciar e como verde (ou vermelha) quando o orquestrador é avisado. A linha verde só sai junto com o aviso.
+- `subagents_info <runId>` mostra o cartão do run: status, tempos, prazo, resultado (truncado e redigido) e notas. `formato="json"` devolve o registro redigido.
+- `subagents_wait <runId>` espera um run terminar, com teto de 300 s. Se o prazo estourar, devolve o progresso.
+- `subagents_log`, `subagents_listar` e `subagents_matar` completam o controle.
+- `TermAI run --wait-subagents[=SEGUNDOS]` espera os filhos numa execução headless. Padrão desligado; teto de 900 s; código 3 se o prazo estourar.
+- Resultados são guardados por 7 dias ou até 50 runs. `/subagents gc` força a limpeza.
+- Tokens e segredos são mascarados na tela e nos logs.
+
+Detalhes de desenho e de falhas: `docs/SUBAGENTS.md`.
+
 ## Estrutura
 
 ```
