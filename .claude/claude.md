@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-23 - [Paridade com OpenClaw: consumo de tokens por subagente e matriz de paridade]
+**Contexto:** O cartão do subagente dizia "tokens não registrados", mas o provedor já informa o `usage` em cada chamada. O usuário pediu paridade total com o OpenClaw em subagentes, incluindo tokens. A documentação do OpenClaw tem 7 páginas; a matriz registra cada item e o status real.
+**Files Modified:** `agent/api/usage.lua` (NOVO, acumulador puro por chamada); `agent/api/request_stream/tokens.lua` e `agent/api/request_sync.lua` (acumulam o usage de cada chamada); `tools/subagents/worker.lua` (grava rec.usage no sucesso e na falha); `tools/subagents/card.lua` (mostra entrada, saída, total e chamadas); `tests/subagents_usage_spec.lua` (NOVO); `docs/plans/PARIDADE_OPENCLAW_SUBAGENTS.md` (NOVO, matriz completa com lotes).
+**Learning:** (1) Consumo acumulado não é o tamanho do contexto: cada chamada reenvia o contexto, então a soma é o que foi cobrado. (2) Conta errada na expectativa da spec foi pega pela própria spec; a conta foi refeita, não a lógica. (3) Mutação na acumulação falha a spec.
+**Prevention:** Limite registrado no código: usage repetido em vários chunks da mesma chamada conta duas vezes.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** `subagents_usage_spec` OK; mutação na acumulação falha a spec; specs de subagentes passam.
+
+
+---
+
 ## 2026-10-23 - [subagents_info no formato OpenClaw; seção de subagentes no README (#100)]
 **Contexto:** `subagents_info` devolvia JSON cru, com o texto inteiro e sem redação. A pesquisa no OpenClaw mostrou o formato de referência: status com nome fixo (completed, failed, timed out, unknown), tempos, notas, resultado truncado com sinalizador e redação de credenciais. O README não mencionava subagentes (issue #100).
 **Files Modified:** `tools/subagents/card.lua` (NOVO, cartão puro); `tools/subagents/control.lua` (info usa o cartão; `formato="json"` para depuração, redigido); `tests/subagents_info_card_spec.lua` (NOVO, 10 grupos); `tests/subagents_wait_spec.lua` (checagem de progresso atualizada para o cartão); `README.md` (seção Subagentes).

@@ -33,6 +33,7 @@ function M.pensar_sync(ctx, txt, role)
     if ok and rep and rep.choices and rep.choices[1] then
       local sync_fresh = false  -- T5: assume não confiável até provider confirmar
 
+      if rep.usage then ctx.usage_acc = require("agent.api.usage").add(ctx.usage_acc, rep.usage) end
       if rep.usage and rep.usage.total_tokens then
         local new_tok = rep.usage.total_tokens
         local prev_tok = ctx.tokens or 0
