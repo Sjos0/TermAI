@@ -71,7 +71,14 @@ function M.parse(args)
     elseif a == "--ag" then
       result.flags.global = false
       i = i + 1
-      result.flags.agent = args[i]
+      local name = args[i]
+      -- Vazio, ausente ou seguido de outra flag: não é um agente. Antes isso virava
+      -- agent = "" e o instalador escrevia em workspace//skills.
+      if not name or name:match("^%s*$") or name:sub(1, 2) == "--" then
+        result.error = "--ag precisa de um nome de agente (ex.: --ag main)"
+      else
+        result.flags.agent = name
+      end
     elseif a == "install" then
       i = i + 1
       result.operation = "install"
