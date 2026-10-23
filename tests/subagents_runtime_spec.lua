@@ -24,11 +24,20 @@ local events    = require("tools.subagents.events")
 
 -- Simulação do sistema: processos "vivos" e comandos de kill.
 local alive, killed, next_pid = {}, {}, 4000
+local run_of = {}   -- pid falso -> runId do worker (para a identidade do processo)
 launcher.exec.popen = function(cmd)
   next_pid = next_pid + 1
   alive[next_pid] = true
   local pid = next_pid
+  run_of[pid] = cmd:match("%-%-worker '([^']+)'")
   return { read = function() return tostring(pid) .. "\n" end, close = function() end }
+end
+-- Identidade do pid: PIDs falsos podem coincidir com processos reais no runner do CI.
+-- Sem esta stub, /proc/<pid>/cmdline devolveria outro programa e o run viraria process_exit
+-- (falha intermitente). Aqui o pid vivo sempre responde com a linha de comando do seu worker.
+launcher.exec.cmdline = function(pid)
+  if alive[pid] and run_of[pid] then return "lua5.4 main.lua run --worker " .. run_of[pid] end
+  return nil
 end
 launcher.exec.execute = function(cmd)
   local p = cmd:match("kill %-0 (%d+)")
