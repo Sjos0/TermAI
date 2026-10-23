@@ -16,8 +16,8 @@ function M.register(tools, get_parent)
         agentId = { type = "string", description = "Agente independente existente. Omita para clonar." },
         label = { type = "string", description = "Rótulo curto para listagem." },
         model = { type = "string", description = "Modelo provider/id (opcional)." },
-        cleanup = { type = "string", description = "delete (padrão) ou keep." },
-        runTimeoutSeconds = { type = "number", description = "Tempo máximo do run em segundos." },
+        cleanup = { type = "string", description = "retain (padrão: guardado por 7 dias ou 50 runs), delete (apaga logo após o anúncio) ou keep (sem limite)." },
+        runTimeoutSeconds = { type = "number", description = "Tempo máximo do run em segundos (padrão 600). Limites: 5 simultâneos no total e 5 por agente pai." },
       }, required = { "task" } })
 
   tools.register("subagents_listar", "Lista os subagentes (opcional: status).",

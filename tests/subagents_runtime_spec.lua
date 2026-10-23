@@ -81,8 +81,9 @@ end
 check(found, "resposta final chega ao contexto do pai")
 check(announce.inject(ctx) == 0, "anúncio não repete na segunda passagem")
 
--- Limpeza: run entregue com cleanup=delete some do disco.
-check(cleanup.sweep() >= 1 and registry.load(r1.runId) == nil, "cleanup apaga run entregue (delete)")
+-- Retenção (issue #94): o padrão guarda o run entregue, para auditoria; delete explícito é coberto
+-- em tests/subagents_retention_spec.lua.
+check(cleanup.sweep() == 0 and registry.load(r1.runId) ~= nil, "padrão retém run entregue (sem apagar logo)")
 
 -- Kill.
 local kill_msg = control.matar({ runId = r2.runId })

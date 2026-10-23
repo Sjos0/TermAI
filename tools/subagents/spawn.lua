@@ -35,7 +35,7 @@ function M.spawn(args, parent)
     task             = args.task,
     label            = args.label,
     model            = args.model,
-    cleanup          = args.cleanup == "keep" and "keep" or "delete",
+    cleanup          = args.cleanup == "keep" and "keep" or (args.cleanup == "delete" and "delete" or "retain"),
     timeout_seconds  = tonumber(args.runTimeoutSeconds) or lim.runTimeoutSeconds,
     status           = "queued",
     created_at       = os.time(),
