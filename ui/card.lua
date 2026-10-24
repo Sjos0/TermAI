@@ -43,7 +43,8 @@ function M.body_rows(lines, tw)
     rows[#rows + 1] = { prefix = prefix, text = M.cut(lines[i], body_w) }
   end
   if #lines > M.MAX_BODY then
-    rows[#rows + 1] = { prefix = " └─ ", text = "... (" .. (#lines - M.MAX_BODY) .. " linhas)", dim = true }
+    local hidden = #lines - M.MAX_BODY
+    rows[#rows + 1] = { prefix = " └─ ", text = "... (" .. hidden .. (hidden == 1 and " linha)" or " linhas)"), dim = true }
   end
   return rows
 end

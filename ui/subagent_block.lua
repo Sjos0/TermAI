@@ -10,7 +10,23 @@ local c        = core.c
 local M = {}
 
 -- O lançamento não gera linha própria: o card da tool já mostra.
-function M.pending_lines(_) return {} end
+local started = false
+function M.pending_lines(agent_id)
+  if started then return {} end
+  started = true
+  local registry_mod = require("tools.subagents.registry")
+  local n = 0
+  for _, r in ipairs(registry_mod.list()) do
+    if (r.parent_agent or "main") == (agent_id or "main")
+      and (r.status == "completed" or r.status == "failed" or r.status == "timeout" or r.status == "killed")
+      and not r.announce_consumed then
+      n = n + 1
+    end
+  end
+  if n == 0 then return {} end
+  local text = string.format("── %d subagente(s) concluíram enquanto você estava fora ──", n)
+  return { c.gray .. header.cut_cols(text, core.tw() - 1) .. c.reset }
+end
 
 -- Mantido para compatibilidade com o main_loop: nada a desenhar fora do aviso de término.
 function M.flush(_, _, _) return false end
