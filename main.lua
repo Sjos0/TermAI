@@ -10,7 +10,7 @@ package.path = BASE .. "/?.lua;"
 local arg_cmd = arg and arg[1] or nil
 
 local function show_banner()
-  local f = io.open(BASE .. "/banner.txt", "r")
+  local f = io.open(BASE .. "/assets/banner.txt", "r")
   if f then io.write(f:read("*a") .. "\n"); f:close() end
 end
 

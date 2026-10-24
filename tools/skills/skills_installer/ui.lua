@@ -15,7 +15,7 @@ local GRAY = ESC .. "38;5;245m"
 local WHITE = ESC .. "38;5;255m"
 
 function M.banner()
-  local f = io.open(BASE .. "/banner.txt", "r")
+  local f = io.open(BASE .. "/assets/banner.txt", "r")
   if not f then return end
   local lines = {}
   local max_w = 0
