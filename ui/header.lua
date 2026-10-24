@@ -8,11 +8,9 @@ function M.header(m, session_id)
   if f then
     local lines = {}
     local max_w = 0
-    for line in f:lines() do
-      table.insert(lines, line)
-      if #line > max_w then max_w = #line end
-    end
     f:close()
+    lines, max_w = require("ui.banner").read(core.ROOT .. "/assets/banner.txt")
+    lines = lines or {}
 
     local term_w = core.tw()
     local box_w = max_w + 4
@@ -21,11 +19,7 @@ function M.header(m, session_id)
 
     io.write(margin .. c.dim .. c.white .. "╭" .. string.rep("─", box_w - 2) .. "╮\n" .. c.reset)
     for i, line in ipairs(lines) do
-      local ratio = (#lines > 1) and ((i - 1) / (#lines - 1)) or 0
-      local r = math.floor(60  + (0   - 60)  * ratio)
-      local g = math.floor(180 + (40  - 180) * ratio)
-      local b = math.floor(255 + (150 - 255) * ratio)
-      local color = string.format("\27[38;2;%d;%d;%dm", r, g, b)
+      local color = require("ui.banner").color_for(i, #lines)
       local padded = line .. string.rep(" ", max_w - #line)
       io.write(margin .. c.dim .. c.white .. "│ " .. c.reset
             .. color .. c.bold .. padded .. c.reset
