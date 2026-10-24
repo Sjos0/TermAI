@@ -26,9 +26,9 @@ function M.register(tools, get_parent)
     function(arg) return control.info(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
     { type = "object", properties = { runId = { type = "string" } }, required = { "runId" } })
 
-  tools.register("subagents_log", [==[Show the most recent events of one subagent, such as tool calls and retries (20 lines by default). Use it to diagnose a subagent that is slow or has failed. Do not use it to read the result; use subagents_info for that. The runId is required. The optional 'linhas' parameter sets how many lines to return.]==],
+  tools.register("subagents_log", [==[Show the most recent events of one subagent, such as tool calls and retries (20 lines by default). Use it to diagnose a subagent that is slow or has failed. Do not use it to read the result; use subagents_info for that. The runId is required. The optional 'lines' parameter sets how many lines to return.]==],
     function(arg) return control.log(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
-    { type = "object", properties = { runId = { type = "string" }, linhas = { type = "number" } },
+    { type = "object", properties = { runId = { type = "string" }, lines = { type = "number" } },
       required = { "runId" } })
 
   tools.register("subagents_wait", [==[Wait for one subagent to finish, up to timeoutSeconds (maximum 300), and return its result. Use it only when the automatic result message cannot arrive, for example in headless execution. If the timeout expires, it returns the current progress; call it again to keep waiting. Do not poll subagents_info in a loop. Example: runId 'sub-6ada492f349e' with timeoutSeconds 120.]==],

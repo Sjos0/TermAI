@@ -22,17 +22,17 @@ write(root .. "/workspace/USER.md", "Samuka: desenvolvedor independente.\n")
 
 local create = require("tools.agents.create")
 
-check(create.create({ id = "pesquisa", identidade = "x", funcoes = "y" }):match("^❌") ~= nil,
-  "sem confirmado=true é recusado")
-check(create.create({ id = "main", identidade = "x", funcoes = "y", confirmado = true }):match("inválido") ~= nil,
+check(create.create({ id = "pesquisa", identity = "x", functions = "y" }):match("^❌") ~= nil,
+  "sem confirmed=true é recusado")
+check(create.create({ id = "main", identity = "x", functions = "y", confirmed = true }):match("inválido") ~= nil,
   "id 'main' é reservado")
-check(create.create({ id = "Bad Id", identidade = "x", funcoes = "y", confirmado = true }):match("inválido") ~= nil,
+check(create.create({ id = "Bad Id", identity = "x", functions = "y", confirmed = true }):match("inválido") ~= nil,
   "id com espaço/maiúscula é recusado")
-check(create.create({ id = "pesquisa", identidade = " ", funcoes = "y", confirmado = true }):match("identidade") ~= nil,
+check(create.create({ id = "pesquisa", identity = " ", functions = "y", confirmed = true }):match("identity") ~= nil,
   "identidade vazia é recusada")
 
-local ok_msg = create.create({ id = "pesquisa", nome = "Pesquisador", identidade = "Metódico e direto.",
-  funcoes = "Pesquisar na web e resumir fontes.", confirmado = true })
+local ok_msg = create.create({ id = "pesquisa", name = "Pesquisador", identity = "Metódico e direto.",
+  functions = "Pesquisar na web e resumir fontes.", confirmed = true })
 check(ok_msg:match("^✓") ~= nil, "criação válida retorna sucesso")
 
 local dir = paths.workspace_abs("pesquisa")
@@ -51,7 +51,7 @@ check(entry ~= nil and entry.workspace == "agents/pesquisa/workspace", "entrada 
 check(entry ~= nil and entry.disabled_tools[1] == "agents_create", "agente criado não pode criar outros agentes")
 check(cfg_list[1] and cfg_list[1].id == "main", "orquestrador continua como primeiro da lista")
 
-check(create.create({ id = "pesquisa", identidade = "x", funcoes = "y", confirmado = true }):match("já existe") ~= nil,
+check(create.create({ id = "pesquisa", identity = "x", functions = "y", confirmed = true }):match("já existe") ~= nil,
   "id repetido é recusado")
 
 print(failures == 0 and "\nTODOS OS TESTES PASSARAM" or ("\n" .. failures .. " FALHA(S)"))

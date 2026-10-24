@@ -97,7 +97,7 @@ function M.esperar(args)
 end
 
 function M.log(args)
-  local lines = events.tail(args.runId, tonumber(args.linhas) or 20)
+  local lines = events.tail(args.runId, tonumber(args.lines) or 20)
   if #lines == 0 then return "Sem eventos para " .. tostring(args.runId) end
   return table.concat(lines, "\n")
 end

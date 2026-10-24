@@ -11,8 +11,8 @@ end
 -- args: id, nome, identidade, funcoes, confirmado. Retorna texto para o modelo.
 function M.create(args)
   args = type(args) == "table" and args or {}
-  if args.confirmado ~= true then
-    return "❌ agents_create: pergunte ao usuário o nome e as funções do agente e só então envie confirmado=true."
+  if args.confirmed ~= true then
+    return "❌ agents_create: pergunte ao usuário o nome e as funções do agente e só então envie confirmed=true."
   end
   if not paths.valid_id(args.id) then
     return "❌ agents_create: id inválido (minúsculas, números, _ ou -, 2 a 32 caracteres; 'main' é reservado)."
@@ -20,16 +20,16 @@ function M.create(args)
   if registry.exists(args.id) then
     return "❌ agents_create: o agente '" .. args.id .. "' já existe."
   end
-  if blank(args.identidade) then return "❌ agents_create: 'identidade' é obrigatório (vai para IDENTITY.md)." end
-  if blank(args.funcoes) then return "❌ agents_create: 'funcoes' é obrigatório (vai para AGENTS.md)." end
+  if blank(args.identity) then return "❌ agents_create: 'identity' é obrigatório (vai para IDENTITY.md)." end
+  if blank(args.functions) then return "❌ agents_create: 'functions' é obrigatório (vai para AGENTS.md)." end
 
-  local ok, err = workspace.create(args.id, args.nome, args.identidade, args.funcoes)
+  local ok, err = workspace.create(args.id, args.name, args.identity, args.functions)
   if not ok then
     workspace.remove(args.id)
     return "❌ agents_create: " .. tostring(err)
   end
 
-  local reg_ok, reg_err = registry.add(args.id, args.nome)
+  local reg_ok, reg_err = registry.add(args.id, args.name)
   if not reg_ok then
     workspace.remove(args.id)
     return "❌ agents_create: " .. tostring(reg_err)
