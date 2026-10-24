@@ -4,7 +4,7 @@ local M = {}
 
 function M.register(tools)
   tools.register("restart",
-    "Agenda o reinício do TermAI para após a resposta atual. O contexto é salvo antes do reinício.",
+    [==[Schedule a restart of TermAI after the current reply. The context is saved before the restart. Use it only when the user asks for a restart, or when a configuration change requires one. Takes no arguments. The restart does not happen immediately, and the current reply is completed first. Do not use it to recover from an error; report the error to the user instead.]==],
     function()
       local restart_mod = require("agent.restart")
       if restart_mod.request() then

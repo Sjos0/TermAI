@@ -5,7 +5,7 @@ local fetcher = require("tools.web_fetch.fetcher")
 
 function M.register(tools_mod, helpers)
   tools_mod.register("web_fetch",
-    "Fetch and extract clean, readable text or content from a specific HTTP or HTTPS URL. Use ONLY when you already have a specific URL to read. For general web searches, use 'web_search' instead.",
+    [==[Fetch one web page by URL and return its readable text or markdown. Use it only when you already have the exact URL, for example from web_search results or from the user. Do not use it for open-ended searches (use web_search). The output is limited to maxChars characters (default 8000) to protect the context window. Example: url 'https://lua.org'.]==],
     function(arg)
       return fetcher.run(arg)
     end,

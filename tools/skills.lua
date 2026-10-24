@@ -7,9 +7,7 @@ M.current_agent = "main"
 
 function M.register(tools)
   tools.register("skill",
-    "Carrega uma skill especializada pelo nome. Use quando a descrição da skill "
-    .. "no catálogo se alinha com a tarefa do usuário. "
-    .. "Arg: nome da pasta da skill.",
+    [==[Load a specialised skill by its folder name and follow its instructions. Use it when the skill's description in the catalog matches the user's task. Do not load a skill speculatively. Pass the folder name exactly as it appears in the catalog. Example: name 'debug-methodology'.]==],
     function(arg)
       local skill_name = type(arg) == "table" and (arg.name or arg.arg or "") or arg
       local agent_name = M.current_agent or "main"
@@ -20,7 +18,7 @@ function M.register(tools)
       properties = {
         name = {
           type = "string",
-          description = "Nome da skill (nome da pasta, ex: 'debug-methodology', 'lua-programming')"
+          description = "Skill name: the folder name, for example 'debug-methodology' or 'lua-programming'."
         }
       },
       required = {"name"}

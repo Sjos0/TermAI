@@ -28,14 +28,7 @@ function editor.register_tools(tools_mod, helpers)
   local luac_val  = helpers.luac_validate
   local mem       = require("tools.memory")
   tools_mod.register("Edit",
-    "Edita um arquivo com substituição por intervalo de linhas (PREFERIDO) ou texto exato. "
-    .. "SEMPRE chame Read antes para verificar linha/texto atual.\n\n"
-    .. "FORMATO JSON (nativo): envie path + edits array. Cada edit tem:\n"
-    .. "  - start_line + end_line + new_text: substitui o intervalo (PREFERIDO, zero erros de cópia)\n"
-    .. "  - old_text + new_text: substituição exata (ÚLTIMO RECURSO). Nota: o new_text é testado isoladamente e deve ser código Lua válido standalone.\n"
-    .. "  - new_text pode ser vazio string para deletar o trecho\n"
-    .. "Múltiplos edits aplicados em ordem reversa (preserva line numbers).\n"
-    .. "Arquivos Lua validados com luac -p após edição.",
+    [==[Use it to change an existing file: replace a line range or an exact piece of text. The preferred form gives start_line, end_line and new_text, which replaces that range. The fallback form gives old_text and new_text, for an exact match. Read the file first to confirm the current line numbers and text. Edits apply from the bottom up, so line numbers stay valid while several edits run. An empty new_text deletes the range. Lua files are syntax-checked after editing. Do not use it to create a new file; use Write for that.]==],
     function(arg)
       if type(arg) == "table" then
         -- v2: JSON structured {path, edits:[{old_text?,new_text,start_line?,end_line?}]}
@@ -85,29 +78,29 @@ function editor.register_tools(tools_mod, helpers)
       properties = {
         path = {
           type = "string",
-          description = "Caminho do arquivo a editar. Chame Read antes para verificar."
+          description = "Path of the file to edit. Read it first to confirm line numbers and text."
         },
         edits = {
           type = "array",
-          description = "Lista de substituições. Aplicadas em ordem reversa (de baixo para cima).",
+          description = "Replacements to apply. They are applied from the bottom up, so line numbers stay valid.",
           items = {
             type = "object",
             properties = {
               old_text = {
                 type = "string",
-                description = "Texto exato a localizar. Copie com Read — nunca invente. Use apenas quando não tiver os números de linha."
+                description = "Exact text to find. Copy it from Read; never invent it. Use it only when you have no line numbers."
               },
               new_text = {
                 type = "string",
-                description = "Texto de substituição. String vazia para deletar o trecho."
+                description = "Replacement text. An empty string deletes the range."
               },
               start_line = {
                 type = "integer",
-                description = "Linha inicial do intervalo a substituir (PREFERIDO — zero erros de cópia)."
+                description = "First line of the range to replace. Preferred: no copy errors."
               },
               end_line = {
                 type = "integer",
-                description = "Linha final do intervalo a substituir. Omita para substituir só start_line."
+                description = "Last line of the range, inclusive. Omit it to replace only start_line."
               }
             },
             required = {"new_text"}
