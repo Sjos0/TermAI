@@ -76,6 +76,10 @@ function M.read(opts)
         segments = {}
         break
 
+      elseif code == 15 then
+        -- Ctrl+O: expande o corpo do último card (append-only); só o prompt é redesenhado.
+        if require("ui.tools_init.default_body").expand() then redraw() end
+
       elseif code == 27 then
         local kind, seq = tread.read_escape_seq()
 

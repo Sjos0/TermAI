@@ -142,3 +142,10 @@ Cobertura: `tests/subagent_block_spec.lua`.
 - **Cascata:** `subagents_kill` encerra a árvore inteira de filhos ativos (filhos e netos). Quando um pai termina por qualquer motivo (concluiu, falhou, estourou o prazo ou morreu), os filhos ativos dele são encerrados no próximo tick, com o motivo `pai encerrou`. Ciclo no registro não trava a cascata.
 - **Limites de desenho:** a cascata encerra filhos que ainda rodam quando o pai termina; ela não espera os filhos concluírem. Quem precisa do resultado dos netos deve esperá-los com `subagents_wait` antes de encerrar.
 - Cobertura: `tests/subagents_depth_cascade_spec.lua` (15 checagens). Mutação na cascata do `matar` faz a spec falhar.
+
+## Cards e Ctrl+O (TUI)
+
+- Cada tool é um card: cabeçalho numa linha, cortado por colunas (UTF-8); corpo recolhido em 5 linhas com `... (N linhas)`.
+- **Ctrl+O** imprime, abaixo do último card, o corpo completo dele. Não redesenha cards antigos (append-only, seguro no Termux).
+- Limite: o Ctrl+O vale para o último card com corpo padrão (Grep, Read, Exec etc.). O diff do Edit tem recolhimento próprio.
+- Testes: `tests/tui_render_spec` (regras R1 a R5 em todas as tools e larguras) e `tests/card_expand_spec`.
