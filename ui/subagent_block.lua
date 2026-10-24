@@ -54,7 +54,7 @@ function M.pending_lines(agent_id)
       -- Só o lançamento é mostrado aqui; um run que já terminou antes de ser visto não é anunciado por aqui.
       if r.status == "running" or r.status == "queued" then
         out[#out + 1] = c.yellow .. "⬤" .. c.reset .. " Subagente " .. r.runId .. c.gray
-          .. " · lançado pelo orquestrador · " .. trim(redact.clean(r.task or ""), 50) .. c.reset
+          .. (r.origin == "user" and " · lançado pelo usuário · " or " · lançado pelo orquestrador · ") .. trim(redact.clean(r.task or ""), 50) .. c.reset
       end
     end
   end

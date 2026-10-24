@@ -49,6 +49,7 @@ function M.spawn(args, parent)
     created_at       = os.time(),
     parent_agent     = parent.agent_id or "main",
     parent_run       = parent.run_id,
+    origin           = args.origin or "agent",
     depth            = parent_depth + 1,
     announce_pending = false,
     announce_consumed = false,

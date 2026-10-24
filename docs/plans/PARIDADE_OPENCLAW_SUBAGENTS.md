@@ -61,10 +61,10 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 | `log` | Feito | `subagents_log` |
 | `kill` | Feito | `subagents_kill` (com confirmação) |
 | `wait` (esperar um run) | Feito | `subagents_wait` (além do OpenClaw; teto 300 s) |
-| `send` (mensagem a um filho em execução) | Falta | |
-| `steer` (redirecionar um filho em execução) | Falta | |
-| `kill all` | Falta | hoje só um por vez |
-| `spawn` manual (`/subagents spawn <agentId> <task>`) | Falta | |
+| `send` (mensagem a um filho em execução) | Feito | `subagents_send` e `/subagents send`; entrega no ponto seguro do filho |
+| `steer` (redirecionar um filho em execução) | Feito | `subagents_steer` e `/subagents steer`; rótulo de redirecionamento |
+| `kill all` | Feito | `/subagents kill all`, com a mesma cascata do kill individual |
+| `spawn` manual (`/subagents spawn <tarefa>`) | Feito | origem `user` na linha amarela; `agentId` manual ainda não |
 | `sessions_list`, `sessions_history` | Parcial | `sessions_list`, `sessions_history` existem; verificar cobertura de subagentes |
 | `session_status` | Parcial | `session_status` existe |
 | `sessions_yield` (encerrar o turno e esperar resultados) | Falta | útil para orquestrador sem polling |
