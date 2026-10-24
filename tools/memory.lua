@@ -113,12 +113,7 @@ end
 function memory.register(tools)
   tools.register(
     "memory_search",
-    "Memória pessoal e histórica (GraphRAG local). "
-    .. "OBRIGATÓRIO antes de responder sobre: pessoas, eventos, decisões, "
-    .. "bugs resolvidos ou qualquer dado histórico/pessoal. "
-    .. "Já injetada automaticamente no contexto — use manualmente para refinar. "
-    .. "'Não sei' sem busca prévia = erro de protocolo. "
-    .. "Arg: query em linguagem natural.",
+    [==[Search the local long-term memory (GraphRAG) for facts about people, events, decisions and past bugs. Use it before answering any question about the user's history or past decisions, even when some memory was already injected automatically. Pass a natural-language query. Do not use it for general knowledge or for code in the current repository (use Grep or Read). Example: query 'what did we decide about the release schedule'.]==],
     function(arg)
       local q = type(arg) == "table" and (arg.query or arg.arg or "") or arg
       return memory.search(q)
@@ -126,7 +121,7 @@ function memory.register(tools)
     {
       type = "object",
       properties = {
-        query = { type = "string", description = "Query em linguagem natural." }
+        query = { type = "string", description = "Natural-language query." }
       },
       required = {"query"}
     }

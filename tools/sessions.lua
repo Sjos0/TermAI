@@ -4,7 +4,7 @@ local M = {}
 
 function M.register(tools)
   tools.register("sessions_list",
-    "Lista todas as sessões de conversa salvas com metadados. Sem argumentos.",
+    [==[List all saved conversation sessions with their id, message count, token count, compaction count and model. Takes no arguments. Use it to find a session id before reading its history with sessions_history. The active session is marked. Do not use it to read messages; use sessions_history for that.]==],
     function(arg)
       local session = require("session")
       local list = session.list()
@@ -27,7 +27,7 @@ function M.register(tools)
   )
 
   tools.register("sessions_history",
-    "Lê o histórico de uma sessão específica. Arg: session_id (opcional, padrão=sessão ativa).",
+    [==[Read the message history of one conversation session. Long messages are shortened to 500 characters, and compaction summaries appear as COMPACTION entries. Use it to review what happened in a past session; get the id from sessions_list. Without session_id, the active session is read. Do not use it to check the size of the current conversation; use session_status for that. Example: session_id 'a1b2c3'.]==],
     function(arg)
       local session_id = type(arg) == "table"
         and (arg.session_id or nil)
@@ -55,13 +55,13 @@ function M.register(tools)
     {
       type = "object",
       properties = {
-        session_id = {type = "string", description = "ID da sessão (opcional, padrão=sessão ativa)"}
+        session_id = {type = "string", description = "Session id. Optional; defaults to the active session."}
       }
     }
   )
 
   tools.register("session_status",
-    "Mostra status detalhado da sessão ativa.",
+    [==[Show the detailed status of the active session: id, key, model, creation time, last activity, message count, token count and compaction count. Takes no arguments. Use it to check how much context the current conversation is using. Do not use it to list other sessions; use sessions_list for that.]==],
     function(arg)
       local session = require("session")
       local st = session.status()

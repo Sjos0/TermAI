@@ -17,9 +17,7 @@ function M.register(tools, helpers)
   end
 
   tools.register("Grep",
-    "High-performance recursive content search to locate references, function definitions, variables, classes, specific code snippets, or terms across multiple files.\n"
-    .. "ALWAYS use this when you need to scan the project to map where something is implemented. It is hundreds of times faster and saves over 95% of tokens compared to reading files sequentially or listing directories.\n"
-    .. "Ignores binary files, .git and sensitive files (config.json, tokens, keys). Lua patterns only: | is literal, not alternation.",
+    [==[Search file contents for a Lua pattern across a directory tree and return each matching line with its file and line number. Use it to find where a function, variable, class or phrase is defined or used, before opening files. Do not use it to find files by name (use Find) or to read a whole file (use Read). Patterns are Lua patterns, not regular expressions: '|' is a literal character, so use %d and %w instead of \d and \w, and escape magic characters with %. Binary files, .git and sensitive files (config.json, tokens, keys) are skipped. Results stop at 100 matches. Example: pattern 'function M%.' with include '*.lua'.]==],
     function(arg)
       local opts = {}
       if type(arg) == "table" then
@@ -49,15 +47,15 @@ function M.register(tools, helpers)
       properties = {
         pattern = {
           type = "string",
-          description = "Search pattern (NOT regex: Lua patterns only. No alternation with |, no \\d or \\w (use %d and %w), escape magic chars with %. Ex: 'function M%.' or 'class %w+'."
+          description = "Lua pattern, not a regular expression: '|' is literal, so use %d and %w instead of \\d and \\w, and escape magic characters with %. Example: 'function M%.' or 'class %w+'."
         },
         path = {
           type = "string",
-          description = "Starting path or directory for recursive search. Default: project root directory."
+          description = "Directory to search recursively. Default: the workspace."
         },
         include = {
           type = "string",
-          description = "Optional file filter based on simple glob matching. Ex: '*.py', '*.json', '*.lua', '*.md'."
+          description = "Optional glob filter on file names, for example '*.lua' or '*.md'. Only matching files are searched."
         }
       },
       required = {"pattern"}

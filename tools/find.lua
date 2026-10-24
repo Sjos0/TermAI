@@ -5,8 +5,7 @@ local searcher = require("tools.find.searcher")
 
 function M.register(tools_mod, helpers)
   tools_mod.register("Find",
-    "Search for files by name (partial or complete) in the workspace (default) or in custom directories. "
-    .. "Highly preferred over running raw shell commands (like 'exec find') as this tool is heavily optimized, sanitizes inputs, and avoids context window bloat.",
+    [==[Find files by name, partial or complete, inside the workspace or a directory you choose. Use it when you know part of a file name and need its path. Do not use it to search file contents (use Grep) or to list a folder's structure (use List). Examples: name 'store' to find every file whose name contains 'store', or name 'messages.lua' with dir 'session/'.]==],
     function(arg)
       return searcher.run(arg, helpers)
     end,
@@ -15,11 +14,11 @@ function M.register(tools_mod, helpers)
       properties = {
         name = {
           type = "string",
-          description = "File name to search for (partial or complete). Ex: 'store' or 'messages.lua'."
+          description = "File name to find, partial or complete. Examples: 'store' or 'messages.lua'."
         },
         dir = {
           type = "string",
-          description = "Optional directory path to search inside. Default: workspace. Ex: '~/TermAI/' or 'session/'."
+          description = "Directory to search inside. Default: the workspace. Examples: '~/TermAI/' or 'session/'."
         }
       },
       required = {"name"}

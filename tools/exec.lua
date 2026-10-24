@@ -10,13 +10,7 @@ local M = {}
 
 function M.register(tools)
   tools.register("Exec",
-    "Execute bash/shell commands on the system. "
-    .. "ABSOLUTE RULE: ONLY run real system commands. Never use 'echo' to mock outputs — this is hallucination. "
-    .. "IMPORTANT: Avoid using this tool for file operations when dedicated tools exist. Use the appropriate tool instead: "
-    .. "Find (NOT find/ls), Grep (NOT grep/rg), Read (NOT cat/head/tail), Edit (NOT sed/awk), Write (NOT echo/cat <<EOF). "
-    .. "Multiple commands: For independent commands, make separate Exec calls. For dependent commands, chain with '&&'. Use ';' only when earlier failures don't matter. "
-    .. "Paths: Prefer absolute paths over 'cd'. Always quote paths containing spaces. Before creating files, verify the parent directory exists with 'ls'. "
-    .. "Outputs exceeding 2000 lines or 100KB are automatically truncated. Use 'timeout' parameter for blocking commands (curl, ssh).",
+    [==[Run a shell command on the device and return its output. Use it for system work that no dedicated tool covers: git, builds, luac, package and process commands. Do not use it to read, search, create or edit files when Read, Grep, Find, Write or Edit can do the job; those tools return less noise and are safer. Run independent commands as separate Exec calls, and chain dependent commands with '&&'. Prefer absolute paths over 'cd', and always quote paths that contain spaces. Output over 2000 lines or 100 KB is truncated. On timeout you get the partial output; raise 'timeout' for slow network commands. Never use echo to simulate output. Example: command 'git status'.]==],
     function(arg)
       -- Passo 1: parsing e normalização (responsabilidade de interface)
       local cmd     = type(arg) == "table" and (arg.command or arg.arg or "") or arg
@@ -51,14 +45,14 @@ function M.register(tools)
       properties = {
         command = {
           type        = "string",
-          description = "Full bash command to execute in Termux. "
-                      .. "Examples: 'ls -la ~/TermAI/', 'luac -p arquivo.lua', "
+          description = "Shell command to run on the device. "
+                      .. "Examples: 'ls -la ~/TermAI/', 'luac -p file.lua', "
                       .. "'git status', 'mkdir -p ~/TermAI/backup && cp *.lua ~/TermAI/backup/'"
         },
         timeout = {
           type        = "number",
-          description = "Timeout em segundos (1-300). Interrompe o comando se exceder. "
-                       .. "Use para: ssh, curl, compilações longas. Default: 30s (máx 300s)."
+          description = "Timeout in seconds (1-300). The command is stopped when it exceeds it. "
+                       .. "Use it for slow network or build commands. Default: 30 s (max 300 s)."
         }
       },
       required = {"command"}

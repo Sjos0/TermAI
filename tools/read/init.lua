@@ -11,9 +11,7 @@ function M.register(tools, helpers)
   local file_info = helpers.file_info
 
   tools.register("Read",
-    "Reads the content of a single specific file in the system.\n"
-    .. "Use ONLY when you already know the exact file path (previously found via Grep or Find).\n"
-    .. "For medium or large files, you should ALWAYS pass start_line and end_line parameters to surgically extract only the needed block, saving context resources.",
+    [==[Read the content of one known file, with line numbers. Use it when you already have the exact path, for example from Find or Grep results. Do not use it to search text across files (use Grep) or to list a folder (use List). For files over 200 lines, always pass start_line and end_line to read only the block you need. Files over 50 KB or 2000 lines cannot be read whole; the error tells you to use a line range. A directory path is rejected. Example: path 'session/store.lua' with start_line 1 and end_line 80.]==],
     function(arg)
       -- v2: arg pode ser tabela (native) ou string (legado)
       local parsed
@@ -79,15 +77,15 @@ function M.register(tools, helpers)
       properties = {
         path = {
           type = "string",
-          description = "Full or relative path of the file to inspect."
+          description = "Path of the file to read, absolute or relative to the workspace."
         },
         start_line = {
           type = "integer",
-          description = "Starting line number to focus reading only on the relevant range."
+          description = "First line to return, 1-based. Use it together with end_line for large files."
         },
         end_line = {
           type = "integer",
-          description = "Ending line number to focus reading only on the relevant range."
+          description = "Last line to return, inclusive. Defaults to start_line when omitted."
         }
       },
       required = {"path"}

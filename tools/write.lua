@@ -10,11 +10,7 @@ function M.register(tools_mod, helpers)
   local engine    = require("tools.write.write_engine")
 
   tools_mod.register("Write",
-    "Create or completely overwrite a file (parent directories are created automatically). "
-    .. "Use only for new files or complete file rewrites. For partial modifications, always use 'Edit'. "
-    .. "RULE: You MUST call 'Read' first to confirm the current file state before overwriting. "
-    .. "Lua files (.lua) are automatically syntax-validated with 'luac -p' after writing. "
-    .. "Paths are relative to the workspace or absolute. NEVER prefix paths with 'workspace/'.",
+    [==[Create a new file, or overwrite an existing file completely, and create any missing parent directories. Use it only for new files or full rewrites. Do not use it to change part of an existing file; use Edit for that. Read the file first to confirm its current state before overwriting it. Lua files are syntax-checked with 'luac -p' after writing, and the result is returned. Paths are relative to the workspace or absolute; never prefix them with 'workspace/'.]==],
     function(arg)
       local path, content
       if type(arg) == "table" then
@@ -44,11 +40,11 @@ function M.register(tools_mod, helpers)
       properties = {
         path = {
           type = "string",
-          description = "Path to the file to create/overwrite. Relative to the workspace or absolute. NEVER prefix with 'workspace/'."
+          description = "Path of the file to create or overwrite, relative to the workspace or absolute. Never prefix it with 'workspace/'."
         },
         content = {
           type = "string",
-          description = "Complete file content. For Lua files, it will be validated with 'luac -p' after writing."
+          description = "Complete file content. Lua files are syntax-checked with 'luac -p' after writing."
         }
       },
       required = {"path", "content"}

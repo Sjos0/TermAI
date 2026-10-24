@@ -135,3 +135,14 @@ Consequências (aceitas):
    pode tentar o nome antigo e receber "ferramenta não existe" (com a lista de nomes atuais, graças ao #66).
 4. **Memória e notas** do próprio agente que citem os nomes antigos ficam desatualizadas.
 5. **Nenhum histórico de rename no registro de tools** — quem olhar `tools.registry` só vê nomes em inglês.
+
+## 7. Status da etapa 4 (descrições em inglês)
+
+Concluída: as 24 descrições e os textos dos parâmetros estão em inglês. Cada descrição tem o que faz,
+quando usar ("Use it..."), quando NÃO usar ("Do not use it..."), e exemplo quando o parâmetro pede.
+O lint `tests/tools_descriptions_spec.lua` (139 checagens) trava: nomes em inglês, seções obrigatórias,
+tamanho entre 120 e 1400 caracteres, e nenhum marcador de português em descrição ou parâmetro.
+Mutação: uma descrição em português faz o lint falhar.
+
+Fora desta etapa, para decisão futura: os nomes dos parâmetros continuam em português onde são
+contrato (`nome`, `identidade`, `funcoes`, `linhas`). Renomear exige mudar o handler e a chamada do modelo.
