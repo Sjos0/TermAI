@@ -34,16 +34,17 @@ end
 
 -- Linhas do corpo, já prontas em texto puro: prefixo " │ " ou " └─ " na última visível,
 -- e " └─ ... (N linhas)" quando houver mais que MAX_BODY. Cada linha cabe em tw colunas.
-function M.body_rows(lines, tw)
+function M.body_rows(lines, tw, max)
+  max = max or M.MAX_BODY
   local rows = {}
-  local visible = math.min(#lines, M.MAX_BODY)
+  local visible = math.min(#lines, max)
   local body_w = math.max(1, tw - 8)
   for i = 1, visible do
-    local prefix = (i == visible and #lines <= M.MAX_BODY) and " └─ " or " │ "
+    local prefix = (i == visible and #lines <= max) and " └─ " or " │ "
     rows[#rows + 1] = { prefix = prefix, text = M.cut(lines[i], body_w) }
   end
-  if #lines > M.MAX_BODY then
-    local hidden = #lines - M.MAX_BODY
+  if #lines > max then
+    local hidden = #lines - max
     rows[#rows + 1] = { prefix = " └─ ", text = "... (" .. hidden .. (hidden == 1 and " linha)" or " linhas)"), dim = true }
   end
   return rows
