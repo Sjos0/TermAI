@@ -56,17 +56,17 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 
 | Item | Status | Observação |
 |---|---|---|
-| `list` | Feito | `subagents_listar` |
+| `list` | Feito | `subagents_list` |
 | `info` (cartão de detalhes) | Feito | formato OpenClaw; redigido |
 | `log` | Feito | `subagents_log` |
-| `kill` | Feito | `subagents_matar` (com confirmação) |
+| `kill` | Feito | `subagents_kill` (com confirmação) |
 | `wait` (esperar um run) | Feito | `subagents_wait` (além do OpenClaw; teto 300 s) |
 | `send` (mensagem a um filho em execução) | Falta | |
 | `steer` (redirecionar um filho em execução) | Falta | |
 | `kill all` | Falta | hoje só um por vez |
 | `spawn` manual (`/subagents spawn <agentId> <task>`) | Falta | |
-| `sessions_list`, `sessions_history` | Parcial | `sessoes_listar`, `sessoes_historico` existem; verificar cobertura de subagentes |
-| `session_status` | Parcial | `sessao_status` existe |
+| `sessions_list`, `sessions_history` | Parcial | `sessions_list`, `sessions_history` existem; verificar cobertura de subagentes |
+| `session_status` | Parcial | `session_status` existe |
 | `sessions_yield` (encerrar o turno e esperar resultados) | Falta | útil para orquestrador sem polling |
 | `subagents` slash command no chat | Parcial | `/subagents` existe na TUI com `gc`, `kill` etc. |
 
@@ -92,7 +92,7 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 | Item | Status | Observação |
 |---|---|---|
 | Subagente sem ferramentas de sessão/mensagem por padrão | Feito | filho não cria filho nem fala com canais |
-| Ferramentas de controle só no nível permitido | Feito | `subagents_matar` e `agents_criar` pedem confirmação |
+| Ferramentas de controle só no nível permitido | Feito | `subagents_kill` e `agents_create` pedem confirmação |
 | Política por profundidade | Parcial | limite de profundidade vale; política de tools por nível ainda não |
 
 ## 8. Operação: concorrência, recuperação, parada

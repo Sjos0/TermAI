@@ -3,10 +3,10 @@
 Status: **implementado e validado com provedor real na VPS** (UI, acordar o orquestrador e `/subagents` incluídos). Base: `feature/81-subagents-mvp`.
 
 Implementado nesta etapa:
-- Agentes independentes (`agents_criar`): workspace próprio, `IDENTITY.md` (nome + identidade), `AGENTS.md` (funções), `USER.md` copiado do orquestrador, registro em `agents.list`. Exige `confirmado=true`.
+- Agentes independentes (`agents_create`): workspace próprio, `IDENTITY.md` (nome + identidade), `AGENTS.md` (funções), `USER.md` copiado do orquestrador, registro em `agents.list`. Exige `confirmado=true`.
 - Runtime assíncrono: `sessions_spawn` responde `accepted`; cada run roda em processo próprio (`TermAI run --worker <runId>`); fila com `maxConcurrent` e `maxChildrenPerAgent` (padrão 5); timeout; processo morto vira `failed/process_exit`.
 - Entrega: resposta final entra no contexto do pai no próximo ponto seguro (início de cada iteração do loop).
-- Controle: `subagents_listar`, `subagents_info`, `subagents_log`, `subagents_matar`.
+- Controle: `subagents_list`, `subagents_info`, `subagents_log`, `subagents_kill`.
 - Limpeza: run entregue com `cleanup=delete` (padrão) é apagado do disco.
 
 Também implementado:
@@ -139,6 +139,6 @@ Cobertura: `tests/subagent_block_spec.lua`.
 
 - **Profundidade:** `agents.defaults.subagents.maxSpawnDepth` (padrão **1**: subagente não cria subagente, como antes). Cada run guarda `depth` (nível) e `parent_run` (run que o criou). Com `maxSpawnDepth = 2`, um subagente de nível 1 pode criar filhos de nível 2. Um subagente sem profundidade registrada conta como nível 1, nunca como agente principal. A regra está em `spawn.can_nest(parent_depth, max)`.
 - **Anúncio em cadeia:** o resultado de um filho vai para o **run pai** (quando é aninhado) e não para o agente principal. O subagente recebe os avisos dos próprios filhos no ponto seguro, como o agente faz.
-- **Cascata:** `subagents_matar` encerra a árvore inteira de filhos ativos (filhos e netos). Quando um pai termina por qualquer motivo (concluiu, falhou, estourou o prazo ou morreu), os filhos ativos dele são encerrados no próximo tick, com o motivo `pai encerrou`. Ciclo no registro não trava a cascata.
+- **Cascata:** `subagents_kill` encerra a árvore inteira de filhos ativos (filhos e netos). Quando um pai termina por qualquer motivo (concluiu, falhou, estourou o prazo ou morreu), os filhos ativos dele são encerrados no próximo tick, com o motivo `pai encerrou`. Ciclo no registro não trava a cascata.
 - **Limites de desenho:** a cascata encerra filhos que ainda rodam quando o pai termina; ela não espera os filhos concluírem. Quem precisa do resultado dos netos deve esperá-los com `subagents_wait` antes de encerrar.
 - Cobertura: `tests/subagents_depth_cascade_spec.lua` (15 checagens). Mutação na cascata do `matar` faz a spec falhar.

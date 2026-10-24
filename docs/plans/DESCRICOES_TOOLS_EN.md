@@ -115,3 +115,23 @@ Uma descrição é considerada igual ou superior quando:
 - aponta a tool vizinha certa para cada caso de fronteira;
 - trava o nome de cada parâmetro sem ambiguidade (`session_id`, não `id`);
 - o lint do teste passa para todas as tools.
+
+## 6. Decisão final: sem alias (registrada pelo usuário)
+
+Decisão do usuário: **nomes somente em inglês, sem alias** para o nome antigo. O usuário assume as consequências,
+registradas abaixo. Isto substitui a estratégia de alias das seções 3 e 4 (etapa 2 não foi feita).
+
+Renomeações aplicadas:
+calcular → calculate · sessoes_listar → sessions_list · sessoes_historico → sessions_history ·
+sessao_status → session_status · pesquisar_web → web_search · subagents_listar → subagents_list ·
+subagents_matar → subagents_kill · agents_criar → agents_create
+
+Consequências (aceitas):
+1. **Configuração salva com o nome antigo deixa de valer.** `disabled_tools` com `calcular`, `pesquisar_web` etc.
+   não desativa mais nada: a tool volta a ficar ativa sem aviso. Quem desativou uma tool precisa trocar o nome.
+2. **Agentes já criados** com `disabled_tools = { "agents_criar" }` ficam sem a proteção (o nome novo é `agents_create`).
+3. **Permissões de ferramentas internas** usam o nome novo (`subagents_list`, `subagents_kill`, `agents_create`).
+   Chamadas antigas gravadas no histórico de conversas referem o nome antigo; ao reabrir uma sessão, o modelo
+   pode tentar o nome antigo e receber "ferramenta não existe" (com a lista de nomes atuais, graças ao #66).
+4. **Memória e notas** do próprio agente que citem os nomes antigos ficam desatualizadas.
+5. **Nenhum histórico de rename no registro de tools** — quem olhar `tools.registry` só vê nomes em inglês.
