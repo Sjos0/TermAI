@@ -10,8 +10,9 @@ package.path = BASE .. "/?.lua;"
 local arg_cmd = arg and arg[1] or nil
 
 local function show_banner()
-  local f = io.open(BASE .. "/assets/banner.txt", "r")
-  if f then io.write(f:read("*a") .. "\n"); f:close() end
+  local ok, banner = pcall(require, "ui.banner")
+  local text = ok and banner.render(BASE .. "/assets/banner.txt") or nil
+  if text then io.write(text .. "\27[0m\n") end
 end
 
 local commands = {
