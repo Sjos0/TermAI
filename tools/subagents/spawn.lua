@@ -7,6 +7,15 @@ local log       = require("diag.log")
 local M = {}
 
 -- args: task, agentId, label, model, cleanup ("delete"|"keep"), runTimeoutSeconds
+-- PID da TUI que está criando o filho. Só com terminal interativo: headless não tem dono a vigiar.
+local function owner_pid()
+  if os.execute("test -t 1") ~= true then return nil end
+  local h = io.popen("echo $PPID")
+  local s = h and h:read("*l")
+  if h then h:close() end
+  return tonumber(s)
+end
+
 -- Pode o agente/run de profundidade parent_depth criar um filho? (regra pura, testável)
 function M.can_nest(parent_depth, max_depth)
   return (tonumber(parent_depth) or 0) + 1 <= (tonumber(max_depth) or 1)
@@ -50,6 +59,7 @@ function M.spawn(args, parent)
     parent_agent     = parent.agent_id or "main",
     parent_run       = parent.run_id,
     origin           = args.origin or "agent",
+    owner_pid        = owner_pid(),
     depth            = parent_depth + 1,
     announce_pending = false,
     announce_consumed = false,

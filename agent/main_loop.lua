@@ -76,7 +76,8 @@ function M.run(ctx)
     if not input then
       local active = subagents.active_count(ctx)
       if active > 0 then
-        print(string.format("\n%d subagente(s) continuam rodando; os resultados chegam na próxima sessão.", active))
+        require("tools.subagents.control").matar_todos(ctx)
+        print(string.format("\n%d subagente(s) encerrado(s) ao sair; o trabalho parcial fica salvo.", active))
       end
       print("\nSaindo..."); break
     end

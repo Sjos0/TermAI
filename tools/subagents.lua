@@ -53,6 +53,7 @@ end
 function M.on_boundary(ctx)
   if not ctx then return end
   if ctx.is_subagent then
+    pcall(require("tools.subagents.watchdog").check, ctx.run_id)
     pcall(snapshot.tick, ctx)
     pcall(require("tools.subagents.inbox").deliver, ctx)
     pcall(require("tools.subagents.announce").inject, ctx)

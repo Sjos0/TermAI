@@ -41,8 +41,13 @@ function M.listar(args)
   local lines = {}
   for _, r in ipairs(registry.list()) do
     if not args.status or args.status == r.status then
+      local extra = ""
+      if not scheduler.is_terminal(r) then
+        local p = M.progress(r)
+        extra = string.format(" | %ss | tools=%d", p.decorrido_s, p.tools_usadas)
+      end
       lines[#lines + 1] = string.format("%s | %s | %s | agente=%s", r.runId, r.status,
-        tostring(r.kind), tostring(r.agentId))
+        tostring(r.kind), tostring(r.agentId)) .. extra
     end
   end
   if #lines == 0 then return "Nenhum subagente." end
