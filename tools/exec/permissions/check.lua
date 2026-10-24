@@ -49,7 +49,7 @@ function M.check(tool_name, command)
   -- continuam pedindo confirmação.
   local INTERNAL_AUTO = {
     sessions_spawn = true, subagents_list = true,
-    subagents_info = true, subagents_log = true, subagents_wait = true,
+    subagents_info = true, subagents_log = true, subagents_wait = true, subagents_send = true, subagents_steer = true,
   }
   if INTERNAL_AUTO[tool_name] then
     return { allowed = true, reason = "tool interna de subagentes" }

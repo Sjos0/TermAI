@@ -49,7 +49,7 @@ end
 local names = {}
 for name in pairs(tools.registry) do names[#names + 1] = name end
 table.sort(names)
-check(#names == 24, "24 tools registradas (encontradas " .. #names .. ")")
+check(#names == 26, "26 tools registradas (encontradas " .. #names .. ")")
 
 for _, name in ipairs(names) do
   local t = tools.registry[name]

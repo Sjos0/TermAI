@@ -26,6 +26,7 @@ end
 
 function M.register(tools)
   tools_def.register(tools, function() return bound_ctx end)
+  require("tools.subagents.send_def").register(tools, function() return bound_ctx end)
 end
 
 -- Ponto seguro do pai: avança a fila, entrega resultados e limpa runs entregues.
@@ -33,6 +34,7 @@ function M.on_boundary(ctx)
   if not ctx then return end
   if ctx.is_subagent then
     pcall(snapshot.tick, ctx)
+    pcall(require("tools.subagents.inbox").deliver, ctx)
     pcall(require("tools.subagents.announce").inject, ctx)
     return
   end

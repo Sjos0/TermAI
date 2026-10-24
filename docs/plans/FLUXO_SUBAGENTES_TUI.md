@@ -153,3 +153,26 @@ Antes de codar, todo recurso novo passa por estas perguntas, nesta ordem:
 3. Depois F1, F2 e F5 (lançamento honesto), com S1, S2 e S5.
 4. Depois F8 e F7 (Ctrl+C e saída), com S8 e S9.
 5. Por último F6, F10, F11 (painel e largura), com S10, S13.
+
+## 9. Lote 2 (send, steer, kill all, spawn manual): fluxo e tela, antes do código
+
+Regra seção 7 aplicada ao lote 2.
+
+**send / steer (pai ou usuário fala com um filho em execução).**
+- Backend: o pai (ou o usuário com `/subagents send|steer <id> <msg>`) grava uma linha em `inbox.jsonl` do filho. O filho lê só o que é novo, no ponto seguro dele (`on_boundary`), e entrega como mensagem do usuário com o rótulo `[mensagem do orquestrador]` ou `[redirecionamento do orquestrador]`.
+- Regras: só o dono do filho fala com ele; filho já terminado recusa; mensagem vazia é recusada.
+- Tela (40 colunas):
+  ```
+  → mensagem entregue a sub-6ada4a80e1a2 no próximo ponto seguro.
+  ↷ redirecionamento enviado a sub-6ada4a80e1a2 (vale a partir do próximo ponto seguro).
+  ```
+- Falhas previstas: filho que termina antes de ler (a mensagem fica no arquivo e não é entregue; a confirmação já terá saído). Tratado pela recusa explícita quando o status já é terminal. Fica como limite conhecido: a confirmação diz "próximo ponto seguro", não "lido".
+
+**kill all.** Encerra os ativos do dono, com a mesma cascata do `kill` individual. Não toca em filho de outro agente nem em run já terminado.
+- Tela: `✓ 5 subagente(s) encerrado(s).`
+
+**spawn manual (`/subagents spawn <tarefa>`).** O usuário cria o filho pela TUI.
+- Backend: `origin = "user"` gravado no run.
+- Tela: a linha amarela diz `lançado pelo usuário`, e não `lançado pelo orquestrador` (que seria falso).
+
+**Impacto em F-IDs do fluxo.** Este lote não resolve F2 (linha amarela só no ocioso), F7 (saída da TUI), F8 (Ctrl+C) nem F3 (rótulo de sistema). Eles seguem na ordem da seção 8.
