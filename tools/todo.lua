@@ -60,29 +60,22 @@ end
 function M.register(tools)
   tools.register(
     "todo_write",
-    "Cria ou atualiza a lista de tarefas da sessão atual. SEMPRE envie a lista "
-    .. "COMPLETA (substitui a anterior inteira, não é incremental). Use no início "
-    .. "de tarefas com 3+ passos distintos para planejar, e atualize o status "
-    .. "conforme avança (pode marcar várias de uma vez). Adicione itens novos "
-    .. "descobertos no meio da tarefa. Checklist de nível único, sem subtarefas. "
-    .. "Quando TODOS os itens forem enviados como 'completed' na mesma chamada, "
-    .. "a lista é arquivada automaticamente na memória e removida — não é preciso "
-    .. "chamar de novo para 'limpar'.",
+    [==[Create or replace the task checklist for the current session. Always send the complete list: each call replaces the previous list entirely. Use it at the start of a task with three or more distinct steps, and update the statuses as you progress; several items can change in one call. Items are single-level, so do not create subtasks. Do not use it for a single-step request. When every item is sent as completed in the same call, the list is archived to memory and cleared; you do not need a separate call to clear it.]==],
     M.write,
     {
       type = "object",
       properties = {
         todos = {
           type = "array",
-          description = "Lista completa de tarefas. Substitui a lista anterior inteira.",
+          description = "Complete task list. It replaces the previous list entirely.",
           items = {
             type = "object",
             properties = {
-              content = {type = "string", description = "Descrição curta da tarefa."},
+              content = {type = "string", description = "Short task description."},
               status  = {
                 type = "string",
                 enum = {"pending", "in_progress", "completed"},
-                description = "Status atual da tarefa."
+                description = "Current task status."
               }
             },
             required = {"content", "status"}

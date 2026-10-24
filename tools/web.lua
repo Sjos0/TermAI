@@ -6,8 +6,7 @@ local M = {}
 
 function M.register(tools)
   tools.register("web_search",
-    "Pesquisa na web por informações atualizadas. "
-    .. "O comportamento depende do Provedor de Busca e do Fallback ativos no config.json.",
+    [==[Search the web for current information and return ranked results. Use it when the answer depends on facts that may have changed, or when you do not know the source. Do not use it when you already have the exact URL; use web_fetch for that. The search provider and the fallback order come from the web_tools section of config.json. Pass short, specific search terms as query. Example: query 'Lua 5.4 release date'.]==],
     function(arg)
       local q = type(arg) == "table" and (arg.query or arg.arg or "") or arg
       if not q or q:match("^%s*$") then
@@ -55,7 +54,7 @@ function M.register(tools)
     {
       type = "object",
       properties = {
-        query = {type = "string", description = "Termo de busca na web"}
+        query = {type = "string", description = "Search terms, short and specific."}
       },
       required = {"query"}
     }

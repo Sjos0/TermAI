@@ -5,7 +5,7 @@ local lister = require("tools.list.lister")
 
 function M.register(tools_mod, helpers)
   tools_mod.register("List",
-    "List the contents of the workspace (default) or custom directories up to 3 levels deep.",
+    [==[List the entries of a directory up to three levels deep. Use it to understand a folder's structure before reading or searching. Do not use it to find a file by name (use Find) or to read file contents (use Read). The default directory is the workspace. Example: dir '~/TermAI/'.]==],
     function(arg)
       return lister.run(arg, helpers)
     end,
@@ -14,7 +14,7 @@ function M.register(tools_mod, helpers)
       properties = {
         dir = {
           type = "string",
-          description = "Optional directory path to list. Default: workspace. Ex: '~/TermAI/' or 'session/'."
+          description = "Directory to list. Default: the workspace. Examples: '~/TermAI/' or 'session/'."
         }
       }
     }
