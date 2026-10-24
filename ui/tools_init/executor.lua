@@ -27,7 +27,7 @@ local function render_subagent_or_body(name, out, ok, tw)
   if name ~= "Subagente" then return render_result_body(name, out, ok, tw) end
   if ok then return end
   local first = ((out or "") .. "\n"):match("^([^\n]*)") or ""
-  io.write(c.gray .. " └─ " .. c.red .. first:sub(1, tw - 8) .. c.reset .. "\n")
+  io.write(c.gray .. " └─ " .. c.red .. header.cut_cols(first, tw - 8) .. c.reset .. "\n")
 end
 
 function M.tool_start(cmd)
@@ -39,7 +39,7 @@ end
 function M.tool_end(cmd, out, ok)
   local tw        = core.tw()
   local name, arg = parser.parse_cmd(cmd)
-  local vis_len   = header.header_vis_len(name, arg)
+  local vis_len   = header.header_vis_len(name, arg, tw)
   local lines_up  = math.max(1, math.ceil(vis_len / tw))
   if name == "Subagente" then
     lines_up = lines_up + require("ui.subagent").finish_lines()

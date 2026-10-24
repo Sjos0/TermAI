@@ -1,6 +1,7 @@
 -- ui/subagent.lua — Linhas aninhadas das ferramentas de um clone: 3 visíveis + contador.
 local core = require("ui.core")
 local c    = core.c
+local header = require("ui.tools_init.header")
 
 local M = {}
 local VISIBLE = 3
@@ -10,7 +11,7 @@ local state = { printed = 0, hidden = 0 }
 function M.child_start(disp)
   if state.printed < VISIBLE then
     state.printed = state.printed + 1
-    io.write(c.gray .. " │ " .. c.reset .. c.white .. disp:sub(1, core.tw() - 8) .. c.reset .. "\n")
+    io.write(c.gray .. " │ " .. c.reset .. c.white .. header.cut_cols(disp, core.tw() - 8) .. c.reset .. "\n")
     io.flush()
   else
     state.hidden = state.hidden + 1

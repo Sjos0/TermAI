@@ -69,12 +69,18 @@ function M.run(ctx)
     local input, pasted_texts, raw_input, wake =
       input_mod.read(is_tty() and { on_idle = on_idle } or nil)
     if wake then
-      input      = "↻ subagentes concluídos"
+      input      = ""
       raw_input  = "[sistema] Os subagentes terminaram. Leia as mensagens do sistema e continue."
       pasted_texts = {}
     end
-    if not input then print("\nSaindo..."); break end
-    if input == "" then goto continue end
+    if not input then
+      local active = subagents.active_count(ctx)
+      if active > 0 then
+        print(string.format("\n%d subagente(s) continuam rodando; os resultados chegam na próxima sessão.", active))
+      end
+      print("\nSaindo..."); break
+    end
+    if input == "" and not wake then goto continue end
 
     -- 3. MEMORY FLUSH PRÉ-INPUT (Contexto Isolado com conteúdo BRUTO)
     local fl = flush_h.handle(ctx, raw_input, flush_msgs_start)
