@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/tui_render_spec.lua — Simulação da TUI: cada tool, com argumentos e saídas reais,
 -- desenhada por tool_start/tool_end em várias larguras de celular. Regras de exibição:
 --   R1. nenhuma linha passa da largura do terminal (em colunas, não bytes);

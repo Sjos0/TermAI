@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/security_validation_test.lua
 package.path = "./?.lua;./?/init.lua;" .. package.path
 

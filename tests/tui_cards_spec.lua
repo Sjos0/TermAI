@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/tui_cards_spec.lua — Cards de tool e avisos de subagente na TUI: nada quebra a largura da tela,
 -- sem rótulo de origem, aviso agrupado, e o main_loop não imprime linha falsa de usuário.
 package.path = "./?.lua;./?/init.lua;" .. package.path

@@ -9,7 +9,7 @@ local function load_json()
     f:close()
     return dofile(path)
   else
-    return dofile("json.lua")
+    return dofile("lib/json.lua")
   end
 end
 

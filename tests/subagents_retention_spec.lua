@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_retention_spec.lua — PR-B: retenção (#94), salvage no timeout (#93),
 -- teto e cabeçalho do anúncio e classe do erro (#96).
 package.path = "./?.lua;./?/init.lua;" .. package.path

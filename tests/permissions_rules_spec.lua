@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/permissions_rules_spec.lua — Testes unitários do módulo rules (PR #33 / Issue #26)
 -- ATENÇÃO: toca config.json; sempre limpa o que cria.
 package.path = "./?.lua;./?/init.lua;" .. package.path

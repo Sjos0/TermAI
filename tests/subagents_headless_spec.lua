@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_headless_spec.lua — --wait-subagents na execução headless (#92).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")

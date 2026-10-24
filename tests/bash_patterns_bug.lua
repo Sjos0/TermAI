@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- bash_patterns_bug.lua — Testes para bug de persistência de permissões
 -- Executar: lua5.4 ~/TermAI/tests/bash_patterns_bug.lua
 

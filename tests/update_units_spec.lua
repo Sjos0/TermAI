@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/update_units_spec.lua
 -- Testes unitários e de contrato do comando CLI `TermAI update`
 -- Origem: Issue #41 / PR #42 (feature/41-cli-update)

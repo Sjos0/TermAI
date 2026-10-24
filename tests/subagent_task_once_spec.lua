@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagent_task_once_spec.lua — Regressão #85 e #86: a tarefa do subagente entra UMA vez
 -- e o turno do filho não vaza estado de módulo para o pai.
 package.path = "./?.lua;./?/init.lua;" .. package.path

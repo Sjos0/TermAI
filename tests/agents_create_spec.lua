@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/agents_create_spec.lua — Criação de agentes independentes (agents_create).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")

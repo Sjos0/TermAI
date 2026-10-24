@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/doc_gap_surfaces_spec.lua
 -- Regressão PR #68 / Issues #55 #56 #54 (e inventário alinhado ao batch DOC-GAP).
 --

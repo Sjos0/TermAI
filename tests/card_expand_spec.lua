@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/card_expand_spec.lua — Ctrl+O: expande o corpo do último card, sem recolher e sem quebrar a largura.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 

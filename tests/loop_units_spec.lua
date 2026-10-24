@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/loop_units_spec.lua
 -- Testes dos submódulos extraídos em agent/loop/
 -- Origem: Issue #29 / PR #40 (branch refactor/29-agent-loop-facade)

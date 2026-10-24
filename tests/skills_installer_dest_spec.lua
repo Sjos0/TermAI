@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/skills_installer_dest_spec.lua
 -- Regressão Issue #72 / PR #75: destino do CLI installer = SSOT do runtime.
 --

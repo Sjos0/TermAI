@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_lote2_spec.lua — lote 2 da paridade OpenClaw: send, steer, kill all, origem do spawn.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")

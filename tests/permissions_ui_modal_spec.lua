@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/permissions_ui_modal_spec.lua — Lifecycle alternate screen (PR #24 v5)
 
 package.path = "./?.lua;./?/init.lua;" .. package.path

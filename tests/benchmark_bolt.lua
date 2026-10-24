@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/benchmark_bolt.lua
 -- Benchmark comparativo para as otimizações do Bolt.
 

@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/graph_cache_full_spec.lua — Spec 2026-08-06 + fixes Ameno
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local portable_tmp = require("tests.helpers.tmp")

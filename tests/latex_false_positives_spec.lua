@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/latex_false_positives_spec.lua
 -- Regressão Issue #36: apply_latex não deve mutar paths, moeda nem substrings.
 -- Também garante que math mode legítimo e standalone intencional continuam ok.

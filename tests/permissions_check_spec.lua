@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/permissions_check_spec.lua — Testes unitários do módulo check (PR #33 / Issue #26)
 -- ATENÇÃO: depende de config.json, session e parser. Sempre restaura estado.
 

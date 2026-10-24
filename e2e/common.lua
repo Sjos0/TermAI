@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- e2e/common.lua — Preparação comum dos testes reais: registra o provedor Kilo (sem chave) no store de modelos.
 local M = {}
 

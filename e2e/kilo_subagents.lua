@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- e2e/kilo_subagents.lua — Subagentes reais com Kilo: clone, agente independente e fila (2 simultâneos).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local json      = require("json")

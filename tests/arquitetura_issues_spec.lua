@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/arquitetura_issues_spec.lua — decisões do Arquiteto: #51, #52, #58, #70, #71.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
@@ -48,7 +49,7 @@ check(not docs:find("Exec", 1, true), "#70: texto não manda executar comando vi
 check(docs:find("não são ferramentas", 1, true) ~= nil, "#70: deixa claro que comandos não são ferramentas")
 
 -- #71: contrato de nomes documentado, sem rename (nomes continuam registrados)
-local tl = rd("tools.lua")
+local tl = rd("lib/tools.lua")
 check(tl:find("Contrato de nomes (issue #71", 1, true) ~= nil, "#71: contrato de nomes no topo de tools.lua")
 check(tools.registry["Grep"] ~= nil and tools.registry["web_fetch"] ~= nil and tools.registry["web_search"] ~= nil,
   "#71: nomes existentes continuam registrados (sem rename)")

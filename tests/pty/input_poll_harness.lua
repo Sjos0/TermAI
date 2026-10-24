@@ -1,5 +1,5 @@
 -- tests/pty/input_poll_harness.lua — Harness do teste de pseudo-terminal para ui/input.lua (polling).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local input = require("ui.input")
 local mode = arg[1] or "type"
 

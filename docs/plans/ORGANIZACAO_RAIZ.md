@@ -47,3 +47,10 @@ mostrando todos os módulos. Pontos de entrada (`main.lua`, `agente.lua`, `agent
 - Nomes de módulo (`require("json")` continua igual).
 - Pastas por domínio (`agent/`, `tools/`, `ui/`, `commands/`, `channels/`) continuam como estão.
 - Pares `models.lua` + `models/` seguem o padrão de fachada do projeto.
+
+## 5. Status (fase 2 concluída)
+
+- Módulos-fachada movidos para `lib/`: `json`, `tools`, `ui`, `renderer`, `session`, `prompt`, `models`, `memoryflush`, `config`.
+- Raiz agora: `main.lua`, `agente.lua`, `agente_telegram.lua`, `install.sh`, `README`, `CONTEXT`, `LICENSE`, `VERSION`.
+- Caminhos ajustados: `package.path` em `main.lua` e `commands/config_cli.lua`; linha de `lib/` no começo de cada teste e e2e (62 arquivos); leituras por caminho em 4 specs; lista de `commands/status.lua`.
+- O `require("json")` etc. não mudou: só o lugar do arquivo.

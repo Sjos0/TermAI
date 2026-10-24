@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_depth_cascade_spec.lua — paridade OpenClaw lote 1: profundidade (maxSpawnDepth),
 -- roteamento do anúncio por run pai, e cascata (matar e órfãos). Padrão preserva o comportamento atual.
 package.path = "./?.lua;./?/init.lua;" .. package.path

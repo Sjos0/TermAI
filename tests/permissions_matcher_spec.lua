@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/permissions_matcher_spec.lua — Testes unitários do módulo matcher (PR #33 / Issue #26)
 -- Executar: lua5.4 tests/permissions_matcher_spec.lua  (a partir da raiz do repo)
 package.path = "./?.lua;./?/init.lua;" .. package.path

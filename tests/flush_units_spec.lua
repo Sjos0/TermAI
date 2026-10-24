@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/flush_units_spec.lua
 -- Testes unitários dos submódulos extraídos em agent/flush/
 -- Origem: Issue #28 / branch refactor/28-agent-flush-facade

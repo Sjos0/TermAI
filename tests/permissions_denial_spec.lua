@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/permissions_denial_spec.lua — Testes unitários do módulo denial (PR #33 / Issue #26)
 package.path = "./?.lua;./?/init.lua;" .. package.path
 

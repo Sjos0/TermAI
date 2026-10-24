@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/google_grounding_units_spec.lua
 -- Testes unitários dos submódulos extraídos em providers/google_grounding/
 -- Origem: Issue #27 / PR #37 (refactor monólito → fachada + submódulos)

@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/diag_log_spec.lua — Log estruturado: escrita, RSS, rotação e leitura do final.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")

@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- test_compaction_v7.lua — Fase 1+5 (unitários + adversariais)
 -- Executar: lua5.4 ~/test_compaction_v7.lua
 

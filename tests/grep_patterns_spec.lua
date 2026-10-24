@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/grep_patterns_spec.lua — Grep (issue #91): validação de Lua patterns, aviso de '|',
 -- base oculto pesquisável, arquivos sensíveis fora, .git fora, segredo mascarado.
 package.path = "./?.lua;./?/init.lua;" .. package.path

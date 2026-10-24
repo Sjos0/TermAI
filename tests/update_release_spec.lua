@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/update_release_spec.lua — Release (#74), restart (#53), /models (#67), caminhos (#83), artefato (#47).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")

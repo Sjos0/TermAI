@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/summarizer_runner_lifecycle_spec.lua
 -- Regressão Issue #73: ciclo de vida do curl no summarizer (PID + kill antes de remove).
 --
@@ -112,7 +113,7 @@ end
 -- ── prompt #69 (mesmo PR, regressão cruzada leve) ───────────────────────────
 sec("prompt CONSCIÊNCIA AMBIENTAL (#69)")
 
-local prompt = assert(io.open("prompt.lua", "r")):read("*a")
+local prompt = assert(io.open("lib/prompt.lua", "r")):read("*a")
 T("sem ler_arquivo/escrever_arquivo/substituir_texto",
   not prompt:find("ler_arquivo", 1, true)
     and not prompt:find("escrever_arquivo", 1, true)
