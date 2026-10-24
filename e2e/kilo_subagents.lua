@@ -20,10 +20,10 @@ config.set("agents.defaults.subagents.maxConcurrent", 2)
 config.set("agents.defaults.subagents.maxChildrenPerAgent", 5)
 config.set("agents.defaults.subagents.runTimeoutSeconds", 600)
 
--- Papel do usuário: cria o agente independente (confirmado=true).
-local created = create.create({ id = "pesquisa", nome = "Pesquisador",
-  identidade = "Responde de forma curta e exata.",
-  funcoes = "Responder exatamente o que for pedido, sem texto extra.", confirmado = true })
+-- Papel do usuário: cria o agente independente (confirmed=true).
+local created = create.create({ id = "pesquisa", name = "Pesquisador",
+   identity = "Responde de forma curta e exata.",
+  functions = "Responder exatamente o que for pedido, sem texto extra.", confirmed = true })
 log.info("e2e_agent_created", { result = created })
 
 local parent = { agent_id = "main", cfg = config.load(), msgs = {} }
