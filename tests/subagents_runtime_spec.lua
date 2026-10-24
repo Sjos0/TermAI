@@ -96,7 +96,7 @@ check(cleanup.sweep() == 0 and registry.load(r1.runId) ~= nil, "padrão retém r
 
 -- Kill.
 local kill_msg = control.matar({ runId = r2.runId })
-check(kill_msg:match("^✓") ~= nil, "subagents_matar encerra o run")
+check(kill_msg:match("^✓") ~= nil, "subagents_kill encerra o run")
 check(registry.load(r2.runId).status == "killed" and killed[tonumber(registry.load(r2.runId).pid)], "run morto fica com status killed e processo sinalizado")
 
 -- Processo morto sem terminar vira failed/process_exit.
@@ -120,7 +120,7 @@ events.append(r2.runId, "tool", "Read | a.lua")
 events.append(r2.runId, "tool", "Grep | foo")
 local tail = events.tail(r2.runId, 1)
 check(#tail == 1 and tail[1]:find("Grep", 1, true) ~= nil, "subagents_log mostra as últimas linhas")
-check(control.listar({}):find(r2.runId, 1, true) ~= nil, "subagents_listar lista os runs")
+check(control.listar({}):find(r2.runId, 1, true) ~= nil, "subagents_list lista os runs")
 check(scheduler.limits(nil).maxChildrenPerAgent == 5 and scheduler.limits(nil).maxConcurrent == 5,
   "padrão de limites é 5 (simultâneos e por pai)")
 

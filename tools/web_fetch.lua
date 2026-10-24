@@ -5,7 +5,7 @@ local fetcher = require("tools.web_fetch.fetcher")
 
 function M.register(tools_mod, helpers)
   tools_mod.register("web_fetch",
-    "Fetch and extract clean, readable text or content from a specific HTTP or HTTPS URL. Use ONLY when you already have a specific URL to read. For general web searches, use 'pesquisar_web' instead.",
+    "Fetch and extract clean, readable text or content from a specific HTTP or HTTPS URL. Use ONLY when you already have a specific URL to read. For general web searches, use 'web_search' instead.",
     function(arg)
       return fetcher.run(arg)
     end,

@@ -28,7 +28,7 @@ function M.executar(ferramentas, disabled_tools)
         result_text = out
           .. "\n\n[INSTRUCAO DO SISTEMA] Ferramenta falhou. Verifique:\n"
           .. "1. Nome correto? Ferramentas: Exec, Read, Write, Edit, "
-          .. "Find, List, pesquisar_web, sessao_status, memory_search, calcular\n"
+          .. "Find, List, web_search, session_status, memory_search, calculate\n"
           .. "2. Formato: <tool><name>NOME</name><arg>ARGUMENTO</arg></tool>\n"
           .. "3. Read antes de Edit/Write"
       end

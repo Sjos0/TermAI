@@ -17,7 +17,7 @@ function M.add(id, nome)
     name           = nome or id,
     workspace      = paths.workspace_rel(id),
     model          = { primary = "" },
-    disabled_tools = { "agents_criar" },
+    disabled_tools = { "agents_create" },
   }
   if not config.set("agents.list", list) then
     return false, "falha ao salvar o config"

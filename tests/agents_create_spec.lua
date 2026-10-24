@@ -1,4 +1,4 @@
--- tests/agents_create_spec.lua — Criação de agentes independentes (agents_criar).
+-- tests/agents_create_spec.lua — Criação de agentes independentes (agents_create).
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
 local failures = 0
@@ -48,7 +48,7 @@ local cfg_list = require("config").get("agents.list") or {}
 local entry
 for _, a in ipairs(cfg_list) do if a.id == "pesquisa" then entry = a end end
 check(entry ~= nil and entry.workspace == "agents/pesquisa/workspace", "entrada registrada em agents.list")
-check(entry ~= nil and entry.disabled_tools[1] == "agents_criar", "agente criado não pode criar outros agentes")
+check(entry ~= nil and entry.disabled_tools[1] == "agents_create", "agente criado não pode criar outros agentes")
 check(cfg_list[1] and cfg_list[1].id == "main", "orquestrador continua como primeiro da lista")
 
 check(create.create({ id = "pesquisa", identidade = "x", funcoes = "y", confirmado = true }):match("já existe") ~= nil,

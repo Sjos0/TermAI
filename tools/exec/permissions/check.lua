@@ -45,10 +45,10 @@ function M.check(tool_name, command)
 
   -- 5. Se não for Exec, e não estiver explicitamente bloqueado/permitido, precisa de diálogo
   -- Tools internas de subagentes: não alteram arquivos do usuário e precisam
-  -- rodar também em modo headless (sem diálogo). subagents_matar e agents_criar
+  -- rodar também em modo headless (sem diálogo). subagents_kill e agents_create
   -- continuam pedindo confirmação.
   local INTERNAL_AUTO = {
-    sessions_spawn = true, subagents_listar = true,
+    sessions_spawn = true, subagents_list = true,
     subagents_info = true, subagents_log = true, subagents_wait = true,
   }
   if INTERNAL_AUTO[tool_name] then

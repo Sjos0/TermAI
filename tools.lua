@@ -6,7 +6,7 @@
 -- v3.3: get_schema/get_docs aceitam disabled_set (Issue #32); defesa em call*.
 -- Contrato de nomes (issue #71; decisão do Arquiteto: NÃO renomear). Três famílias coexistem:
 --   PascalCase EN (filesystem/shell): Exec, Read, Grep, Find, List, Write, Edit
---   snake_case PT (sessão, cálculo, web): pesquisar_web, calcular, sessoes_listar, sessoes_historico, sessao_status
+--   snake_case PT (sessão, cálculo, web): web_search, calcular, sessions_list, sessions_history, session_status
 --   minúsculo (misto): web_fetch, memory_search, skill, restart, todo_write
 -- Fonte de verdade: tools.registry. Listas manuais de nomes são o problema da #66.
 -- Tool NOVA: filesystem/shell -> PascalCase EN; sessão/cálculo/web -> snake_case PT; description coerente.

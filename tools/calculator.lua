@@ -1,4 +1,4 @@
--- tools/calculator.lua — Ferramenta "calcular".
+-- tools/calculator.lua — Ferramenta "calculate".
 -- v2: schema JSON para native tool calling + arg backward compat.
 local M = {}
 
@@ -7,7 +7,7 @@ function M.register(tools)
   local engine    = require("tools.calculator.engine")
   local formatter = require("tools.calculator.formatter")
 
-  tools.register("calcular",
+  tools.register("calculate",
     "OBRIGATÓRIO para qualquer cálculo numérico antes de responder. "
     .. "Nunca calcule mentalmente. "
     .. "ATENÇÃO: % em Lua = módulo. Para porcentagens use frações: 15% → (15/100)*200. "
