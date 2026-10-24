@@ -20,7 +20,7 @@ function M.route(input, ctx, flush_msgs_start)
   elseif sub == "info" then
     out = id ~= "" and control.info({ runId = id }) or USAGE
   elseif sub == "log" then
-    out = id ~= "" and control.log({ runId = id, linhas = tonumber(extra) }) or USAGE
+    out = id ~= "" and control.log({ runId = id, lines = tonumber(extra) }) or USAGE
   elseif sub == "gc" then
     local n = require("tools.subagents.cleanup").sweep()
     io.write("\27[38;5;114m✓\27[0m " .. n .. " run(s) antigo(s) removido(s) (guardados: 50 runs ou 7 dias)\n\n")

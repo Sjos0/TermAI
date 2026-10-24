@@ -60,6 +60,10 @@ for _, name in ipairs(names) do
   check(#d >= 120 and #d <= 1400, name .. ": tamanho da descrição entre 120 e 1400 caracteres (" .. #d .. ")")
   local pt = has_pt(d)
   check(pt == nil, name .. ": descrição sem português" .. (pt and (" (achei '" .. pt .. "')") or ""))
+  for pname in pairs((t.schema or {}).properties or {}) do
+    local bad = { nome = true, identidade = true, funcoes = true, confirmado = true, linhas = true }
+    check(not bad[pname], name .. ": nome de parâmetro '" .. pname .. "' em inglês")
+  end
   for _, pd in ipairs(param_descriptions(t.schema, nil, name)) do
     local ppt = has_pt(pd[2])
     check(ppt == nil, name .. " / " .. pd[1] .. ": parâmetro sem português" .. (ppt and (" (achei '" .. ppt .. "')") or ""))

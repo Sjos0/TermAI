@@ -146,3 +146,16 @@ Mutação: uma descrição em português faz o lint falhar.
 
 Fora desta etapa, para decisão futura: os nomes dos parâmetros continuam em português onde são
 contrato (`nome`, `identidade`, `funcoes`, `linhas`). Renomear exige mudar o handler e a chamada do modelo.
+
+## 8. Parâmetros em inglês (feito depois da etapa 4)
+
+Os parâmetros de tool que estavam em português foram renomeados, sem alias (decisão do usuário):
+`agents_create`: nome→name, identidade→identity, funcoes→functions, confirmado→confirmed;
+`subagents_log`: linhas→lines.
+
+Consequências aceitas: chamadas antigas no histórico com os nomes em português deixam de funcionar
+(o campo obrigatório some e a tool recusa a chamada com a mensagem de campo obrigatório).
+Agentes já criados não são afetados: o registro e os arquivos do workspace não mudam.
+
+Não renomeado, de propósito: `tool.nome` em `tools/error_feedback/validator.lua`. É o nome da tool
+lido do parser de XML (protocolo interno), não um parâmetro de schema. Mudar quebra o parsing de todas as tools.

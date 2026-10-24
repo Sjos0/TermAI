@@ -14,12 +14,12 @@ function M.register(tools)
       type = "object",
       properties = {
         id         = { type = "string", description = "Short id: lowercase letters, digits, '_' or '-' (2 to 32 characters)." },
-        nome       = { type = "string", description = "Agent display name, written to IDENTITY.md." },
-        identidade = { type = "string", description = "Who the agent is and how it speaks (IDENTITY.md)." },
-        funcoes    = { type = "string", description = "What the agent does and its working rules (AGENTS.md)." },
-        confirmado = { type = "boolean", description = "Set to true only after the user has confirmed the details." },
+        name       = { type = "string", description = "Agent display name, written to IDENTITY.md." },
+        identity   = { type = "string", description = "Who the agent is and how it speaks (IDENTITY.md)." },
+        functions  = { type = "string", description = "What the agent does and its working rules (AGENTS.md)." },
+        confirmed  = { type = "boolean", description = "Set to true only after the user has confirmed the details." },
       },
-      required = { "id", "identidade", "funcoes", "confirmado" },
+      required = { "id", "identity", "functions", "confirmed" },
     }
   )
 end
