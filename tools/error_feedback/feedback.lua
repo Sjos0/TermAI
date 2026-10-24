@@ -9,13 +9,13 @@ local examples = {
   Edit              = "~/TermAI/arquivo.lua|||texto antigo|||texto novo",
   Find              = "nome_do_arquivo",
   List              = "",
-  calcular          = "2 + 2 * 3",
+  calculate          = "2 + 2 * 3",
   memory_search     = "query de busca",
-  pesquisar_web     = "termo de pesquisa",
+  web_search     = "termo de pesquisa",
   skill             = "nome_da_skill",
-  sessoes_listar    = "",
-  sessao_status     = "",
-  sessoes_historico = "",
+  sessions_list    = "",
+  session_status     = "",
+  sessions_history = "",
   restart           = "",
 }
 

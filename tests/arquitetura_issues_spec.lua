@@ -13,7 +13,7 @@ check(type(tools.format_arg_str) == "function", "#52: tools.format_arg_str exist
 check(tools.format_arg_str("Grep", { pattern = "foo", path = "src" }) == '"foo" in src', "#52: Grep formata padrão e caminho")
 check(tools.format_arg_str("Read", { path = "a.lua", start_line = 3, end_line = 9 }) == "a.lua:3-9", "#52: Read com intervalo")
 check(tools.format_arg_str("Exec", { command = "ls -la" }) == "ls -la", "#52: campo command vira primário")
-check(tools.format_arg_str("calcular", { expression = "2+2" }) == "2+2", "#52: campo expression vira primário")
+check(tools.format_arg_str("calculate", { expression = "2+2" }) == "2+2", "#52: campo expression vira primário")
 check(tools.format_arg_str("X", { foo = 1 }):find('"foo"', 1, true) ~= nil, "#52: sem campo conhecido cai para JSON")
 check(tools.format_arg_str("X", "texto cru") == "texto cru", "#52: argumento não-tabela vira texto")
 check(not rd("agent/loop/tool_runner/executor.lua"):find("build_arg_str", 1, true), "#52: executor não tem terceira cópia (build_arg_str removido)")
@@ -49,7 +49,7 @@ check(docs:find("não são ferramentas", 1, true) ~= nil, "#70: deixa claro que 
 -- #71: contrato de nomes documentado, sem rename (nomes continuam registrados)
 local tl = rd("tools.lua")
 check(tl:find("Contrato de nomes (issue #71", 1, true) ~= nil, "#71: contrato de nomes no topo de tools.lua")
-check(tools.registry["Grep"] ~= nil and tools.registry["web_fetch"] ~= nil and tools.registry["pesquisar_web"] ~= nil,
+check(tools.registry["Grep"] ~= nil and tools.registry["web_fetch"] ~= nil and tools.registry["web_search"] ~= nil,
   "#71: nomes existentes continuam registrados (sem rename)")
 
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))

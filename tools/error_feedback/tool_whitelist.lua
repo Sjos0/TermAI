@@ -3,10 +3,10 @@
 local M = {}
 
 local whitelist = {
-  sessoes_listar    = true,
+  sessions_list    = true,
   List              = true,
-  sessao_status     = true,
-  sessoes_historico = true,
+  session_status     = true,
+  sessions_history = true,
   restart           = true,
 }
 

@@ -41,12 +41,12 @@ TermAI é um agente de IA local com interface de terminal (TUI), escrito em Lua 
 
 - Arquivos e busca: `Read`, `Write`, `Edit`, `Find`, `Grep`, `List`
 - Shell: `Exec`
-- Web: `pesquisar_web`, `web_fetch`
-- Utilitárias: `calcular`, `todo_write`, `skill`, `restart`
-- Memória e sessões: `memory_search`, `sessao_status`, `sessoes_listar`, `sessoes_historico`
-- Subagentes: `sessions_spawn`, `subagents_listar`, `subagents_info`, `subagents_log`, `subagents_matar`, `agents_criar`
+- Web: `web_search`, `web_fetch`
+- Utilitárias: `calculate`, `todo_write`, `skill`, `restart`
+- Memória e sessões: `memory_search`, `session_status`, `sessions_list`, `sessions_history`
+- Subagentes: `sessions_spawn`, `subagents_list`, `subagents_info`, `subagents_log`, `subagents_kill`, `agents_create`
 
-Permissões ficam em `tools/exec/permissions/`. Ferramentas que não são `Exec` pedem diálogo, exceto `sessions_spawn`, `subagents_listar`, `subagents_info` e `subagents_log`, que são internas e liberadas. `subagents_matar` e `agents_criar` continuam pedindo confirmação.
+Permissões ficam em `tools/exec/permissions/`. Ferramentas que não são `Exec` pedem diálogo, exceto `sessions_spawn`, `subagents_list`, `subagents_info` e `subagents_log`, que são internas e liberadas. `subagents_kill` e `agents_create` continuam pedindo confirmação.
 
 ## Subagentes
 

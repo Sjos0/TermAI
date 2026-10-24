@@ -1,11 +1,11 @@
--- tools/web.lua — Ferramenta "pesquisar_web".
+-- tools/web.lua — Ferramenta "web_search".
 -- v2: schema JSON para native tool calling + arg backward compat.
 -- v3: Despacha dinamicamente para o Provedor de Busca (Search Provider) ativo.
 -- v4: Suporta fallback dinâmico em cadeia (Chain-of-Responsibility) ordenável pelo usuário.
 local M = {}
 
 function M.register(tools)
-  tools.register("pesquisar_web",
+  tools.register("web_search",
     "Pesquisa na web por informações atualizadas. "
     .. "O comportamento depende do Provedor de Busca e do Fallback ativos no config.json.",
     function(arg)

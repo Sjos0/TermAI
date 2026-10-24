@@ -60,7 +60,7 @@ function M.build(opts)
     local merged = {}
     for _, name in ipairs(disabled_list) do merged[#merged + 1] = name end
     merged[#merged + 1] = "sessions_spawn"
-    merged[#merged + 1] = "agents_criar"
+    merged[#merged + 1] = "agents_create"
     disabled_list = merged
   end
   local disabled_set = {}

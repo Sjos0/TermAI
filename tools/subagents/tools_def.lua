@@ -20,7 +20,7 @@ function M.register(tools, get_parent)
         runTimeoutSeconds = { type = "number", description = "Tempo máximo do run em segundos (padrão 600). Limites: 5 simultâneos no total e 5 por agente pai." },
       }, required = { "task" } })
 
-  tools.register("subagents_listar", "Lista os subagentes (opcional: status).",
+  tools.register("subagents_list", "Lista os subagentes (opcional: status).",
     function(arg) return control.listar(type(arg) == "table" and arg or {}) end,
     { type = "object", properties = { status = { type = "string" } } })
 
@@ -37,7 +37,7 @@ function M.register(tools, get_parent)
     function(arg) return control.esperar(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
     { type = "object", properties = { runId = { type = "string" }, timeoutSeconds = { type = "number" } }, required = { "runId" } })
 
-  tools.register("subagents_matar", "Encerra um subagente em execução.",
+  tools.register("subagents_kill", "Encerra um subagente em execução.",
     function(arg) return control.matar(type(arg) == "table" and arg or { runId = tostring(arg or "") }) end,
     { type = "object", properties = { runId = { type = "string" } }, required = { "runId" } })
 end

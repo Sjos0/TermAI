@@ -3,7 +3,7 @@
 local M = {}
 
 function M.register(tools)
-  tools.register("sessoes_listar",
+  tools.register("sessions_list",
     "Lista todas as sessões de conversa salvas com metadados. Sem argumentos.",
     function(arg)
       local session = require("session")
@@ -26,7 +26,7 @@ function M.register(tools)
     {type = "object", properties = {}}
   )
 
-  tools.register("sessoes_historico",
+  tools.register("sessions_history",
     "Lê o histórico de uma sessão específica. Arg: session_id (opcional, padrão=sessão ativa).",
     function(arg)
       local session_id = type(arg) == "table"
@@ -60,7 +60,7 @@ function M.register(tools)
     }
   )
 
-  tools.register("sessao_status",
+  tools.register("session_status",
     "Mostra status detalhado da sessão ativa.",
     function(arg)
       local session = require("session")

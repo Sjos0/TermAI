@@ -248,9 +248,9 @@ print("4.5 Lista realista de tools do TermAI")
 do
   local real_tools = {
     "exec", "read", "write", "edit", "grep", "find", "list",
-    "memory_search", "web_fetch", "pesquisar_web", "restart",
-    "sessao_status", "sessoes_historico", "sessoes_listar",
-    "todo_write", "skill", "calcular"
+    "memory_search", "web_fetch", "web_search", "restart",
+    "session_status", "sessions_history", "sessions_list",
+    "todo_write", "skill", "calculate"
   }
   local m, d = fuzzy.find_closest("rexec", real_tools)
   TEST("lista realista: encontra 'exec'", m == "exec")

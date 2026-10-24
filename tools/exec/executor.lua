@@ -7,7 +7,7 @@ local M = {}
 
 local _count = 0  -- contador para evitar colisão de nomes de tmp
 
--- Lista de comandos de rede proibidos dentro do exec para garantir o uso de ferramentas nativas seguras (web_fetch/pesquisar_web)
+-- Lista de comandos de rede proibidos dentro do exec para garantir o uso de ferramentas nativas seguras (web_fetch/web_search)
 local BANNED_COMMANDS = { "wget", "lynx", "w3m" }
 
 -- Executa um comando shell e retorna resultado estruturado.
@@ -20,7 +20,7 @@ function M.run(command, timeout)
     if command:match("%f[%w]" .. banned .. "%f[%W]") then
       return {
         output = "❌ [SEGURANÇA] Bloqueio de Comando: O uso do utilitário de rede '" .. banned 
-          .. "' dentro da ferramenta 'Exec' é proibido por segurança. Para buscar ou extrair conteúdo de páginas web, você DEVE usar as ferramentas nativas seguras 'pesquisar_web' ou 'web_fetch', que possuem salvaguardas de tokens e escudos de SSRF.",
+          .. "' dentro da ferramenta 'Exec' é proibido por segurança. Para buscar ou extrair conteúdo de páginas web, você DEVE usar as ferramentas nativas seguras 'web_search' ou 'web_fetch', que possuem salvaguardas de tokens e escudos de SSRF.",
         exit_code = "1",
         timed_out = false
       }
