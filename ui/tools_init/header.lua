@@ -1,20 +1,13 @@
 -- ui/tools_init/header.lua — Cabeçalho de uma tool: sempre UMA linha, cortada na largura da tela.
 -- Cabeçalho que quebra desalinha a volta do cursor (ESC[nA) e deixa resíduo na TUI.
 local core = require("ui.core")
+local card = require("ui.card")
 local c    = core.c
 
 local M = {}
 
--- Corta por caracteres UTF-8 para caber em max colunas; o corte é marcado com "…".
-function M.cut_cols(s, max)
-  s = tostring(s or "")
-  if max <= 0 then return "" end
-  local n = utf8.len(s)
-  if not n then return s:sub(1, max) end          -- texto inválido em UTF-8: corte bruto
-  if n <= max then return s end
-  if max == 1 then return "…" end
-  return s:sub(1, utf8.offset(s, max) - 1) .. "…"
-end
+-- Corte UTF-8 por colunas: delegado ao componente Card (ui/card.lua), fonte única.
+function M.cut_cols(s, max) return card.cut(s, max) end
 
 -- Colunas visíveis do cabeçalho ("⬤ " + nome + " (arg)"), limitadas a tw-1 quando tw é dado.
 function M.header_vis_len(name, arg, tw)

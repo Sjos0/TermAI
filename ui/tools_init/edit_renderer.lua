@@ -24,7 +24,7 @@ function M.render_edit_body(lines, ok, tw)
   if added and removed then
     local summary = string.format("Adicionadas %d linha(s), removida(s) %d linha(s)", added, removed)
     local text_color = (added == 0 and removed == 0) and c.red or c.cyan
-    io.write(c.gray .. prefix .. text_color .. "└ " .. summary .. c.reset .. "\n")
+    io.write(c.gray .. prefix .. text_color .. "└ " .. require("ui.card").cut(summary, tw - 8) .. c.reset .. "\n")
   end
 
   -- 3. Imprime linhas de diff formatadas
@@ -83,9 +83,23 @@ function M.render_edit_body(lines, ok, tw)
   end
 
   local idx = 1
+  local printed = 0
+  local card = require("ui.card")
   while idx <= #lines do
     if idx ~= 1 and idx ~= metrics_idx then
       if show_line[idx] then
+        -- Corpo recolhido (regra de card): depois de MAX_BODY linhas, mostra quantas faltam e para.
+        if printed >= card.MAX_BODY then
+          local left = 0
+          for j = idx, #lines do
+            if j ~= metrics_idx and show_line[j] then left = left + 1 end
+          end
+          if left > 0 then
+            io.write(c.gray .. prefix .. c.dim .. "... (" .. left .. " linhas)" .. c.reset .. "\n")
+          end
+          break
+        end
+        printed = printed + 1
         local ln = lines[idx]
         local ln_str, marker, content = ln:match("^%s*(%d+)%s*([%-%+ ]?)%s*|%s*(.*)$")
 
@@ -95,9 +109,7 @@ function M.render_edit_body(lines, ok, tw)
           local formatted = string.format("%4s %s  %s", ln_str, marker ~= " " and marker or " ", content)
 
           local max_w = tw - 12
-          if #formatted > max_w then
-            formatted = formatted:sub(1, max_w - 3) .. "..."
-          end
+          formatted = card.cut(formatted, max_w)
 
           if marker == "-" then
             io.write(c.gray .. prefix .. c.red .. formatted .. c.reset .. "\n")
@@ -107,7 +119,7 @@ function M.render_edit_body(lines, ok, tw)
             io.write(c.gray .. prefix .. c.gray .. formatted .. c.reset .. "\n")
           end
         else
-          io.write(c.gray .. prefix .. c.white .. ln:sub(1, tw - 8) .. c.reset .. "\n")
+          io.write(c.gray .. prefix .. c.white .. card.cut(ln, tw - 8) .. c.reset .. "\n")
         end
         idx = idx + 1
       else
