@@ -106,8 +106,10 @@ function M.matar(args)
   local r = registry.load(args.runId)
   if not r then return "❌ run não encontrado: " .. tostring(args.runId) end
   if scheduler.is_terminal(r) then return "Run já terminado: " .. r.status end
+  local children = scheduler.stop_tree(r.runId, "pai morto pelo usuário")
   launcher.kill(r.pid, r.runId)
   r.status, r.error, r.finished_at = "killed", "morto pelo usuário", os.time()
+  if children > 0 then r.stopped_children = children end
   r.announce_pending = true
   registry.save(r)
   log.info("run_killed_by_user", { run_id = r.runId })

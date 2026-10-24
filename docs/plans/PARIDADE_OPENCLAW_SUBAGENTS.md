@@ -14,8 +14,8 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 | Sessão própria por subagente | Feito | run.json + events.jsonl por run |
 | Anúncio do resultado ao solicitante | Feito | aviso ao pai no ponto seguro; linha verde/vermelha na TUI |
 | Isolamento por padrão | Feito | filho sem sessão/mensagens do pai |
-| Profundidade de aninhamento configurável | Falta | hoje o filho não cria filho (profundidade fixa em 1) |
-| Ponte de anúncio em cadeia (filho de filho) | Falta | depende da profundidade configurável |
+| Profundidade de aninhamento configurável | Feito | maxSpawnDepth (padrão 1); run guarda depth e parent_run |
+| Ponte de anúncio em cadeia (filho de filho) | Feito | aviso vai ao run pai; subagente recebe avisos dos próprios filhos |
 | Sandboxing opcional | N/A | backends Docker/Podman/SSH do OpenClaw não existem no TermAI |
 
 ## 2. Contexto (`context`)
@@ -93,7 +93,7 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 |---|---|---|
 | Subagente sem ferramentas de sessão/mensagem por padrão | Feito | filho não cria filho nem fala com canais |
 | Ferramentas de controle só no nível permitido | Feito | `subagents_matar` e `agents_criar` pedem confirmação |
-| Política por profundidade | Falta | depende da profundidade configurável |
+| Política por profundidade | Parcial | limite de profundidade vale; política de tools por nível ainda não |
 
 ## 8. Operação: concorrência, recuperação, parada
 
@@ -103,7 +103,7 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 | Fila | Feito | |
 | Timeout por run | Feito | |
 | Recuperação após reinício | Parcial | run.json persistido; anúncio entregue na próxima sessão |
-| Parada em cascata (`/stop` derruba filhos e netos) | Falta | depende da profundidade |
+| Parada em cascata (`/stop` derruba filhos e netos) | Feito | matar encerra a árvore; pai que termina encerra órfãos |
 | Parada manual de um run | Feito | |
 
 ## 9. Sessões ligadas a thread (canais)

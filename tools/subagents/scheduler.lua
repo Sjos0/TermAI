@@ -18,6 +18,7 @@ function M.limits(cfg)
     maxConcurrent       = tonumber(d.maxConcurrent) or 5,
     maxChildrenPerAgent = tonumber(d.maxChildrenPerAgent) or 5,
     runTimeoutSeconds   = tonumber(d.runTimeoutSeconds) or 600,
+    maxSpawnDepth       = tonumber(d.maxSpawnDepth) or 1,   -- 1 = subagente não cria subagente (padrão atual)
   }
 end
 
@@ -58,7 +59,51 @@ local function timed_out(r, lim)
 end
 
 -- Reconcilia processos, aplica timeouts e inicia runs da fila até o limite de simultâneos.
+-- Filhos ativos de um run, em todos os níveis (netos incluídos). Ciclo é cortado por "visto".
+local function active_descendants(run_id)
+  local all, out, seen = registry.list(), {}, { [run_id] = true }
+  local frontier = { run_id }
+  while #frontier > 0 do
+    local nxt = {}
+    for _, cur in ipairs(frontier) do
+      for _, r in ipairs(all) do
+        if r.parent_run == cur and not seen[r.runId] then
+          seen[r.runId] = true
+          nxt[#nxt + 1] = r.runId
+          if not M.is_terminal(r) then out[#out + 1] = r end
+        end
+      end
+    end
+    frontier = nxt
+  end
+  return out
+end
+
+-- Encerra a árvore de filhos ativos de um run. Usado por matar e quando o pai termina.
+function M.stop_tree(run_id, reason)
+  local n = 0
+  for _, r in ipairs(active_descendants(run_id)) do
+    launcher.kill(r.pid, r.runId)
+    r.status, r.error, r.finished_at = "killed", reason or "pai encerrado", os.time()
+    r.announce_pending = true
+    registry.save(r)
+    n = n + 1
+  end
+  return n
+end
+
+-- Filho ativo cujo pai já terminou não pode ficar órfão rodando: encerra a árvore do pai.
+function M.cascade_orphans()
+  for _, r in ipairs(registry.list()) do
+    if r.parent_run and not M.is_terminal(r) then
+      local parent = registry.load(r.parent_run)
+      if parent and M.is_terminal(parent) then M.stop_tree(parent.runId, "pai encerrou") end
+    end
+  end
+end
+
 function M.tick(cfg)
+  M.cascade_orphans()
   local lim = M.limits(cfg)
   for _, r in ipairs(registry.list()) do
     if r.status == "running" then

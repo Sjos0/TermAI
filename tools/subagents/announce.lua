@@ -61,11 +61,17 @@ function M.summary(rec)
   return header(rec) .. "\n" .. body(rec)
 end
 
+-- Quem recebe o aviso: o run pai (subagente aninhado) ou o agente pai (nível 0).
+local function owner_matches(rec, ctx)
+  if ctx.run_id then return rec.parent_run == ctx.run_id end
+  return rec.parent_run == nil and rec.parent_agent == ctx.agent_id
+end
+
 function M.inject(ctx)
   if not ctx or not ctx.msgs then return 0 end
   local n = 0
   for _, rec in ipairs(registry.list()) do
-    if scheduler.is_terminal(rec) and not rec.announce_consumed and rec.parent_agent == ctx.agent_id then
+    if scheduler.is_terminal(rec) and not rec.announce_consumed and owner_matches(rec, ctx) then
       ctx.msgs[#ctx.msgs + 1] = {
         role = "system",
         content = header(rec) .. "\n" .. body(rec),
