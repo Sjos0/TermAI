@@ -81,4 +81,4 @@ O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. C
 - Caminhos `/home/ubuntu` fixos em `cron.lua` e scripts (issue #83).
 - Várias issues `[INCONSISTÊNCIA]`, `[DUPLICAÇÃO]` e `[DOC-GAP]` abertas; veja a lista no GitHub (por exemplo #47, #51, #52, #58, #66, #67, #70, #71, #74, #76).
 - O README ainda diz que não há runner de CI formal, mas existe `tests.yml`.
-- Arquivos soltos na raiz a revisar: `ChatGPT.md` e `test_sync_check.txt`.
+- Raiz organizada: `ChatGPT.md` foi para `.ChatGPT/MEMORIA_OPERACIONAL.md`; o banner foi para `assets/banner.txt`. Os módulos-fachada ainda estão na raiz (plano em `docs/plans/ORGANIZACAO_RAIZ.md`).

@@ -4,7 +4,7 @@ local M = {}
 
 function M.header(m, session_id)
   io.write(c.cls)
-  local f = io.open(core.ROOT .. "/banner.txt", "r")
+  local f = io.open(core.ROOT .. "/assets/banner.txt", "r")
   if f then
     local lines = {}
     local max_w = 0
