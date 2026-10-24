@@ -134,3 +134,11 @@ Cobertura: `tests/subagent_block_spec.lua`.
 - **`subagents_info`** mostra o progresso de um run em execução (tempo decorrido, tools usadas, último evento). Não mostra iteração do modelo: esse dado não é gravado.
 - **`TermAI run --wait-subagents[=SEGUNDOS]`**: execução headless não tem aviso automático. Com a flag, espera os filhos do agente, imprime os resultados e sai com 0. Sem a flag, o comportamento não muda. Teto de 900 s. Se o prazo estourar, sai com código 3 e lista o que ficou pendente.
 - Cobertura: `tests/subagents_wait_spec.lua` e `tests/subagents_headless_spec.lua`. A mutação que faz a espera devolver `ok` sempre falha a spec.
+
+## Profundidade, anúncio em cadeia e cascata (paridade OpenClaw, lote 1)
+
+- **Profundidade:** `agents.defaults.subagents.maxSpawnDepth` (padrão **1**: subagente não cria subagente, como antes). Cada run guarda `depth` (nível) e `parent_run` (run que o criou). Com `maxSpawnDepth = 2`, um subagente de nível 1 pode criar filhos de nível 2. Um subagente sem profundidade registrada conta como nível 1, nunca como agente principal. A regra está em `spawn.can_nest(parent_depth, max)`.
+- **Anúncio em cadeia:** o resultado de um filho vai para o **run pai** (quando é aninhado) e não para o agente principal. O subagente recebe os avisos dos próprios filhos no ponto seguro, como o agente faz.
+- **Cascata:** `subagents_matar` encerra a árvore inteira de filhos ativos (filhos e netos). Quando um pai termina por qualquer motivo (concluiu, falhou, estourou o prazo ou morreu), os filhos ativos dele são encerrados no próximo tick, com o motivo `pai encerrou`. Ciclo no registro não trava a cascata.
+- **Limites de desenho:** a cascata encerra filhos que ainda rodam quando o pai termina; ela não espera os filhos concluírem. Quem precisa do resultado dos netos deve esperá-los com `subagents_wait` antes de encerrar.
+- Cobertura: `tests/subagents_depth_cascade_spec.lua` (15 checagens). Mutação na cascata do `matar` faz a spec falhar.

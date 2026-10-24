@@ -7,14 +7,22 @@ local log       = require("diag.log")
 local M = {}
 
 -- args: task, agentId, label, model, cleanup ("delete"|"keep"), runTimeoutSeconds
+-- Pode o agente/run de profundidade parent_depth criar um filho? (regra pura, testável)
+function M.can_nest(parent_depth, max_depth)
+  return (tonumber(parent_depth) or 0) + 1 <= (tonumber(max_depth) or 1)
+end
+
 function M.spawn(args, parent)
   args = type(args) == "table" and args or {}
   if type(args.task) ~= "string" or args.task:match("^%s*$") then
     return "❌ sessions_spawn: 'task' (string) é obrigatório."
   end
   if not parent then return "❌ sessions_spawn: nenhum agente ativo." end
-  if parent.is_subagent then
-    return "❌ sessions_spawn: um subagente não pode criar outro (profundidade 1)."
+  local max_depth = scheduler.limits(parent.cfg or require("config").load()).maxSpawnDepth
+  -- Subagente sem profundidade explícita conta como nível 1 (nunca como agente principal).
+  local parent_depth = parent.depth or (parent.is_subagent and 1 or 0)
+  if not M.can_nest(parent_depth, max_depth) then
+    return string.format("❌ sessions_spawn: profundidade máxima atingida (maxSpawnDepth=%d).", max_depth)
   end
 
   local cfg      = parent.cfg or config.load()
@@ -40,6 +48,8 @@ function M.spawn(args, parent)
     status           = "queued",
     created_at       = os.time(),
     parent_agent     = parent.agent_id or "main",
+    parent_run       = parent.run_id,
+    depth            = parent_depth + 1,
     announce_pending = false,
     announce_consumed = false,
   }

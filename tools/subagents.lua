@@ -33,6 +33,7 @@ function M.on_boundary(ctx)
   if not ctx then return end
   if ctx.is_subagent then
     pcall(snapshot.tick, ctx)
+    pcall(require("tools.subagents.announce").inject, ctx)
     return
   end
   local ok, err = pcall(function()

@@ -39,6 +39,7 @@ function M.execute(run_id)
     local loop    = require("agent.loop")
     local ctx = context.build({ agent_id = rec.agentId, model = rec.model,
                                 is_subagent = true, run_id = run_id })
+    ctx.depth = rec.depth or 0
     events.append(run_id, "start", rec.task)
     local resp, _, _, overflow, complete = loop.rodar(ctx, rec.task, "user", ctx.MAX_ITER)
     run_usage = ctx.usage_acc

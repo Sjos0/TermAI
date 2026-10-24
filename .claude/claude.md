@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-24 - [Paridade OpenClaw, lote 1: profundidade configurável, anúncio em cadeia e cascata]
+**Contexto:** Subagente não podia criar subagente, o anúncio ia só ao agente principal e matar um pai deixava filhos órfãos rodando. O objetivo é escalar a feature com segurança, mantendo o padrão atual.
+**Files Modified:** `tools/subagents/spawn.lua` (regra pura `can_nest`; depth e parent_run no registro); `tools/subagents/scheduler.lua` (`maxSpawnDepth`; `stop_tree`; `cascade_orphans` no tick); `tools/subagents/control.lua` (matar encerra a árvore); `tools/subagents/announce.lua` (dono do aviso: run pai ou agente pai); `tools/subagents.lua` (subagente recebe avisos dos filhos); `tools/subagents/worker.lua` (ctx.depth); `tests/subagents_depth_cascade_spec.lua` (NOVO, 15 checagens); `docs/SUBAGENTS.md`; `docs/plans/PARIDADE_OPENCLAW_SUBAGENTS.md`; `CONTEXT.md`.
+**Learning:** (1) Subagente sem profundidade explícita tem que contar como nível 1; defaultar para 0 abriria aninhamento sem limite. (2) Trocar uma checagem de "é subagente" por "qual profundidade" pode quebrar testes que montam contexto parcial: rodar a suíte inteira, não só a spec nova. (3) Mutação na cascata do matar falhou a spec (rc 1).
+**Prevention:** Padrão `maxSpawnDepth = 1` preserva o comportamento atual; a spec trava a fórmula, o roteamento do aviso, a cascata em árvore com netos, o ciclo e os órfãos.
+**Author:** Claude (claude.ai) — via RDC na VPS, a pedido do Samuel.
+**Validation:** 15 checagens da spec nova; todas as specs de subagentes passam; mutação na cascata falha a spec.
+
+
+---
+
 ## 2026-10-23 - [Paridade com OpenClaw: consumo de tokens por subagente e matriz de paridade]
 **Contexto:** O cartão do subagente dizia "tokens não registrados", mas o provedor já informa o `usage` em cada chamada. O usuário pediu paridade total com o OpenClaw em subagentes, incluindo tokens. A documentação do OpenClaw tem 7 páginas; a matriz registra cada item e o status real.
 **Files Modified:** `agent/api/usage.lua` (NOVO, acumulador puro por chamada); `agent/api/request_stream/tokens.lua` e `agent/api/request_sync.lua` (acumulam o usage de cada chamada); `tools/subagents/worker.lua` (grava rec.usage no sucesso e na falha); `tools/subagents/card.lua` (mostra entrada, saída, total e chamadas); `tests/subagents_usage_spec.lua` (NOVO); `docs/plans/PARIDADE_OPENCLAW_SUBAGENTS.md` (NOVO, matriz completa com lotes).
