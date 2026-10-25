@@ -2,7 +2,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- test_compaction_v7.lua — Fase 1+5 (unitários + adversariais)
 -- Executar: lua5.4 ~/test_compaction_v7.lua
 
-package.path = "./?.lua;./?/init.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 for _, parte in ipairs({

@@ -1,7 +1,7 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/summarizer_orchestracao_spec.lua — #78: orquestração de summarizar entre tentativas.
 -- Simula o curl pelo io.popen (lê o caminho de saída do próprio comando), o relógio e o sleep.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0

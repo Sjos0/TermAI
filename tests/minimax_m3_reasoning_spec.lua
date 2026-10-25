@@ -1,7 +1,7 @@
 -- tests/minimax_m3_reasoning_spec.lua — Issue #136: payload de reasoning do MiniMax M3 (NVIDIA).
 -- O M3 exige chat_template_kwargs = { thinking_mode = "enabled" } (string); os outros
 -- modelos com reasoning_style = "chat_template_kwargs" continuam com { thinking = true }.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local json = require("json")
 local payload = require("agent.api.payload")

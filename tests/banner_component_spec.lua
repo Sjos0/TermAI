@@ -1,6 +1,6 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/banner_component_spec.lua — Banner reutilizável: a CLI e a TUI têm o mesmo gradiente azul.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
 local function check(cond, msg)

@@ -11,7 +11,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- bordas (nil, main, agent nomeado, flags vazios).
 
 
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 print("\n=== Unit tests: skills installer dest SSOT (Issue #72 / PR #75) ===\n")

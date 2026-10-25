@@ -7,7 +7,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- - kill_curl: PID inválido é no-op; PID de sleep controlado é terminado
 -- - start_curl: wrapper ecoa PID numérico de processo real (sleep)
 
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local pass, fail = 0, 0
 

@@ -13,7 +13,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- Nota: agent/flush/tests/T1|T2|T4 são stubs TDD conceituais que
 -- reimplementam a lógica localmente. Este arquivo importa os módulos
 -- REAIS e valida o comportamento de produção.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 print("\n=== Unit tests: agent/flush submodules (Issue #28) ===\n")

@@ -6,7 +6,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 --   R3. a volta do cursor (ESC[nA) é sempre de 1 linha: o cabeçalho ocupa uma linha só;
 --   R4. nenhum \r cru chega à tela;
 --   R5. corpo recolhido: no máximo MAX_BODY linhas + a linha "... (N linhas)".
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures, checks = 0, 0
 local function check(cond, msg)

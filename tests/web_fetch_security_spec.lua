@@ -1,7 +1,7 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/web_fetch_security_spec.lua
 -- Testes de segurança para a ferramenta web_fetch (Command Injection e SSRF)
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local fetcher = require("tools.web_fetch.fetcher")
 

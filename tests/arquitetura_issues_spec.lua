@@ -1,6 +1,6 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/arquitetura_issues_spec.lua — decisões do Arquiteto: #51, #52, #58, #70, #71.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
 local function check(cond, msg)

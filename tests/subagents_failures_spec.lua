@@ -1,7 +1,7 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_failures_spec.lua — Falhas de subagentes: requisição esgotada, stream cortado,
 -- PID reaproveitado, deadline do SO e retomada depois que o orquestrador morre.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local C = require("tests.subagents_failures_spec.contexto")
 

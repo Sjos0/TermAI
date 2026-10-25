@@ -1,6 +1,6 @@
 -- tests/google_grounding_pr5_spec.lua
 -- Teste de isolamento: google_grounding com Interactions API + fallback chain
-package.path = "./?.lua;./?/init.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
 
 local harness = require("tests.helpers.harness")
 local D = require("tests.google_grounding_pr5_spec.dobles")

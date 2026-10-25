@@ -1,5 +1,5 @@
 -- tests/validate_tmpdir_spec.lua — validate.test_connection não depende de /tmp (issue #131 / bug #130).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local validate = require("models.validate")
 
 local pass, fail = 0, 0

@@ -1,7 +1,7 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/test_depth_tracker.lua — Testes robustos e de performance para o depth_tracker.
 -- Executar: HOME="/app" lua5.4 tests/test_depth_tracker.lua
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local pass, fail = 0, 0
 local function T(name, ok)

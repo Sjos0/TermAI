@@ -18,7 +18,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 --   * caso extremo (nil, vazio, bordas de retry, prefixos de erro)
 --   * contrato estrutural das actions devolvidas aos paths
 --   * regressão de comportamento do monólito (Issue #29)
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 -- Silencia io.write/io.flush dos auto-retries durante os testes (restaurado no fim)

@@ -11,7 +11,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- antes de chegar ao usuário.
 
 
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 for _, parte in ipairs({

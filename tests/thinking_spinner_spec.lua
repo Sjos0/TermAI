@@ -1,6 +1,6 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/thinking_spinner_spec.lua — Testes para Diff Compacto e Thinking Spinner
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local spinner = require("ui.spinner")
 local stream = require("ui.stream")

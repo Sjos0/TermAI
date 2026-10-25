@@ -18,7 +18,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- quando o cwd é a raiz do clone.
 
 
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 print("\n=== Unit tests: commands/update (Issue #41 / PR #42) ===\n")
