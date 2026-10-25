@@ -1,13 +1,14 @@
 -- tests/subagents_depth_cascade_spec.lua — paridade OpenClaw lote 1: profundidade (maxSpawnDepth),
 -- roteamento do anúncio por run pai, e cascata (matar e órfãos). Padrão preserva o comportamento atual.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local root = "/tmp/termai_depth_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_depth_test")
 os.execute("mkdir -p '" .. root .. "'")
 require("config.store").PATH = root .. "/config.json"
 require("config.store")._data = nil

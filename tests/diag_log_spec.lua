@@ -1,12 +1,13 @@
 -- tests/diag_log_spec.lua — Log estruturado: escrita, RSS, rotação e leitura do final.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local root = "/tmp/termai_diag_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_diag_test")
 os.execute("mkdir -p '" .. root .. "'")
 require("tools.agents.paths").base_override = root
 

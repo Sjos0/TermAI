@@ -10,6 +10,7 @@
 -- bordas (nil, main, agent nomeado, flags vazios).
 
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local pass, fail = 0, 0
 
@@ -267,7 +268,7 @@ T("get_home não vazio", #skills_utils.get_home() > 0)
 
 -- file_exists API (borda sem I/O de skill real)
 T("file_exists path inexistente → false",
-  skills_utils.file_exists("/tmp/termai_skill_path_that_should_not_exist_xyz_72") == false)
+  skills_utils.file_exists(portable_tmp.dir() .. "/termai_skill_path_that_should_not_exist_xyz_72") == false)
 
 -- ─────────────────────────────────────────────────────────────
 print(string.format(

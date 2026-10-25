@@ -1,13 +1,14 @@
 -- tests/subagents_retention_spec.lua — PR-B: retenção (#94), salvage no timeout (#93),
 -- teto e cabeçalho do anúncio e classe do erro (#96).
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local root = "/tmp/termai_ret_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_ret_test")
 os.execute("mkdir -p '" .. root .. "'")
 require("tools.agents.paths").base_override = root
 local registry = require("tools.subagents.registry")

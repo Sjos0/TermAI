@@ -1,5 +1,6 @@
 -- tests/permissions_ui_modal_spec.lua — Lifecycle alternate screen (PR #24 v5)
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local pass, fail = 0, 0
 local function T(name, ok, detail)
@@ -137,7 +138,7 @@ sec("4. Retry após entrada inválida")
 
 install_io_mocks()
 read_queue = { "x", "1" }
-local d4 = ui.show_dialog("Read", "/tmp/file", nil, nil, false)
+local d4 = ui.show_dialog("Read", portable_tmp.dir() .. "/file", nil, nil, false)
 local out4 = all_output()
 T("após 'x' inválido, '1' → once", d4 == "once")
 T("mensagem de entrada inválida presente", out4:find("Entrada inválida", 1, true) ~= nil)

@@ -1,13 +1,14 @@
 -- tests/subagents_failures_spec.lua — Falhas de subagentes: requisição esgotada, stream cortado,
 -- PID reaproveitado, deadline do SO e retomada depois que o orquestrador morre.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local tmp = "/tmp/termai_subfail_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local tmp = portable_tmp.name("termai_subfail")
 os.execute("mkdir -p '" .. tmp .. "'")
 require("config.store").PATH = tmp .. "/config.json"
 require("config.store")._data = nil

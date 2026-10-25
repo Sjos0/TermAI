@@ -1,5 +1,6 @@
 -- tests/update_release_spec.lua — Release (#74), restart (#53), /models (#67), caminhos (#83), artefato (#47).
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
@@ -19,7 +20,7 @@ check(rel.parse_tag(nil) == nil, "parse_tag com corpo nulo devolve nil")
 check(rel.ref_for("release", "v1.22.10.2026") == "v1.22.10.2026", "ref_for release aponta para a tag")
 check(rel.ref_for("main", "v1.22.10.2026") == "origin/main", "ref_for main aponta para origin/main")
 
-local home = "/tmp/termai_upd_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local home = portable_tmp.name("termai_upd_test")
 os.execute("mkdir -p '" .. home .. "/.TermAI'")
 check(rel.read_previous(home) == nil, "sem update anterior, read_previous é nil")
 local sha = "0123456789abcdef0123456789abcdef01234567"

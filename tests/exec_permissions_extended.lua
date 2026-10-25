@@ -1,6 +1,7 @@
 -- tests/exec_permissions_extended.lua — Testes estendidos para cobrir gaps do spec
 -- Complementa exec_permissions_spec.lua com cenários de borda e integração
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local security = require("tools.exec.security")
 local perms = require("tools.exec.permissions")
@@ -152,7 +153,7 @@ T("Ferramenta sem status no config: pede permissão (reason = ask)",
   check_non_exec.allowed == false and check_non_exec.reason == "ask")
 
 -- Ferramenta não-exec COM status 'always' no config é auto-aprovada
-require("config.store").PATH = (os.getenv("TMPDIR") or "/tmp") .. "/termai_perm_spec_" .. tostring(os.time()) .. ".json"
+require("config.store").PATH = portable_tmp.name("termai_perm_spec") .. ".json"
 require("config.store")._data = nil
 require("config").set("hooks.permissions.Read", "always")
 local check_read = perms.check("Read", "/some/file")

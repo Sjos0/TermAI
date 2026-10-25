@@ -1,6 +1,7 @@
 -- tests/summarizer_orchestracao_spec.lua — #78: orquestração de summarizar entre tentativas.
 -- Simula o curl pelo io.popen (lê o caminho de saída do próprio comando), o relógio e o sleep.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
@@ -12,8 +13,10 @@ local ui_mod = require("agent.api.summarizer.ui")
 local runner = require("agent.api.summarizer.runner")
 
 -- Caminhos temporários previsíveis; o teste confere se foram removidos.
+-- Resolve o diretório ANTES dos stubs de os.execute abaixo (o helper usa mkdir).
+local tmp_base = portable_tmp.dir()
 local tmp_n = 0
-utils.make_tmp_path = function() tmp_n = tmp_n + 1; return "/tmp/termai_sum78_" .. tmp_n end
+utils.make_tmp_path = function() tmp_n = tmp_n + 1; return tmp_base .. "/termai_sum78_" .. tmp_n end
 
 local clock, killed, sleeps = 0, {}, 0
 ui_mod.get_wall_time = function() return clock end

@@ -1,7 +1,8 @@
 -- tests/graph_cache_full_spec.lua — Spec 2026-08-06 + fixes Ameno
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
-local TMP  = os.getenv("TMPDIR") or (HOME .. "/.TermAI/workspace/tmp")
-local TEST_DIR = TMP .. "/termai_graph_test_" .. tostring(os.time())
+local portable_tmp = require("tests.helpers.tmp")
+local TMP  = portable_tmp.dir()
+local TEST_DIR = portable_tmp.name("termai_graph_test")
 os.execute('mkdir -p "' .. TEST_DIR .. '"')
 
 package.loaded["tools.memory.io_utils"] = nil
