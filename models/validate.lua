@@ -3,6 +3,14 @@ local security = require("agent.security")
 local error_log = require("agent.api.request_stream.error_log")
 local M = {}
 
+-- Diretório de arquivos temporários: TMPDIR (o Termux sempre define). Sem TMPDIR,
+-- usa /tmp, que é gravável fora do Android. Não se usa a tmpname do Lua: ela fixa /tmp.
+M.tmp_dir = function()
+  local dir = os.getenv("TMPDIR")
+  if dir == nil or dir == "" then dir = "/tmp" end
+  return dir
+end
+
 function M.test_connection(active)
   -- Validação de segurança prévia para mitigar injeção de comandos
   if active.endpoint then
@@ -51,8 +59,12 @@ function M.test_connection(active)
     end
   end
 
-  local tmp_path = os.tmpname()
+  local tmp_path = M.tmp_dir() .. "/termai_validate_" .. tostring(os.time())
+    .. "_" .. tostring(math.random(1000000))
   local tmp = io.open(tmp_path, "w")
+  if not tmp then
+    return false, "Não foi possível criar arquivo temporário em " .. M.tmp_dir()
+  end
   tmp:write(json.encode(payload))
   tmp:close()
 
