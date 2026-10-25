@@ -4,7 +4,7 @@
 >
 > **O que ele NÃO é:** não faz parte do TermAI. Nenhum código o lê, não é system prompt, não é configuração e não é memória do agente. Pode ser editado ou apagado sem afetar o programa.
 >
-> Atualizado em 2026-10-21 (versão `1.21.10.2026`). Se este arquivo divergir do código, o código vence.
+> Atualizado em 2026-10-25 (versão `1.27.10.2026`). Se este arquivo divergir do código, o código vence.
 
 ## O que é
 
@@ -50,7 +50,7 @@ Permissões ficam em `tools/exec/permissions/`. Ferramentas que não são `Exec`
 
 ## Subagentes
 
-O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. Cada subagente roda em um processo próprio (`TermAI run --worker <runId>`), com fila (`maxConcurrent`, `maxChildrenPerAgent`) e timeout (`runTimeoutSeconds`). O resultado entra no contexto do pai no próximo ponto seguro. A TUI mostra um bloco ao vivo e o comando `/subagents` controla as execuções. Um subagente não cria outros subagentes nem agentes. Falhas e recuperação (requisição esgotada, stream cortado, prazo, pid reaproveitado, pai que morre) estão em `docs/SUBAGENTS.md`.
+O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. Cada subagente roda em um processo próprio (`TermAI run --worker <runId>`), com fila (`maxConcurrent`, `maxChildrenPerAgent`) e timeout (`runTimeoutSeconds`). O resultado entra no contexto do pai no próximo ponto seguro. A TUI mostra um bloco ao vivo e o comando `/subagents` controla as execuções. Por padrão (`agents.defaults.subagents.maxSpawnDepth = 1`) um subagente não cria outros subagentes; com `maxSpawnDepth = 2`, um subagente de nível 1 pode criar filhos de nível 2 (ver `docs/SUBAGENTS.md`). Falhas e recuperação (requisição esgotada, stream cortado, prazo, pid reaproveitado, pai que morre) estão em `docs/SUBAGENTS.md`.
 
 ## Convenções do projeto
 

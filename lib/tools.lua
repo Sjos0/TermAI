@@ -4,12 +4,11 @@
 --       get_schema() com ordem estável e determinística.
 -- v3.2: call_structured(name, args, opts) com opts.skip_pretool.
 -- v3.3: get_schema/get_docs aceitam disabled_set (Issue #32); defesa em call*.
--- Contrato de nomes (issue #71; decisão do Arquiteto: NÃO renomear). Três famílias coexistem:
---   PascalCase EN (filesystem/shell): Exec, Read, Grep, Find, List, Write, Edit
---   snake_case PT (sessão, cálculo, web): web_search, calculate, sessions_list, sessions_history, session_status
---   minúsculo (misto): web_fetch, memory_search, skill, restart, todo_write
+-- Contrato de nomes (issue #71; PR #111 renomeou as tools para nomes em inglês, sem alias).
+--   filesystem/shell: PascalCase (Exec, Read, Grep, Find, List, Write, Edit)
+--   demais tools: snake_case ou minúsculo (web_search, calculate, sessions_list, web_fetch, ...)
 -- Fonte de verdade: tools.registry. Listas manuais de nomes são o problema da #66.
--- Tool NOVA: filesystem/shell -> PascalCase EN; sessão/cálculo/web -> snake_case PT; description coerente.
+-- Tool NOVA: seguir o padrão do grupo e manter a description coerente.
 -- Renomear quebra native calling, XML, disabled_tools e hooks: exige issue própria com alias.
 local json   = require("json")
 local tools  = {}
