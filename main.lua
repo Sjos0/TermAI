@@ -2,7 +2,7 @@
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 local BASE = HOME .. "/TermAI"
 
-package.path = BASE .. "/?.lua;"
+package.path = BASE .. "/?.lua;" .. BASE .. "/lib/?.lua;"
             .. BASE .. "/?/init.lua;"
             .. BASE .. "/?.lua;"
             .. package.path

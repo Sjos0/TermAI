@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/latex_perf_spec.lua — Testes de unidade e benchmark para renderer.latex
 local latex = require("renderer.latex")
 

@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- e2e/kilo_smoke.lua — Smoke real: o modelo Kilo (kilo-auto/free, sem chave) responde via TermAI run.
 package.path = "./?.lua;./?/init.lua;" .. package.path
 local config = require("config")

@@ -1,7 +1,8 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/tools_descriptions_spec.lua — Lint das descrições das tools (em inglês, com as seções obrigatórias).
 -- Regras (docs/plans/DESCRICOES_TOOLS_EN.md): nomes em inglês; descrição com "Use" (quando usar) e
 -- "Do not"/"Never" (quando não usar); descrições e textos de parâmetros sem português.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
 local function check(cond, msg)

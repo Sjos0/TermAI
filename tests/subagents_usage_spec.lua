@@ -1,5 +1,6 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_usage_spec.lua — consumo de tokens por run (acumulado por chamada) e cartão.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
 local function check(cond, msg)

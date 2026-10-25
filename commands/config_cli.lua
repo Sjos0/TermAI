@@ -2,7 +2,7 @@
 -- Consumidor: main.lua via dofile(BASE.."/commands/config_cli.lua")
 -- v2: opção Tools (Issue #32).
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
-package.path = HOME.."/TermAI/?.lua;"..HOME.."/TermAI/?/init.lua;"..package.path
+package.path = HOME.."/TermAI/?.lua;"..HOME.."/TermAI/lib/?.lua;"..HOME.."/TermAI/?/init.lua;"..package.path
 
 local config_mod = require("config")
 local ui         = require("commands.config_cli.ui_utils")

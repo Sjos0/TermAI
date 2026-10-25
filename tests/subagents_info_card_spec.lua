@@ -1,5 +1,6 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_info_card_spec.lua — subagents_info no formato OpenClaw (cartão, redação, truncamento).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0

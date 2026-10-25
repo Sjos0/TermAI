@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/security_validation_pr5_spec.lua
 -- PR #5: Sentinel — Fix potential command injection
 -- Testa a proteção contra injeção de comandos em endpoints e API keys

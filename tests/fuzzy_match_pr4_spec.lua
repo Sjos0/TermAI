@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/fuzzy_match_pr4_spec.lua
 -- Suíte de testes para validar a PR #4: Optimize fuzzy matching
 -- Objetivo: Confirmar que a versão otimizada preserva 100% do comportamento atual

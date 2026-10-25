@@ -1,5 +1,5 @@
 -- tests/helpers_tmp_spec.lua — Testa o helper tests/helpers/tmp.lua (issue #128).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local tmp = require("tests.helpers.tmp")
 

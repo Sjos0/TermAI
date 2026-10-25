@@ -1,6 +1,7 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/f8_f9_f6_spec.lua — F8 (Ctrl+C / saída da TUI com subagentes), F9 (aviso ao reabrir),
 -- F6 (progresso na listagem) e plural correto do card.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0

@@ -1,7 +1,8 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagent_block_spec.lua — Avisos de subagente na TUI (contrato atual, estilo OpenClaw):
 -- sem linha de lançamento; aviso de término uma única vez, pelo announce; sem tools do filho na tela;
 -- nunca sobe o cursor; segredos mascarados.
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0

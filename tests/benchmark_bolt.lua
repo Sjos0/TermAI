@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/benchmark_bolt.lua
 -- Benchmark comparativo para as otimizações do Bolt.
 
@@ -24,7 +25,7 @@ local function old_strip_thinking_tags(text)
 end
 
 -- Carrega as versões novas otimizadas
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local xml_cleaner = require("agent.startup.xml_cleaner")
 local utils = require("agent.api.utils")
 

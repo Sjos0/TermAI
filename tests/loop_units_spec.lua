@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/loop_units_spec.lua
 -- Testes dos submódulos extraídos em agent/loop/
 -- Origem: Issue #29 / PR #40 (branch refactor/29-agent-loop-facade)
@@ -17,7 +18,7 @@
 --   * caso extremo (nil, vazio, bordas de retry, prefixos de erro)
 --   * contrato estrutural das actions devolvidas aos paths
 --   * regressão de comportamento do monólito (Issue #29)
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 -- Silencia io.write/io.flush dos auto-retries durante os testes (restaurado no fim)

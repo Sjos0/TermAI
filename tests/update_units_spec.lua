@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/update_units_spec.lua
 -- Testes unitários e de contrato do comando CLI `TermAI update`
 -- Origem: Issue #41 / PR #42 (feature/41-cli-update)
@@ -17,7 +18,7 @@
 -- quando o cwd é a raiz do clone.
 
 
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 print("\n=== Unit tests: commands/update (Issue #41 / PR #42) ===\n")

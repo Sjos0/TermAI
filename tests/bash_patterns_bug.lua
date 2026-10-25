@@ -1,7 +1,8 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- bash_patterns_bug.lua — Testes para bug de persistência de permissões
 -- Executar: lua5.4 ~/TermAI/tests/bash_patterns_bug.lua
 
-package.path = "./?.lua;./?/init.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. os.getenv("HOME") .. "/TermAI/?.lua;" .. os.getenv("HOME") .. "/TermAI/?/init.lua;" .. package.path
 local harness = require("tests.helpers.harness")
 
 for _, parte in ipairs({

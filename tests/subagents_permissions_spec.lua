@@ -1,5 +1,6 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/subagents_permissions_spec.lua — Permissões das tools de subagentes (headless-safe).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0

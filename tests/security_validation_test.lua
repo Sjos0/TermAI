@@ -1,5 +1,6 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/security_validation_test.lua
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local security = require("agent.security")
 local validate = require("models.validate")

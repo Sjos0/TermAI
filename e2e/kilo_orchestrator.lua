@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- e2e/kilo_orchestrator.lua — Orquestrador real: o modelo decide chamar sessions_spawn sozinho.
 -- Não bloqueante no workflow: depende de o modelo gratuito usar ferramentas; o resultado é só reportado.
 package.path = "./?.lua;./?/init.lua;" .. package.path

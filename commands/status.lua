@@ -40,8 +40,8 @@ io.write("\n")
 -- Módulos
 io.write(c.bold .. "  Módulos:" .. c.reset .. "\n")
 local modules = {
-  "agente.lua", "json.lua", "memoryflush.lua",
-  "prompt.lua", "renderer.lua", "tools.lua", "ui.lua",
+  "agente.lua", "lib/json.lua", "lib/memoryflush.lua",
+  "lib/prompt.lua", "lib/renderer.lua", "lib/tools.lua", "lib/ui.lua", "lib/session.lua", "lib/config.lua", "lib/models.lua",
 }
 for _, mod in ipairs(modules) do
   check(mod, HOME .. "/TermAI/" .. mod)

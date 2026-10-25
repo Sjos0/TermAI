@@ -1,3 +1,4 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/edit_diff_display_spec.lua — Investigação do bug: Edit não mostra diff na TUI
 -- Testa diff_builder e edit_renderer isoladamente para isolar a causa raiz.
 

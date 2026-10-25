@@ -1,5 +1,6 @@
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- tests/issues_77_66_spec.lua — #77 (--ag vazio) e #66 (lista de tools no erro).
-package.path = "./?.lua;./?/init.lua;" .. package.path
+package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
 local function check(cond, msg)
