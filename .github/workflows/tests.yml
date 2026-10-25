@@ -20,13 +20,14 @@ jobs:
           fail=0
           while IFS= read -r f; do
             if ! lua5.4 -e "assert(loadfile('$f'))" 2>/tmp/syntax.err; then
-              echo "SINTAXE: $f"; cat /tmp/syntax.err; fail=1
+              echo "SINTAXE: $f"; cat /tmp/syntax.err; echo "::error::SINTAXE $f $(head -c 300 /tmp/syntax.err | tr '\n' ' ')"; fail=1
             fi
           done < <(git ls-files '*.lua')
           exit $fail
 
       - name: Teste de terminal (pty) do polling da entrada
-        run: python3 tests/pty/input_poll_test.py
+        run: |
+          python3 tests/pty/input_poll_test.py > /tmp/pty.log 2>&1 || { cat /tmp/pty.log; echo "::error::PTY falhou: $(tail -c 600 /tmp/pty.log | tr '\n' ' ')"; exit 1; }
 
       - name: Rodar specs
         run: |
@@ -39,7 +40,7 @@ jobs:
             elif echo " $KNOWN_FAILING " | grep -q " $t "; then
               echo "KNOWN $t (falha pré-existente)"
             else
-              echo "FAIL  $t"; tail -30 "$log"; fail=1
+              echo "FAIL  $t"; tail -30 "$log"; echo "::error title=FAIL $t::$(tail -6 "$log" | tr '\n' ' ' | cut -c1-900)"; fail=1
             fi
           done
           exit $fail

@@ -1,6 +1,7 @@
 -- tests/grep_patterns_spec.lua — Grep (issue #91): validação de Lua patterns, aviso de '|',
 -- base oculto pesquisável, arquivos sensíveis fora, .git fora, segredo mascarado.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
@@ -41,7 +42,7 @@ check(not pattern.has_alternation("alpha"), "has_alternation: sem |")
 check(not pattern.has_alternation("a%|b"), "has_alternation: %| é literal, não alternância")
 
 -- (3) Ponta a ponta num base OCULTO (como ~/.TermAI), com arquivos sensíveis e .git.
-local base = "/tmp/.grep91_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local base = portable_tmp.name(".grep91")
 os.execute("mkdir -p '" .. base .. "/sub' '" .. base .. "/.git'")
 local function write(path, text)
   local f = assert(io.open(path, "w")); f:write(text); f:close()

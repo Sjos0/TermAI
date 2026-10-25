@@ -2,13 +2,14 @@
 -- sem linha de lançamento; aviso de término uma única vez, pelo announce; sem tools do filho na tela;
 -- nunca sobe o cursor; segredos mascarados.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local root = "/tmp/termai_block_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_block_test")
 os.execute("mkdir -p '" .. root .. "'")
 require("config.store").PATH = root .. "/config.json"
 require("config.store")._data = nil

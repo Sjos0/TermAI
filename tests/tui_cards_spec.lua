@@ -1,6 +1,7 @@
 -- tests/tui_cards_spec.lua — Cards de tool e avisos de subagente na TUI: nada quebra a largura da tela,
 -- sem rótulo de origem, aviso agrupado, e o main_loop não imprime linha falsa de usuário.
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
@@ -9,7 +10,7 @@ end
 local function plain(s) return (s:gsub("\27%[[%d;]*m", "")) end
 local function width(s) return utf8.len(plain(s)) or #plain(s) end
 
-local root = "/tmp/termai_cards_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_cards_test")
 os.execute("mkdir -p '" .. root .. "'")
 require("config.store").PATH = root .. "/config.json"
 require("config.store")._data = nil

@@ -1,12 +1,13 @@
 -- tests/agents_create_spec.lua — Criação de agentes independentes (agents_create).
 package.path = "./?.lua;./?/init.lua;" .. package.path
+local portable_tmp = require("tests.helpers.tmp")
 
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
-local root = "/tmp/termai_agents_test_" .. tostring(os.time()) .. "_" .. tostring(math.random(100000))
+local root = portable_tmp.name("termai_agents_test")
 os.execute("mkdir -p '" .. root .. "/workspace'")
 
 -- Isola config e raiz: nada toca no ~/.TermAI real.
