@@ -64,6 +64,23 @@ local ok_empty = pcall(runner._kill_curl, "")
 local ok_str = pcall(runner._kill_curl, "abc")
 T("PID nil/vazio/não-numérico é no-op seguro", ok_nil and ok_empty and ok_str)
 
+-- Processo "vivo" = existe e não é zumbi. Um zumbi (já morreu, mas o pai/init ainda não
+-- colheu) responde a `kill -0`, mas não executa mais nada: conta como morto. Sem /proc,
+-- cai para kill -0.
+local function esta_vivo(pid)
+  local f = io.open("/proc/" .. pid .. "/stat", "r")
+  if f then
+    local s = f:read("*a") or ""
+    f:close()
+    local estado = s:match("%) (%a)")
+    return estado ~= nil and estado ~= "Z" and estado ~= "X"
+  end
+  local h = io.popen("kill -0 " .. pid .. " 2>/dev/null; echo $?")
+  local r = h and h:read("*a") or "1"
+  if h then h:close() end
+  return (r:match("%d+") or "1") == "0"
+end
+
 -- Processo controlado: sleep longo → kill
 local h = io.popen("(sleep 30 & echo $!)")
 local pid = h and (h:read("*l") or ""):match("^%s*(%d+)%s*$")
@@ -71,19 +88,11 @@ if h then h:close() end
 
 if pid then
   -- confirma vivo
-  local alive = io.popen("kill -0 " .. pid .. " 2>/dev/null; echo $?")
-  local code = alive and alive:read("*a") or "1"
-  if alive then alive:close() end
-  code = (code or ""):match("%d+") or "1"
-  T("subprocesso sleep está vivo antes do kill", code == "0", "pid=" .. pid)
+  T("subprocesso sleep está vivo antes do kill", esta_vivo(pid), "pid=" .. pid)
 
   runner._kill_curl(pid)
   os.execute("sleep 0.3")
-  local alive2 = io.popen("kill -0 " .. pid .. " 2>/dev/null; echo $?")
-  local code2 = alive2 and alive2:read("*a") or "1"
-  if alive2 then alive2:close() end
-  code2 = (code2 or ""):match("%d+") or "1"
-  T("kill_curl termina o subprocesso", code2 ~= "0", "pid=" .. pid .. " code=" .. code2)
+  T("kill_curl termina o subprocesso", not esta_vivo(pid), "pid=" .. pid)
 else
   T("subprocesso sleep está vivo antes do kill", false, "não obteve PID")
   T("kill_curl termina o subprocesso", false, "skip")
@@ -97,11 +106,7 @@ T("start_curl devolve PID numérico", pid2 ~= nil and pid2:match("^%d+$") ~= nil
 if pid2 then
   runner._kill_curl(pid2)
   os.execute("sleep 0.2")
-  local a3 = io.popen("kill -0 " .. pid2 .. " 2>/dev/null; echo $?")
-  local c3 = a3 and a3:read("*a") or "1"
-  if a3 then a3:close() end
-  c3 = (c3 or ""):match("%d+") or "1"
-  T("PID de start_curl é killable", c3 ~= "0")
+  T("PID de start_curl é killable", not esta_vivo(pid2))
 end
 
 -- ── prompt #69 (mesmo PR, regressão cruzada leve) ───────────────────────────
