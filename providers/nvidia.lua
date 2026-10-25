@@ -41,7 +41,7 @@ return {
       id            = "minimaxai/minimax-m3",
       name          = "Minimax M3 (NVIDIA)",
       reasoning     = true,
-      reasoning_style = "chat_template_kwargs",
+      reasoning_style = "chat_template_thinking_mode",
       input         = {"text", "image"},
       cost          = {input=0, output=0, cacheRead=0, cacheWrite=0},
       contextWindow = 1000000,

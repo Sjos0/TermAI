@@ -42,6 +42,8 @@ function M.test_connection(active)
       payload.reasoning = { effort = "medium" }
     elseif style == "chat_template_kwargs" then
       payload.chat_template_kwargs = { thinking = true }
+    elseif style == "chat_template_thinking_mode" then
+      payload.chat_template_kwargs = { thinking_mode = "enabled" }
     elseif style == "reasoning_effort" then
       payload.reasoning_effort = "high"
     end
