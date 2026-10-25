@@ -1,6 +1,10 @@
 -- tests/exec_permissions_spec.lua — Testes unitários para o sistema de permissões e segurança bash
 package.path = "./?.lua;./?/init.lua;" .. package.path
 
+-- Config isolado: regras salvas pelo usuário em ~/.TermAI/config.json não podem
+-- alterar o resultado destes testes (issue #129). Deve vir antes de qualquer require.
+require("tests.helpers.config_fake").install()
+
 local security = require("tools.exec.security")
 local perms = require("tools.exec.permissions")
 
