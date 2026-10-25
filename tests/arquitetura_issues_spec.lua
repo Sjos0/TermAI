@@ -5,6 +5,7 @@ local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
+local fonte = require("tests.helpers.fonte")
 local function rd(p) local f = io.open(p, "r"); if not f then return "" end; local s = f:read("*a"); f:close(); return s end
 
 -- #52: dono único de format_arg_str (caracterização: mesmos resultados do bloco original)
@@ -16,10 +17,10 @@ check(tools.format_arg_str("Exec", { command = "ls -la" }) == "ls -la", "#52: ca
 check(tools.format_arg_str("calculate", { expression = "2+2" }) == "2+2", "#52: campo expression vira primário")
 check(tools.format_arg_str("X", { foo = 1 }):find('"foo"', 1, true) ~= nil, "#52: sem campo conhecido cai para JSON")
 check(tools.format_arg_str("X", "texto cru") == "texto cru", "#52: argumento não-tabela vira texto")
-check(not rd("agent/loop/tool_runner/executor.lua"):find("build_arg_str", 1, true), "#52: executor não tem terceira cópia (build_arg_str removido)")
+check(not fonte.ler("agent/loop/tool_runner/executor"):find("build_arg_str", 1, true), "#52: executor não tem terceira cópia (build_arg_str removido)")
 
 -- #51: grupo Read roda PreToolUse ANTES da UI de grupo, e não executa de novo com skip_pretool
-local ex = rd("agent/loop/tool_runner/executor.lua")
+local ex = fonte.ler("agent/loop/tool_runner/executor")
 local body = ex:match("local function executar_grupo_read.-\nend\n") or ""
 local i_hook = body:find('"PreToolUse"', 1, true)
 local i_ui = body:find("ui.tool_group_read_start", 1, true)

@@ -44,7 +44,7 @@ local fresh = require("ui.tools_init.default_body")
 check(fresh.expand() == false, "Ctrl+O sem card: não escreve nada")
 
 -- (4) O leitor de teclas tem o ramo de Ctrl+O (código 15) e chama a expansão.
-local src = io.open("ui/input.lua"):read("*a")
+local src = require("tests.helpers.fonte").ler("ui/input")
 check(src:find("code == 15", 1, true) ~= nil and src:find("default_body\").expand()", 1, true) ~= nil,
   "leitor de teclas: Ctrl+O chama a expansão do último card")
 
