@@ -29,7 +29,7 @@ print("\n=== Unit tests: summarizer runner lifecycle (Issue #73) ===\n")
 -- ── Fonte estática ──────────────────────────────────────────────────────────
 sec("fonte estática runner.lua")
 
-local src = assert(io.open("agent/api/summarizer/runner.lua", "r")):read("*a")
+local src = require("tests.helpers.fonte").ler("agent/api/summarizer/runner")
 
 T("não usa os.execute com & solto no curl",
   not src:match('os%.execute%([^)]*&%s*"?%)')
