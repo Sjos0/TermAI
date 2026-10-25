@@ -69,7 +69,7 @@ O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. C
 
 - `VERSION` segue `1.<dia>.<mês>.<ano>` (exemplo: `1.21.10.2026`).
 - `TermAI update` atualiza para a última release (tag verificada: precisa estar no `main`). `--main` segue a branch; `--rollback` volta ao commit anterior.
-- Release atual: `v1.26.10.2026`. Anteriores: `v1.25.10.2026`, `v1.24.10.2026`, `v1.23.10.2026`, `v1.22.10.2026`.
+- Release atual: `v1.27.10.2026`. Anteriores: `v1.26.10.2026`, `v1.25.10.2026`, `v1.24.10.2026`, `v1.23.10.2026`, `v1.22.10.2026`.
 
 ## Registros de contribuição
 
