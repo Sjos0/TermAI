@@ -6,6 +6,7 @@
 local ui          = require("ui")
 local api         = require("agent.api")
 local ag_loop     = require("agent.loop")
+local harness_gancho = require("agent.harness")
 local input_mod   = require("ui.input")
 local restart_mod = require("agent.restart")
 local session     = require("session")
@@ -105,6 +106,8 @@ function M.run(ctx)
       ag_loop.rodar(ctx, stamped_input, "user")
 
     local end_time = timestamp.to_hhmm(timestamp.capture())
+    -- Harness² (Fase 1): gancho depois do turno; sem efeito com a opção desligada
+    pcall(harness_gancho.depois_do_turno, { completo = stream_complete ~= false })
 
     -- Aviso se o stream foi cortado por timeout (resposta incompleta)
     if stream_complete == false and not is_overflow then
