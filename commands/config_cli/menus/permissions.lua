@@ -4,6 +4,22 @@ local perms_mod = require("agent.hooks.permissions")
 local tools_mod = require("tools")
 local M = {}
 
+-- Pede confirmação e aplica "Sempre" em todas (bloqueadas ficam como estão).
+local function liberar_todas(ui, names)
+  local bulk = require("commands.config.menus.permissions_bulk")
+  local resposta = ui.rdl("Liberar TODAS como [Sempre]? (s/N)")
+  if not bulk.is_confirmed(resposta) then
+    io.write(ui.GR .. "\n  Cancelado.\n" .. ui.R)
+    return
+  end
+  local liberadas, preservadas = bulk.allow_all(perms_mod, names)
+  io.write(ui.G .. "\n  ✅ " .. liberadas .. " ferramenta(s) liberada(s) como [Sempre].\n" .. ui.R)
+  if #preservadas > 0 then
+    io.write(ui.YL .. "  Preservadas (bloqueadas): " .. table.concat(preservadas, ", ") .. "\n" .. ui.R)
+  end
+  ui.rdl("Enter para continuar")
+end
+
 function M.run(config_mod, ui)
   while true do
     local names = {}
@@ -23,17 +39,20 @@ function M.run(config_mod, ui)
         ui.B, i, ui.R, name, slabels[st] or st))
     end
 
+    io.write("  "..ui.B.."a."..ui.R.."  Sempre para TODAS as ferramentas\n")
     io.write("  "..ui.B.."0."..ui.R.."  Voltar\n\n")
 
     local ch = ui.rdl("Selecione uma ferramenta")
     if ui.cancel(ch) then break end
     local idx = tonumber(ch)
-    if idx and names[idx] then
+    if tostring(ch):lower() == "a" then
+      liberar_todas(ui, names)
+    elseif idx and names[idx] then
       local tname   = names[idx]
       local current = perms_mod.get(tname)
       ui.hdr("TermAI Config › Hooks › " .. tname)
       io.write("  Status atual: " .. (slabels[current] or current) .. "\n\n")
-      io.write("  "..ui.B.."1."..ui.R.."  "..ui.G .."Sempre Permitida\n"..ui.R)
+      io.write("  " .. ui.B .. "1." .. ui.R .. "  " .. ui.G .. "Sempre Permitida\n" .. ui.R)
       io.write("  "..ui.B.."2."..ui.R.."  "..ui.YL.."Perguntar (padrão)\n"..ui.R)
       io.write("  "..ui.B.."3."..ui.R.."  "..ui.RE.."Bloqueada\n"..ui.R)
       io.write("  "..ui.B.."0."..ui.R.."  Cancelar\n\n")

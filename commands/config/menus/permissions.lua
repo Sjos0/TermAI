@@ -6,6 +6,21 @@ local M = {}
 
 local function cls() io.write("\27[2J\27[H"); io.flush() end
 
+-- Pede confirmação e aplica "Sempre" em todas as ferramentas (bloqueadas ficam como estão).
+local function liberar_todas(perms_mod, names)
+  local bulk = require("commands.config.menus.permissions_bulk")
+  local resposta = ui.prompt_read("Liberar TODAS como [Sempre]? (s/N)")
+  if not bulk.is_confirmed(resposta) then
+    io.write(c.gray.."\n  Cancelado.\n"..c.reset)
+    return
+  end
+  local liberadas, preservadas = bulk.allow_all(perms_mod, names)
+  io.write(c.green.."\n  ✅ "..liberadas.." ferramenta(s) liberada(s) como [Sempre].\n"..c.reset)
+  if #preservadas > 0 then
+    io.write(c.yellow.."  Preservadas (bloqueadas): "..table.concat(preservadas, ", ").."\n"..c.reset)
+  end
+end
+
 function M.run(ctx)
   local perms_mod = require("agent.hooks.permissions")
   local tools_mod = require("tools")
@@ -26,11 +41,15 @@ function M.run(ctx)
       io.write(string.format("  %s%d.%s  %-28s %s\n",
         c.white, i, c.reset, name, slabels[st] or st))
     end
+    io.write("  "..c.white.."a."..c.reset.."  Sempre para TODAS as ferramentas\n")
     io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
     local ch = ui.prompt_read("Selecione uma ferramenta")
     if ui.is_cancel(ch) then break end
     local idx = tonumber(ch)
-    if idx and names[idx] then
+    if tostring(ch):lower() == "a" then
+      liberar_todas(perms_mod, names)
+      ui.pause()
+    elseif idx and names[idx] then
       local tname   = names[idx]
       local current = perms_mod.get(tname)
       io.write("\n  Ferramenta : "..c.bold..tname..c.reset.."\n")

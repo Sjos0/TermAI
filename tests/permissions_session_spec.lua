@@ -1,4 +1,5 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 -- tests/permissions_session_spec.lua — Testes unitários do módulo session (PR #33 / Issue #26)
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 

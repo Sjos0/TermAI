@@ -1,4 +1,5 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 -- tests/exec_permissions_spec.lua — Testes unitários para o sistema de permissões e segurança bash
 
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
