@@ -2,6 +2,7 @@
 -- Complementa exec_permissions_spec.lua. Os cenários estão em tests/exec_permissions_extended/
 -- e rodam nesta ordem: a parte de estado configura o config que as seguintes usam.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 local harness = require("tests.helpers.harness")
 
 for _, parte in ipairs({

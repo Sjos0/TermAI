@@ -4,6 +4,16 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-26 - [Testes de permissão isolados do config do usuário + ação em lote "Sempre para todas"]
+**Contexto:** Depois de rodar os specs locais, as permissões "sempre" do usuário (Exec, Read, Edit, Grep) eram apagadas e o agente voltava a perguntar a cada ferramenta. O pedido incluiu um botão para liberar todas as ferramentas de uma vez.
+**Files Modified:** `tests/helpers/config_sandbox.lua` (NOVO, isola o PATH do config); `tests/config_isolation_spec.lua` (NOVO, guarda que compara o config real antes e depois de cada spec de permissão); `tests/permissions_bulk_spec.lua` (NOVO); `commands/config/menus/permissions_bulk.lua` (NOVO, lógica pura do lote); `commands/config/menus/permissions.lua` e `commands/config_cli/menus/permissions.lua` (opção "a" com confirmação); `tests/permissions_{check,mode,rules,denial,matcher,session,ui_modal}_spec.lua`, `tests/exec_permissions_spec.lua` e `tests/exec_permissions_extended.lua` (uma linha cada: instalam o sandbox).
+**Learning:** (1) `config/store.lua` lê `M.PATH` a cada load e save, então apontar o PATH para um arquivo temporário isola tudo sem fake e sem trocar HOME (HOME falso quebra specs que usam `$HOME/TermAI`). (2) `clear_hooks_permissions()` e `mode.set(...)` gravavam no config real e restauravam "default" em vez do modo original. (3) O `config_fake` cobria só o spec que o usava; os outros specs gravavam no arquivo real.
+**Prevention:** Todo spec que toca config instala `tests.helpers.config_sandbox` logo após o `package.path`. `config_isolation_spec` falha e restaura o arquivo se algum spec de permissão alterar o config do usuário. Fora deste PR: `e2e/kilo_orchestrator.lua` ainda grava `hooks.permissions.Read` no config real quando roda local (no CI o HOME já é isolado).
+**Author:** Claude (claude.ai) — a pedido do Samuel.
+**Validation:** Antes do conserto, com config simulado com permissões "sempre": `config_isolation_spec` com 4 falhas e 5 passes, e o config foi restaurado. Depois: isolamento 10/10; 11 specs de permissão com rc=0; suíte completa 65/65 PASS no Ubuntu (lua5.4 5.4.6); config do usuário idêntico ao simulado ao fim de tudo. Menus TUI e CLI testados com stdin: confirmar libera 25 ferramentas e preserva Exec bloqueado; não confirmar não altera nada. Pendente: confirmação no Termux (ver issue #129).
+
+---
+
 ## 2026-10-26 - [Release 1.28: #127 concluída, regras de Termux/Ubuntu, fluxo de PR e pendências no aparelho]
 **Contexto:** A issue #127 (arquivos acima de 150 linhas) foi concluída nesta rodada. Ao mesmo tempo, o Samuel pediu regras permanentes de trabalho e que o release saísse com o que está na `main`, deixando como pendência só o que depende do aparelho.
 **Files Modified:** `VERSION` (1.28.10.2026); `CONTEXT.md` (linha de release); `.claude/claude.md` (esta entrada). Código do ciclo: `commands/cron/`, `commands/update/`, `ui/core/`, `ui/stream/`, `ui/spinner/roteiros.lua`, `lib/tools/`, `tests/flush_tdd*`, `commands/config/menus/web_tools/submenus.lua`, `commands/config_cli/menus/request/submenus.lua`, `agent/api/request_stream/streamer/fallback.lua`, `tests/helpers/fonte.lua`, `README.md`.

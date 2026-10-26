@@ -1,4 +1,5 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 -- tests/permissions_mode_spec.lua — Testes unitários do módulo mode (PR #33 / Issue #26)
 -- ATENÇÃO: toca config.json (defaultMode); sempre restaura o original.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path

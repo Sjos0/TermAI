@@ -1,4 +1,5 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 -- tests/permissions_denial_spec.lua — Testes unitários do módulo denial (PR #33 / Issue #26)
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 

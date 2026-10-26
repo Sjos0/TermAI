@@ -1,4 +1,5 @@
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+require("tests.helpers.config_sandbox").install()
 -- tests/permissions_ui_modal_spec.lua — Lifecycle alternate screen (PR #24 v5)
 
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
