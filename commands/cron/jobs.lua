@@ -57,6 +57,28 @@ local function run_job(id)
   os.exit(exit_code > 0 and exit_code or 1)
 end
 
+--- Lista nomes de pastas de run sob root (só nomes, sem path).
+-- Portátil: `ls -1` (sem -t/printf-GNU). Ordenação pelo nome do stamp
+-- (%Y%m%dT%H%M%S%z do runner) — lexicográfico reverso = mais recente primeiro.
+-- Issue #143: evita extensao GNU de find (printf) e também -t se o ambiente for mínimo.
+local function collect_run_names(root)
+  local names = {}
+  local cmd = "ls -1 " .. shell_quote(root) .. " 2>/dev/null"
+  local pipe = io.popen(cmd)
+  if not pipe then return names end
+  for line in pipe:lines() do
+    local name = line:match("^%s*(.-)%s*$")
+    if name and name ~= "" and name ~= "." and name ~= ".." then
+      -- Só aceita entradas que parecem diretório de run (stamp) ou qualquer
+      -- nome não vazio; validação fina é existência de summary.md depois.
+      names[#names + 1] = name
+    end
+  end
+  pipe:close()
+  table.sort(names, function(a, b) return a > b end)
+  return names
+end
+
 local function list_runs(id, limit)
   if not JOBS[id] then
     io.stderr:write("Job desconhecido. Use: bugs-hunter ou code-review.\n")
@@ -65,20 +87,29 @@ local function list_runs(id, limit)
   limit = tonumber(limit) or 10
   limit = math.max(1, math.min(50, math.floor(limit)))
   local root = STATE_DIR .. "/" .. id
-  -- ls -t ordena pela data de modificação (mais recentes primeiro) e existe em GNU, BusyBox e toybox;
-  -- find -printf (GNU) não existe em todo find do Termux.
-  local cmd = "ls -1td " .. shell_quote(root) .. "/*/ 2>/dev/null | head -n " .. limit
-  local pipe = io.popen(cmd)
-  if not pipe then
-    io.stderr:write("Não foi possível consultar o histórico.\n")
-    os.exit(1)
-  end
+
+  local names = collect_run_names(root)
   local dirs = {}
-  for line in pipe:lines() do
-    local path = line:gsub("/$", "")
-    if path then dirs[#dirs + 1] = path end
+  for _, name in ipairs(names) do
+    if #dirs >= limit then break end
+    local path = root .. "/" .. name
+    -- Confirma que é diretório: summary.md ou path abre como dir via listagem.
+    local summary = path .. "/summary.md"
+    local f = io.open(summary, "r")
+    if f then
+      f:close()
+      dirs[#dirs + 1] = path
+    else
+      -- Pasta sem summary ainda conta no histórico (run em andamento / incompleto)
+      local probe = io.popen("test -d " .. shell_quote(path) .. " && echo y")
+      local ok = probe and probe:read("*l")
+      if probe then probe:close() end
+      if ok == "y" then
+        dirs[#dirs + 1] = path
+      end
+    end
   end
-  pipe:close()
+
   io.write("Histórico - " .. JOBS[id].title .. " (mais recentes primeiro)\n")
   if #dirs == 0 then
     io.write("Nenhuma execução registrada.\n")
@@ -99,4 +130,10 @@ local function list_runs(id, limit)
   end
 end
 
-return { list_jobs = list_jobs, run_job = run_job, list_runs = list_runs }
+return {
+  list_jobs = list_jobs,
+  run_job = run_job,
+  list_runs = list_runs,
+  -- exportado para spec (issue #143)
+  _collect_run_names = collect_run_names,
+}
