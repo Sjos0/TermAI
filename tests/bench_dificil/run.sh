@@ -10,7 +10,7 @@ MODEL=${BENCH_MODEL:-kilo/kilo-auto/free}
 mkdir -p "$OUT"
 (cd "$ROOT" && lua5.4 tests/bench_dificil/preparar.lua) || exit 1
 echo "tarefa,rep,resultado,segundos" > "$OUT/resultados.csv"
-for t in t01 t02 t03 t04; do
+for t in ${TAREFAS:-t01 t02 t03 t04 t05 t06 t07 t08}; do
   r=1
   while [ "$r" -le "$REPS" ]; do
     dir="$WS/$t-$r"

@@ -1,0 +1,17 @@
+#!/bin/sh
+d="$1"
+cat > "$d/sessoes1.log" << 'EOF'
+2026-10-01T08:00 INICIO sessao=A
+2026-10-01T08:30 FIM sessao=A
+2026-10-01T23:50 INICIO sessao=B
+2026-10-02T00:20 FIM sessao=B
+2026-10-01T09:00 INICIO sessao=C
+2026-10-01T09:15 FIM sessao=C
+EOF
+cat > "$d/sessoes2.log" << 'EOF'
+2026-10-01T09:40 FIM sessao=D
+2026-10-01T09:10 INICIO sessao=D
+2026-10-02T10:00 INICIO sessao=E
+2026-10-02T10:20 FIM sessao=E
+2026-10-02T11:00 INICIO sessao=G
+EOF

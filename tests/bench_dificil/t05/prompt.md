@@ -1,0 +1,1 @@
+No diretório DIR há dois arquivos de log de sessões, sessoes1.log e sessoes2.log. Cada sessão tem uma linha INICIO e uma linha FIM. As linhas podem estar fora de ordem, e uma sessão pode cruzar a meia-noite. Some a duração, em minutos, de todas as sessões completas nos dois arquivos, ignorando as que estiverem incompletas. Grave em DIR/total.txt apenas o número.

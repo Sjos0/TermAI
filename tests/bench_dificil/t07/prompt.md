@@ -1,0 +1,1 @@
+No arquivo DIR/deps.txt estão as dependências de cada pacote, no formato "pacote: dependências". Grave em DIR/ordem.txt a ordem de instalação, uma linha por pacote, de modo que cada pacote venha depois de todas as suas dependências. Quando houver mais de uma opção a cada passo, escolha a de nome que vem primeiro em ordem alfabética.
