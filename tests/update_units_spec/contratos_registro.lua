@@ -45,7 +45,7 @@ function M.run()
 
   local main_src = read_file("main.lua") or read_file("./main.lua")
   local help_src = read_file("commands/help.lua") or read_file("./commands/help.lua")
-  local update_src = read_file("commands/update.lua") or read_file("./commands/update.lua")
+  local update_src = require("tests.helpers.fonte").ler("commands/update")
 
   if main_src then
     T("main.lua registra update no mapa",
