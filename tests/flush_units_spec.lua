@@ -10,7 +10,7 @@ package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 -- contexto de flush, detecção de gates FPM ou render do checklist
 -- deve falhar aqui antes de chegar ao loop ReAct.
 --
--- Nota: agent/flush/tests/T1|T2|T4 são stubs TDD conceituais que
+-- Nota: tests/flush_tdd/ (T2, T4) são stubs TDD conceituais que
 -- reimplementam a lógica localmente. Este arquivo importa os módulos
 -- REAIS e valida o comportamento de produção.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
