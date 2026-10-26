@@ -27,9 +27,10 @@ jobs:
           sudo apt-get install -y -qq lua5.4 curl procps coreutils
           lua5.4 -v
 
-      - name: HOME isolado
+      - name: HOME isolado com link para o repositório
         run: |
           mkdir -p "$TERMAI_HOME" "$E2E_OUT"
+          ln -sfn "$GITHUB_WORKSPACE" "$TERMAI_HOME/TermAI"
 
       - name: Rodar tarefas difíceis
         env:
