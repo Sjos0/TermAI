@@ -25,7 +25,7 @@ Um agente que roda no bolso — sem daemon permanente, sem servidor próprio —
 - **Políticas de Permissão** — o agente aplica políticas de aprovação baseadas em segurança e risco do comando. Comandos de baixo risco rodam direto; comandos de alto risco pedem aprovação. Você decide o que o agente pode fazer.
 - **Hooks e Skills** — extensível com scripts do usuário e módulos carregáveis para testes, debugging e planejamento.
 - **Conectores (MCP)** — item de menu em `TermAI config` (TUI e CLI) ainda é **stub** (“Em desenvolvimento”). Streamable HTTP foi validado; OAuth e cliente MCP nativo estão pendentes. Não há runtime de MCP no código atual.
-- **Canal Telegram** — entry point `agente_telegram.lua` + módulo `channels/telegram` existem no tree. Ainda não há subcomando CLI dedicado nem cobertura em `tests/`; o canal não aparece no banner/`help` (Issue #57).
+- **Canal Telegram** — entry point `agente_telegram.lua` + módulo `channels/telegram` existem no tree. Ainda não há subcomando CLI dedicado nem cobertura em `tests/`; o canal não aparece no banner/`help`.
 - **Mais atualizações virão** — o TermAI está em desenvolvimento ativo. Novas funcionalidades, melhorias de performance e novos provedores serão adicionados continuamente.
 
 ---
@@ -139,7 +139,7 @@ TermAI/
 ├── config/             # Configuração e migração
 ├── commands/           # Comandos do usuário (/compact, /config, etc.) e CLI
 ├── memoryflush/        # Memória de longo prazo (flush/arquivamento)
-├── tests/              # Specs e fixtures locais (sem runner CI formal; executar com lua/busted conforme cada spec)
+├── tests/              # Specs Lua rodados pela CI (.github/workflows/tests.yml, com lua5.4); helpers em tests/helpers/
 ├── channels/           # Canais alternativos (ex.: telegram)
 ├── .claude/ .grok/ .jules/  # Prompts/personas de agentes externos (não são runtime)
 ├── install.sh          # Instalador: cria o comando global TermAI
