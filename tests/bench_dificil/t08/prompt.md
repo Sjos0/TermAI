@@ -1,0 +1,1 @@
+No arquivo DIR/registros.csv há registros repetidos pelo id, e as datas estão em formatos diferentes. Para cada id, fique só com o registro mais recente. Grave em DIR/limpo.txt uma linha por id, ordenadas pelo id crescente, no formato id;nome.
