@@ -1,5 +1,5 @@
 -- tests/helpers/config_fake.lua — Config em memória para specs de permissão.
--- Sem isso, o spec lê e grava ~/.TermAI/config.json do próprio usuário: regras
+-- Issue #129: sem isso, o spec lê e grava ~/.TermAI/config.json do próprio usuário: regras
 -- salvas por ele (ex: allow "sort *") mudam o resultado e o spec quebra.
 local M = {}
 
