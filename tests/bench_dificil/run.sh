@@ -8,6 +8,7 @@ WS="$HOME/.TermAI/workspace/bench"
 OUT=${E2E_OUT:-/tmp/termai-bench-out}
 MODEL=${BENCH_MODEL:-kilo/kilo-auto/free}
 mkdir -p "$OUT"
+(cd "$ROOT" && lua5.4 tests/bench_dificil/preparar.lua) || exit 1
 echo "tarefa,rep,resultado,segundos" > "$OUT/resultados.csv"
 for t in t01 t02 t03 t04; do
   r=1
