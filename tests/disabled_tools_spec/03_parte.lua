@@ -46,7 +46,7 @@ function M.run()
 
   local payload_src = read_file("agent/api/payload.lua") or read_file("./agent/api/payload.lua")
   local context_src = read_file("agent/context.lua") or read_file("./agent/context.lua")
-  local tools_src = read_file("lib/tools.lua") or read_file("./lib/tools.lua")
+  local tools_src = require("tests.helpers.fonte").ler("lib/tools")
   local runner_src = require("tests.helpers.fonte").ler("agent/loop/tool_runner/executor")
     or read_file("./agent/loop/tool_runner/executor.lua")
   local xml_src = read_file("agent/loop/xml_path.lua") or read_file("./agent/loop/xml_path.lua")
