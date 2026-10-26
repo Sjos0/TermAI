@@ -1,0 +1,1 @@
+No diretório DIR há o arquivo dados.csv, com cabeçalho. Os campos entre aspas podem conter vírgulas. Grave em DIR/contagem.txt duas linhas: na primeira, quantos registros de dados existem (sem contar o cabeçalho); na segunda, o nome da segunda pessoa da lista, sem aspas.

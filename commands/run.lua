@@ -17,6 +17,7 @@ local function read_file(path)
 end
 
 local model_ref, prompt_file, prompt_text, max_iter, wait_seconds
+local allow_always = false -- --permitir-sempre: aprova tudo só neste processo (testes)
 local i = 2
 while i <= #arg do
   local a = arg[i]
@@ -24,15 +25,18 @@ while i <= #arg do
   elseif a == "--prompt-file" then prompt_file = arg[i+1]; i = i + 2
   elseif a == "--prompt" then prompt_text = arg[i+1]; i = i + 2
   elseif a:match("^%-%-wait%-subagents") then wait_seconds = tonumber(a:match("=(%d+)")) or 600; i = i + 1
+  elseif a == "--permitir-sempre" or a == "--allow-always" then allow_always = true; i = i + 1
   elseif a == "--max-iter" then max_iter = tonumber(arg[i+1]); i = i + 2
   elseif a == "--help" or a == "-h" then
-    print("Uso: TermAI run --prompt-file /caminho/prompt.md [--model provider/model] [--max-iter N] [--wait-subagents[=SEGUNDOS]]")
+    print("Uso: TermAI run --prompt-file /caminho/prompt.md [--model provider/model] [--max-iter N] [--permitir-sempre] [--wait-subagents[=SEGUNDOS]]")
     return
   else
     io.stderr:write("Argumento desconhecido: " .. tostring(a) .. "\n")
     os.exit(2)
   end
 end
+
+if allow_always then require("tools.exec.permissions.mode").set_runtime("bypass") end
 
 if prompt_file then
   local text, err = read_file(prompt_file)

@@ -1,0 +1,44 @@
+name: bench-dificil
+
+# Tarefas difíceis com o modelo Kilo gratuito (sem chave). Manual.
+on:
+  workflow_dispatch:
+    inputs:
+      repeticoes:
+        description: "Repetições por tarefa"
+        default: "3"
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TERMAI_HOME: /tmp/termai-home
+      E2E_OUT: /tmp/termai-bench-out
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Lua 5.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lua5.4 curl procps coreutils
+          lua5.4 -v
+
+      - name: HOME isolado
+        run: |
+          mkdir -p "$TERMAI_HOME" "$E2E_OUT"
+
+      - name: Rodar tarefas difíceis
+        env:
+          HOME: ${{ env.TERMAI_HOME }}
+        run: sh tests/bench_dificil/run.sh "${{ github.event.inputs.repeticoes }}"
+
+      - name: Enviar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-dificil
+          path: /tmp/termai-bench-out
