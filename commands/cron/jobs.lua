@@ -65,7 +65,9 @@ local function list_runs(id, limit)
   limit = tonumber(limit) or 10
   limit = math.max(1, math.min(50, math.floor(limit)))
   local root = STATE_DIR .. "/" .. id
-  local cmd = "find " .. shell_quote(root) .. " -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n " .. limit
+  -- ls -t ordena pela data de modificação (mais recentes primeiro) e existe em GNU, BusyBox e toybox;
+  -- find -printf (GNU) não existe em todo find do Termux.
+  local cmd = "ls -1td " .. shell_quote(root) .. "/*/ 2>/dev/null | head -n " .. limit
   local pipe = io.popen(cmd)
   if not pipe then
     io.stderr:write("Não foi possível consultar o histórico.\n")
@@ -73,7 +75,7 @@ local function list_runs(id, limit)
   end
   local dirs = {}
   for line in pipe:lines() do
-    local path = line:match("^%S+%s+(.+)$")
+    local path = line:gsub("/$", "")
     if path then dirs[#dirs + 1] = path end
   end
   pipe:close()
