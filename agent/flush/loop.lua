@@ -9,10 +9,16 @@ local checklist     = require("agent.flush.checklist")
 
 local M = {}
 
+--- True se a resposta da API é falha terminal (retries esgotados / erro fatal).
+-- Não confundir com overflow (já tratado por is_overflow) nem com texto normal.
+local function is_api_terminal_error(resp)
+  return type(resp) == "string" and resp:match("^%[ERRO") ~= nil
+end
+
 --- Executa o loop ReAct do flush sobre um contexto isolado já montado.
 -- @param flush_ctx table Sandbox com msgs, flush_state, MAX_ITER, cfg, active
 -- @param flush_prompt string Prompt inicial do protocolo
--- @return boolean true se completou (done), false se overflow ou MAX_ITER
+-- @return boolean true se completou (done), false se overflow, erro de API ou MAX_ITER
 function M.run_loop(flush_ctx, flush_prompt)
   local iter = 0
   local cur_text = flush_prompt
@@ -56,6 +62,15 @@ function M.run_loop(flush_ctx, flush_prompt)
       return false  -- overflow do provedor = desiste graciosamente
     end
 
+    -- Bug crítico: após max_retries a API devolve "[ERRO] Falha apos N tentativas".
+    -- Sem este guard, o while reinicia outra leva de retries (5/5 → 1/5 de novo).
+    if is_api_terminal_error(resp) then
+      io.write("\27[38;5;203m⚠️  Memory Flush abortado (API): "
+        .. tostring(resp) .. "\27[0m\n")
+      io.flush()
+      return false
+    end
+
     -- Processa tool_calls (caminho nativo JSON)
     if tool_calls and #tool_calls > 0 then
       tool_runner.run_batch(flush_ctx, tool_calls)
@@ -78,10 +93,26 @@ function M.run_loop(flush_ctx, flush_prompt)
       if flush_ctx.flush_state.done then
         return true
       end
+
+      -- Feedback mínimo: thinking terminou sem tool e sem FLUSH_DONE.
+      -- Evita a sensação de "TUI travou" quando o modelo só raciocinou.
+      local snippet = tostring(resp or ""):gsub("%s+", " "):sub(1, 80)
+      if snippet ~= "" then
+        io.write("\27[38;5;245m[flush] resposta sem tool_calls (iter "
+          .. iter .. "/" .. limit .. "): " .. snippet
+          .. (#tostring(resp or "") > 80 and "…" or "") .. "\27[0m\n")
+      else
+        io.write("\27[38;5;245m[flush] resposta vazia sem tool_calls (iter "
+          .. iter .. "/" .. limit .. ")\27[0m\n")
+      end
+      io.flush()
     end
   end
 
   -- MAX_ITER estourado sem completar = desiste graciosamente
+  io.write("\27[38;5;203m⚠️  Memory Flush: MAX_ITER ("
+    .. tostring(limit) .. ") esgotado sem [FLUSH_DONE].\27[0m\n")
+  io.flush()
   return false
 end
 
