@@ -4,6 +4,16 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-26 - [Release 1.28: #127 concluída, regras de Termux/Ubuntu, fluxo de PR e pendências no aparelho]
+**Contexto:** A issue #127 (arquivos acima de 150 linhas) foi concluída nesta rodada. Ao mesmo tempo, o Samuel pediu regras permanentes de trabalho e que o release saísse com o que está na `main`, deixando como pendência só o que depende do aparelho.
+**Files Modified:** `VERSION` (1.28.10.2026); `CONTEXT.md` (linha de release); `.claude/claude.md` (esta entrada). Código do ciclo: `commands/cron/`, `commands/update/`, `ui/core/`, `ui/stream/`, `ui/spinner/roteiros.lua`, `lib/tools/`, `tests/flush_tdd*`, `commands/config/menus/web_tools/submenus.lua`, `commands/config_cli/menus/request/submenus.lua`, `agent/api/request_stream/streamer/fallback.lua`, `tests/helpers/fonte.lua`, `README.md`.
+**Learning:** (1) Dividir sem validar não basta: a comparação precisa ser com a versão original (exports, saída completa, funções ou sessões simuladas). Em duas validações a primeira simulação deu "igual" sem executar nada, porque a UI estava errada; só vale depois de checar que o código rodou. (2) Checagens que leem o código-fonte como texto quebram ao dividir módulos (#133); usar `tests/helpers/fonte.lua`, que lê a fachada e a pasta. (3) Estado de topo reatribuído (ex.: `sink`, `W/H`) não se divide direto: vira holder ou fica no módulo que o usa.
+**Prevention:** Regras fixas: (a) tudo tem que funcionar no Termux e no Ubuntu; (b) nenhuma PR fica aberta: branch, PR, CI verde, merge e exclusão da branch; (c) só lançar release quando as issues do ciclo estiverem concluídas; (d) mudança de comportamento só com teste que prove a diferença. Pendências dependentes do aparelho ficam com instrução exata nas issues para o agente do TermAI no Termux executar e confirmar.
+**Author:** Claude (claude.ai) — a pedido do Samuel.
+**Validation:** Suíte completa verde (63 specs) a cada merge; CI verde em todas as PRs; comparações por função e sessões simuladas idênticas à versão original; `find -printf` trocado por `ls -1td`, com saída idêntica ao original em datas distintas.
+
+---
+
 ## 2026-10-24 - [Paridade OpenClaw, lote 1: profundidade configurável, anúncio em cadeia e cascata]
 **Contexto:** Subagente não podia criar subagente, o anúncio ia só ao agente principal e matar um pai deixava filhos órfãos rodando. O objetivo é escalar a feature com segurança, mantendo o padrão atual.
 **Files Modified:** `tools/subagents/spawn.lua` (regra pura `can_nest`; depth e parent_run no registro); `tools/subagents/scheduler.lua` (`maxSpawnDepth`; `stop_tree`; `cascade_orphans` no tick); `tools/subagents/control.lua` (matar encerra a árvore); `tools/subagents/announce.lua` (dono do aviso: run pai ou agente pai); `tools/subagents.lua` (subagente recebe avisos dos filhos); `tools/subagents/worker.lua` (ctx.depth); `tests/subagents_depth_cascade_spec.lua` (NOVO, 15 checagens); `docs/SUBAGENTS.md`; `docs/plans/PARIDADE_OPENCLAW_SUBAGENTS.md`; `CONTEXT.md`.
