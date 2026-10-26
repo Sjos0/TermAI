@@ -40,10 +40,14 @@ assert(idx["20261026T120000-0300"] < idx["20261025T080000-0300"],
 assert(idx["20261025T080000-0300"] < idx["20261020T100000-0300"],
   "20261025 deveria vir antes de 20261020")
 
--- Garantia: código-fonte de listagem não usa find -printf
+-- Garantia: sem invocação de find nem flag -printf no comando de listagem
 local src = io.open("commands/cron/jobs.lua", "r"):read("*a")
-assert(not src:find("%-printf"), "jobs.lua não pode conter -printf (issue #143)")
-assert(not src:find("find "), "jobs.lua não deve usar find para list_runs")
+-- remove comentarios de linha para não falsar no texto documental
+local code = src:gsub("%-%-[^
+]*", "")
+assert(not code:find("find%s"), "jobs.lua nao deve invocar find (issue #143)")
+assert(not code:find("%-printf"), "jobs.lua nao deve usar -printf (issue #143)")
+assert(code:find("ls %-1"), "jobs.lua deve listar com ls -1 portatil")
 
 os.execute("rm -rf " .. root)
 print("PASS  cron_list_runs_spec: ordenação por stamp + sem find -printf")

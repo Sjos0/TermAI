@@ -58,9 +58,9 @@ local function run_job(id)
 end
 
 --- Lista nomes de pastas de run sob root (só nomes, sem path).
--- Portátil: `ls -1` (sem -t/-printf). Ordenação pelo nome do stamp
+-- Portátil: `ls -1` (sem -t/printf-GNU). Ordenação pelo nome do stamp
 -- (%Y%m%dT%H%M%S%z do runner) — lexicográfico reverso = mais recente primeiro.
--- Issue #143: evita find -printf (GNU) e também -t se o ambiente for mínimo.
+-- Issue #143: evita extensao GNU de find (printf) e também -t se o ambiente for mínimo.
 local function collect_run_names(root)
   local names = {}
   local cmd = "ls -1 " .. shell_quote(root) .. " 2>/dev/null"
