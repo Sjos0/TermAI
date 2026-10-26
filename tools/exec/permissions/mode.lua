@@ -3,8 +3,18 @@ local config_mod = require("config")
 
 local M = {}
 
+-- Override só em memória do processo (ex.: TermAI run --permitir-sempre).
+-- Nunca é salvo no config.json.
+local runtime_override = nil
+
+-- Define o modo para este processo apenas (não persiste no config)
+function M.set_runtime(mode)
+  runtime_override = mode and tostring(mode):lower() or nil
+end
+
 -- Retorna o modo de permissão atual (default, acceptEdits, bypass)
 function M.get()
+  if runtime_override then return runtime_override end
   local cfg = {}
   pcall(function() cfg = config_mod.load() end)
   local mode = cfg.permissions and cfg.permissions.defaultMode or "default"
