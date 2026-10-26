@@ -1,0 +1,1 @@
+No diretório DIR/fotos há arquivos com espaços no nome e extensões variadas. Crie DIR/indice.txt com um nome por linha, em ordem alfabética sem diferenciar maiúsculas de minúsculas, sem a extensão e com os espaços trocados por underscore. Não renomeie nem apague os arquivos originais.

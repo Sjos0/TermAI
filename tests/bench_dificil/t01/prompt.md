@@ -1,0 +1,1 @@
+No diretório DIR há o arquivo calc.lua, com uma função media que está errada. Corrija calc.lua para que media funcione para qualquer lista de números. Não altere a função maximo. Depois grave em DIR/resultado.txt apenas o valor de media({3,5,10}).

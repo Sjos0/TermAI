@@ -1,0 +1,1 @@
+No diretório DIR há o arquivo auth.log. Descubra qual IP teve mais tentativas com FAIL (conte só as linhas com FAIL, ignore as OK). Grave em DIR/relatorio.txt uma única linha: o IP e a quantidade, separados por um espaço.
