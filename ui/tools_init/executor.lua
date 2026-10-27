@@ -30,21 +30,60 @@ local function render_subagent_or_body(name, out, ok, tw)
   io.write(c.gray .. " └─ " .. c.red .. header.cut_cols(first, tw - 8) .. c.reset .. "\n")
 end
 
+-- Saída parcial de Exec (#176 P2). Altura do card é fixa e previsível:
+-- cabeçalho + até MAX_BODY linhas + UMA linha "... (N linhas)" que é reescrita no lugar.
+-- live.rows conta as linhas escritas abaixo do cabeçalho, para o redesenho do tool_end.
+local live = { rows = 0, n = 0 }
+
+local function live_reset()
+  live.rows = 0
+  live.n = 0
+end
+
 function M.tool_start(cmd)
   local name, arg = parser.parse_cmd(cmd)
   header.write_header(c.yellow, name, arg)
+  live_reset()
+  if name == "Exec" then
+    require("tools.exec").on_line = M.tool_chunk
+  end
+  io.flush()
+end
+
+-- Chega uma linha de saída de Exec enquanto o comando roda.
+function M.tool_chunk(line)
+  local card = require("ui.card")
+  local tw   = core.tw()
+  live.n = live.n + 1
+  if live.n <= card.MAX_BODY then
+    io.write(card.bg_row(c.bg, c.gray, " │ ", c.white, card.cut(line, tw - 8), tw) .. "\n")
+    live.rows = live.rows + 1
+  else
+    local hidden = live.n - card.MAX_BODY
+    local txt = "... (" .. hidden .. (hidden == 1 and " linha)" or " linhas)")
+    local row = card.bg_row(c.bg, c.gray, " └─ ", c.dim, txt, tw) .. "\n"
+    if live.rows == card.MAX_BODY then
+      io.write(row)                        -- primeira vez: a linha "..." ainda não existe
+      live.rows = live.rows + 1
+    else
+      io.write("\27[1A\27[2K" .. row)      -- reescreve a linha "..." no mesmo lugar
+    end
+  end
   io.flush()
 end
 
 function M.tool_end(cmd, out, ok)
   local tw        = core.tw()
   local name, arg = parser.parse_cmd(cmd)
+  if name == "Exec" then require("tools.exec").on_line = nil end
   local vis_len   = header.header_vis_len(name, arg, tw)
   local lines_up  = math.max(1, math.ceil(vis_len / tw))
   if name == "Subagente" then
     lines_up = lines_up + require("ui.subagent").finish_lines()
   end
+  lines_up = lines_up + live.rows               -- apaga também a saída parcial já escrita
   io.write(string.format("\27[%dA\27[0J", lines_up))
+  live_reset()
 
   -- Sincroniza detecção de sucesso real (unificado via parser)
   local actual_ok = parser.is_edit_success(out, ok)
