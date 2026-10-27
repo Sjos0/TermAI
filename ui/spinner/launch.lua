@@ -41,7 +41,15 @@ function M.kill_spinner()
   end
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
     .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag .. " 2>/dev/null")
-  io.write("\r\27[K")
+  -- Com a região de rolagem ativa, a status line é a última linha: limpa ela, não a linha atual (#176 P3).
+  local rf = io.open(TMPDIR .. "/termai_rows.txt", "r")
+  local rows = rf and tonumber(rf:read("*l") or "") or nil
+  if rf then rf:close() end
+  if rows and rows >= 5 then
+    io.write("\27" .. "7\27[" .. rows .. ";1H\r\27[2K\27" .. "8")
+  else
+    io.write("\r\27[K")
+  end
   io.flush()
 end
 
