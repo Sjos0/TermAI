@@ -80,6 +80,9 @@ end
 
 function M.estado() return estado end
 
+-- true enquanto o turno está em modo região (spinner fixo na última linha).
+function M.regiao_ativa() return rows_ativas ~= nil end
+
 -- Saída normal pelo os.exit também desfaz a região (Ctrl+C não passa por aqui: Lua não captura SIGINT).
 local os_exit_original = os.exit
 os.exit = function(...)

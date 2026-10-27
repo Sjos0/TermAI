@@ -29,7 +29,7 @@ return function(M, N)
     local s = state._s
     local tmode = get_thinking_mode()
     if tmode == "compact" then
-      if not s.compact_thinking_stopped then
+      if not s.compact_thinking_stopped and not require("ui.spinner.rotulo").regiao_ativa() then
         s.compact_thinking_stopped = true
         spinner.stop_thinking_and_print_compact()
       end
@@ -50,7 +50,7 @@ return function(M, N)
     local s = state._s
     local tmode = get_thinking_mode()
     if tmode == "compact" then
-      if not s.compact_thinking_stopped then
+      if not s.compact_thinking_stopped and not require("ui.spinner.rotulo").regiao_ativa() then
         s.compact_thinking_stopped = true
         spinner.stop_thinking_and_print_compact()
       end

@@ -39,6 +39,11 @@ function M.start_thinking(label)
   end
 end
 
+--- true se o spinner já está animando (não precisa relançar entre chamadas do mesmo turno).
+function M.is_running()
+  return timing.get_anim_start() ~= nil
+end
+
 --- Atualiza label para "Requisitando" (flag de inject).
 function M.update_label()
   require("ui.spinner.rotulo").evento("inject_done")

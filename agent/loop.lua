@@ -38,11 +38,12 @@ local function rodar_turno(ctx, input, role, max_iter)
 
   while iter < limit do
     require("tools.subagents").on_boundary(ctx)
-    if not spinner_started and not quiet then ui.start_thinking() end
+    if not spinner_started and not quiet and not ui.is_running() then ui.start_thinking() end
     spinner_started = false
     local resp, is_overflow, done_flag, reasoning, tool_calls =
       api.pensar_stream(ctx, cur_text, cur_role)
-    elapsed = elapsed + (quiet and 0 or ui.stop_thinking())
+    local regiao = require("ui.spinner.rotulo").regiao_ativa()
+    elapsed = elapsed + ((quiet or regiao) and 0 or ui.stop_thinking())
     if done_flag ~= nil then stream_complete = done_flag end
     do -- diagnóstico: uma linha por resposta do modelo (tool calls, tamanho, origem)
       local n = tool_calls and #tool_calls or 0
@@ -102,7 +103,9 @@ end
 function M.rodar(ctx, input, role, max_iter)
   local r = table.pack(rodar_turno(ctx, input, role, max_iter))
   if not (ctx and ctx.is_subagent == true) then
-    require("ui.spinner.rotulo").evento("turn_end")
+    local rot = require("ui.spinner.rotulo")
+    if rot.regiao_ativa() then r[2] = ui.stop_thinking() end  -- tempo total do turno
+    rot.evento("turn_end")
   end
   return table.unpack(r, 1, r.n)
 end

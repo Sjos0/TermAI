@@ -9,6 +9,7 @@ local M = {}
 M.kill_spinner                  = launch.kill_spinner
 M.start_thinking                = compact.start_thinking
 M.update_label                  = compact.update_label
+M.is_running                    = compact.is_running
 M.mark_reasoning_started        = compact.mark_reasoning_started
 M.restart_spinner               = compact.restart_spinner
 M.stop_thinking_and_print_compact = compact.stop_thinking_and_print_compact
