@@ -51,11 +51,23 @@ local function desativa_regiao()
 end
 
 -- Evento vindo do fluxo do agente/usuário. Devolve o estado novo.
+-- Refaz a região se a altura da tela mudou (rotação do celular) desde a última vez.
+local function reajusta_regiao()
+  if not rows_ativas then return end
+  local agora = altura_tela()
+  if agora >= 5 and agora ~= rows_ativas then
+    io.write(region.teardown(rows_ativas))
+    rows_ativas = nil
+    ativa_regiao()
+  end
+end
+
 function M.evento(nome)
   local novo = fase.on(estado, nome)
   if novo == estado then return estado end
   estado = novo
   if nome == "user_send" then ativa_regiao() end
+  reajusta_regiao()
   local rotulo = fase.label(estado)
   if rotulo then
     escreve_quadros(rotulo)
@@ -67,6 +79,13 @@ function M.evento(nome)
 end
 
 function M.estado() return estado end
+
+-- Saída normal pelo os.exit também desfaz a região (Ctrl+C não passa por aqui: Lua não captura SIGINT).
+local os_exit_original = os.exit
+os.exit = function(...)
+  pcall(desativa_regiao)
+  return os_exit_original(...)
+end
 
 -- Só para testes: volta ao ocioso e limpa arquivos.
 function M.reset()
