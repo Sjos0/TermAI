@@ -50,4 +50,13 @@ function M.body_rows(lines, tw, max)
   return rows
 end
 
+-- Linha de card com fundo (c.bg) do início ao fim. Preenche com espaços até tw-1 colunas,
+-- para o fundo cobrir a largura do card sem encostar na borda, e fecha com reset.
+-- prefix/text são texto puro; as cores entram só como parâmetro.
+function M.bg_row(bg, prefix_color, prefix, text_color, text, tw)
+  local visible = M.width(prefix) + M.width(text)
+  local pad = math.max(0, tw - 1 - visible)
+  return bg .. prefix_color .. prefix .. text_color .. text .. string.rep(" ", pad) .. "\27[0m"
+end
+
 return M
