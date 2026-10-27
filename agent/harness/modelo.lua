@@ -1,7 +1,9 @@
--- agent/harness/modelo.lua — Deps reais do ciclo: chamadas sem streaming, contexto isolado.
--- Cada chamada usa um contexto novo (sem o histórico do usuário) e nada vai para a TUI.
--- Limitação: o teste (probe) é só texto, sem ferramentas. Ferramentas e workspace copiado
--- ficam para a próxima fase, antes de ligar isso em uso real.
+-- agent/harness/modelo.lua — Deps reais do ciclo.
+-- propor/escolher: chamadas simples, sem streaming, sem ferramentas.
+-- testar (probe): roda a tarefa pelo loop real do agente, com ferramentas, num contexto
+-- isolado (is_subagent) e num workspace temporário e vazio, sem histórico do usuário.
+-- Limitação: caminhos absolutos citados na tarefa ainda alcançam o disco real. Antes de
+-- ligar isso em uso real, é preciso uma barreira de caminhos (ainda não existe).
 local M = {}
 
 local function pensar(prompt)
@@ -15,8 +17,25 @@ local function pensar(prompt)
   return texto
 end
 
+local function probe(prompt, tarefa)
+  local context = require("agent.context")
+  local loop    = require("agent.loop")
+  local tmp = os.tmpname()
+  os.remove(tmp)
+  os.execute("mkdir -p '" .. tmp .. "'")
+  local ctx = context.build({ is_subagent = true, agent_id = "harness2", workspace = tmp })
+  ctx.MAX_ITER = 6
+  local resp, _, _, overflow, complete =
+    loop.rodar(ctx, prompt .. "\n\nTAREFA:\n" .. tarefa, "user", ctx.MAX_ITER)
+  os.execute("rm -rf '" .. tmp .. "'")
+  if overflow or complete == false or type(resp) ~= "string" or resp == ""
+     or resp:match("^%[ERRO") then
+    error("probe sem resposta utilizável")
+  end
+  return resp
+end
+
 -- Embaralha as saídas e as apresenta com rótulos anônimos (X, Y, Z).
--- Devolve o texto do pedido e a tabela rótulo anônimo -> nome real.
 local function montar_escolha(saidas)
   local nomes = {}
   for _, nome in ipairs({ "base", "A", "B" }) do
@@ -45,7 +64,7 @@ function M.deps(tarefa)
         .. dimensao .. ". Responda somente com o texto do prompt novo.\n\n" .. base)
     end,
     testar = function(prompt)
-      return pensar(prompt .. "\n\nTAREFA:\n" .. tarefa)
+      return probe(prompt, tarefa)
     end,
     escolher = function(saidas)
       local pedido, mapa = montar_escolha(saidas)

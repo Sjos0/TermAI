@@ -1,8 +1,10 @@
--- e2e/harness2_smoke.lua — Uma execução real do ciclo com o Kilo (6 chamadas).
+-- e2e/harness2_smoke.lua — Uma execução real do ciclo com o Kilo, com ferramentas.
 -- Manual, na VPS. Não roda no CI. Uso: TAREFA_ARQ=arquivo.md lua5.4 e2e/harness2_smoke.lua
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 require("e2e.common").ensure_kilo()
 require("config").set("agents.defaults.model.primary", "kilo/kilo-auto/free")
+-- Só no teste: aprova ferramentas nesta execução (como --permitir-sempre do run).
+require("tools.exec.permissions.mode").set_runtime("bypass")
 local ciclo  = require("agent.harness.ciclo")
 local modelo = require("agent.harness.modelo")
 local adocao = require("agent.harness.adocao")

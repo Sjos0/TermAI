@@ -22,7 +22,11 @@ function M.rodar(base, deps)
     local ok, saida = pcall(deps.testar, cand)
     if ok and type(saida) == "string" then saidas[rotulo] = saida end
   end
-  saidas.base = deps.testar(base) -- a referência não é protegida por pcall: erro aqui aborta o ciclo
+  local okb, saida_base = pcall(deps.testar, base)
+  if not okb or type(saida_base) ~= "string" then
+    return { adotado = false, motivo = "base_sem_resposta" }
+  end
+  saidas.base = saida_base
 
   -- Compose: escolha entre saídas anônimas. Qualquer falha cai na base.
   local ok, escolha = pcall(deps.escolher, saidas)
