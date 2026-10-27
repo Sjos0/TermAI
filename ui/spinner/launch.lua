@@ -59,6 +59,11 @@ function M.set_inject_flag()
   if f then f:write("1"); f:close() end
 end
 
+--- Remove a flag de reasoning (início de uma nova resposta no mesmo turno).
+function M.clear_reasoning_flag()
+  os.remove(_reasoning_flag)
+end
+
 --- Sinaliza ao spinner compacto que o reasoning começou.
 function M.set_reasoning_flag()
   local f = io.open(_reasoning_flag, "w")

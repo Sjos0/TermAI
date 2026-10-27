@@ -40,8 +40,11 @@ local function rodar_turno(ctx, input, role, max_iter)
     require("tools.subagents").on_boundary(ctx)
     if not spinner_started and not quiet and not ui.is_running() then ui.start_thinking() end
     spinner_started = false
+    local em_regiao = (not quiet) and require("ui.spinner.rotulo").regiao_ativa()
+    if em_regiao then ui.begin_request_region() end
     local resp, is_overflow, done_flag, reasoning, tool_calls =
       api.pensar_stream(ctx, cur_text, cur_role)
+    if em_regiao then ui.end_request_region() end
     local regiao = require("ui.spinner.rotulo").regiao_ativa()
     elapsed = elapsed + ((quiet or regiao) and 0 or ui.stop_thinking())
     if done_flag ~= nil then stream_complete = done_flag end

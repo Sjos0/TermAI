@@ -140,10 +140,10 @@ do
     INJECT_DONE=1
     LABEL="Requisitando"
   fi
-  if [ "$REASONING_DONE" -eq 0 ] && [ -f "$REASONING_FLAG" ]; then
-    REASONING_DONE=1
-    LABEL="Pensando"
-    pc=0
+  if [ -f "$REASONING_FLAG" ]; then
+    if [ "$REASONING_DONE" -eq 0 ]; then REASONING_DONE=1; pc=0; fi
+  else
+    REASONING_DONE=0
   fi
 
   case $((c % 6)) in
@@ -172,12 +172,7 @@ do
       sec_val=$(((ms_val % 60000) / 1000))
       TIMER="${min_val}min ${sec_val}seg"
     fi
-    if [ -f "$FRAMES" ]; then
-      pick_frame "$c"
-      show_line "$f $FRAME ${YELLOW}(${TIMER})${R}  "
-    else
-      printf '\r%s %s%s%s %s(%s)%s  \033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
-    fi
+    show_line "$f ${LBLUE}Pensando${R} ${YELLOW}(${TIMER})${R}  "
     pc=$((pc + 1))
   else
     if [ -f "$FRAMES" ]; then
