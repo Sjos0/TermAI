@@ -62,7 +62,10 @@ local function build_payload(ctx, txt, role, stream)
       -- MiniMax M3 (NVIDIA NIM) exige thinking_mode em string, não thinking booleano
       payload.chat_template_kwargs = { thinking_mode = "enabled" }
     elseif style == "reasoning_effort" then
-      payload.reasoning_effort = ctx.cfg and ctx.cfg.agents.defaults.thinkingEffort or "high"
+      local effort = ctx.active.default_effort
+                 or (ctx.cfg and ctx.cfg.agents.defaults.thinkingEffort)
+                 or "high"
+      payload.reasoning_effort = effort
     end
   end
 
