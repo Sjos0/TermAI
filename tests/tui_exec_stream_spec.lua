@@ -1,6 +1,12 @@
 -- tests/tui_exec_stream_spec.lua — Issue #176 P2: saída parcial do Exec aparece no card enquanto roda.
 -- Altura do card fica previsível: cabeçalho + MAX_BODY linhas + UMA linha "... (N linhas)" reescrita no lugar.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+-- Independe do ambiente (CI não tem TMPDIR do Termux): o Exec grava o script temporário em TMPDIR.
+do
+  local real_getenv = os.getenv
+  local tmp = real_getenv("TMPDIR") or "/tmp"
+  os.getenv = function(k) if k == "TMPDIR" then return tmp end return real_getenv(k) end
+end
 
 local failures = 0
 local function check(cond, msg)
