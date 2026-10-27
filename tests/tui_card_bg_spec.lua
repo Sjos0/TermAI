@@ -53,5 +53,22 @@ local any_bg = false
 for ln in exp:gmatch("([^\n]*)\n") do if ln:sub(1, #BG) == BG then any_bg = true end end
 check(any_bg, "expand (Ctrl+O) também usa fundo nas linhas")
 
+-- 4) edit_renderer (diff): todas as linhas com fundo, dentro da largura e com reset
+local edit = require("ui.tools_init.edit_renderer")
+local elines = { "arquivo.lua", "METRICS: added=1, removed=1", "  10 - |old line", "  10 + |new line", "  11 |ctx" }
+local etext = capture(function() edit.render_edit_body(elines, true, tw) end)
+local erows = {}
+for ln in etext:gmatch("([^\n]*)\n") do erows[#erows + 1] = ln end
+check(#erows >= 4, "edit_renderer escreve resumo, diff e rodapé")
+local e_bg, e_fit, e_reset = true, true, true
+for _, ln in ipairs(erows) do
+  if ln:sub(1, #BG) ~= BG then e_bg = false end
+  if width(ln) > tw - 1 then e_fit = false end
+  if ln:sub(-4) ~= "\27[0m" then e_reset = false end
+end
+check(e_bg, "edit_renderer: toda linha começa com c.bg")
+check(e_fit, "edit_renderer: nenhuma linha passa de tw-1 colunas")
+check(e_reset, "edit_renderer: toda linha termina com reset")
+
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
 os.exit(failures == 0 and 0 or 1)
