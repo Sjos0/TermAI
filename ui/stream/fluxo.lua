@@ -25,6 +25,7 @@ return function(M, N)
 
   function M.stream_token(tok)
     if N.ESTADO.sink then return N.ESTADO.sink.token(tok) end
+    require("ui.spinner.rotulo").evento("agent_turn")
     local s = state._s
     local tmode = get_thinking_mode()
     if tmode == "compact" then

@@ -13,7 +13,7 @@ local xml_path         = require("agent.loop.xml_path")
 
 local M = {}
 
-function M.rodar(ctx, input, role, max_iter)
+local function rodar_turno(ctx, input, role, max_iter)
   require("tools.subagents").bind(ctx)
   local quiet = ctx.is_subagent == true -- clone: sem spinner nem aviso de limite na TUI
   local cur_text   = input
@@ -96,6 +96,15 @@ function M.rodar(ctx, input, role, max_iter)
 
   if not quiet then ui.agent_limit(limit) end
   return "", elapsed, false, false, stream_complete, ""
+end
+
+-- Fim do turno do agente: volta o rótulo ao ocioso e desfaz a região de rolagem.
+function M.rodar(ctx, input, role, max_iter)
+  local r = table.pack(rodar_turno(ctx, input, role, max_iter))
+  if not (ctx and ctx.is_subagent == true) then
+    require("ui.spinner.rotulo").evento("turn_end")
+  end
+  return table.unpack(r, 1, r.n)
 end
 
 return M

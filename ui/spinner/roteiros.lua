@@ -2,6 +2,26 @@
 local SPINNER_SCRIPT = [[
 #!/bin/sh
 trap 'exit 0' TERM
+FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
+ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
+# pick_frame N: lê FRAMES (1ª linha = total) e põe em FRAME o quadro N % total.
+pick_frame() {
+  FRAME=""; tot=0; n=0
+  while IFS= read -r fl; do
+    if [ "$n" -eq 0 ]; then tot="$fl"; n=1; continue; fi
+    if [ "$tot" -gt 0 ] && [ $((n-1)) -eq $(( $1 % tot )) ]; then FRAME="$fl"; fi
+    n=$((n+1))
+  done < "$FRAMES"
+}
+# show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
+show_line() {
+  if [ -f "$ROWS_F" ]; then
+    R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
+    printf '\0337\033[%s;1H\r%s\033[K\0338' "$R_ROWS" "$1"
+  else
+    printf '\r%s\033[K' "$1"
+  fi
+}
 ESC=$(printf '\033')
 R="${ESC}[0m"
 B="${ESC}[1m"
@@ -48,7 +68,12 @@ do
     4) f="$F4" ;;
     5) f="$F5" ;;
   esac
-  printf '\r%s %s%s%s %s(%ds)%s  \033[K' "$f" "${B}${LB}" "$LABEL" "$R" "$D" "$s" "$R"
+  if [ -f "$FRAMES" ]; then
+    pick_frame "$c"
+    show_line "$f $FRAME ${D}(${s}s)${R}  "
+  else
+    printf '\r%s %s%s%s %s(%ds)%s  \033[K' "$f" "${B}${LB}" "$LABEL" "$R" "$D" "$s" "$R"
+  fi
   sleep 0.1
   c=$((c + 1))
   if [ $((c % 10)) -eq 0 ]; then s=$((s + 1)); fi
@@ -59,6 +84,26 @@ done
 local COMPACT_SCRIPT = [[
 #!/bin/sh
 trap 'exit 0' TERM
+FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
+ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
+# pick_frame N: lê FRAMES (1ª linha = total) e põe em FRAME o quadro N % total.
+pick_frame() {
+  FRAME=""; tot=0; n=0
+  while IFS= read -r fl; do
+    if [ "$n" -eq 0 ]; then tot="$fl"; n=1; continue; fi
+    if [ "$tot" -gt 0 ] && [ $((n-1)) -eq $(( $1 % tot )) ]; then FRAME="$fl"; fi
+    n=$((n+1))
+  done < "$FRAMES"
+}
+# show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
+show_line() {
+  if [ -f "$ROWS_F" ]; then
+    R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
+    printf '\0337\033[%s;1H\r%s\033[K\0338' "$R_ROWS" "$1"
+  else
+    printf '\r%s\033[K' "$1"
+  fi
+}
 ESC=$(printf '\033')
 R="${ESC}[0m"
 B="${ESC}[1m"
@@ -127,10 +172,20 @@ do
       sec_val=$(((ms_val % 60000) / 1000))
       TIMER="${min_val}min ${sec_val}seg"
     fi
-    printf '\r%s %s%s%s %s(%s)%s  \033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+    if [ -f "$FRAMES" ]; then
+      pick_frame "$c"
+      show_line "$f $FRAME ${YELLOW}(${TIMER})${R}  "
+    else
+      printf '\r%s %s%s%s %s(%s)%s  \033[K' "$f" "${LBLUE}" "$LABEL" "${R}" "${YELLOW}" "${TIMER}" "${R}"
+    fi
     pc=$((pc + 1))
   else
-    printf '\r%s %s%s%s  \033[K' "$f" "${LBLUE}" "$LABEL" "${R}"
+    if [ -f "$FRAMES" ]; then
+      pick_frame "$c"
+      show_line "$f $FRAME  "
+    else
+      printf '\r%s %s%s%s  \033[K' "$f" "${LBLUE}" "$LABEL" "${R}"
+    fi
   fi
   sleep 0.1
   c=$((c + 1))

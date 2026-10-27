@@ -17,6 +17,7 @@ end
 
 --- Inicia o ciclo de thinking (mata spinner anterior, reseta estado, lança modo).
 function M.start_thinking(label)
+  if label == "Injetando" then require("ui.spinner.rotulo").evento("user_send") end
   launch.kill_spinner()
   retry.clear_retry_lines()
   timing.reset_timers()
@@ -40,11 +41,13 @@ end
 
 --- Atualiza label para "Requisitando" (flag de inject).
 function M.update_label()
+  require("ui.spinner.rotulo").evento("inject_done")
   launch.set_inject_flag()
 end
 
 --- Sinaliza ao spinner compacto que o primeiro token de reasoning chegou.
 function M.mark_reasoning_started()
+  require("ui.spinner.rotulo").evento("agent_turn")
   timing.mark_reasoning()
   launch.set_reasoning_flag()
 end

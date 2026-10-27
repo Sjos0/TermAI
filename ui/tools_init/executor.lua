@@ -41,6 +41,7 @@ local function live_reset()
 end
 
 function M.tool_start(cmd)
+  require("ui.spinner.rotulo").evento("agent_turn")
   local name, arg = parser.parse_cmd(cmd)
   header.write_header(c.yellow, name, arg)
   live_reset()
