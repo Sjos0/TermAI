@@ -45,6 +45,11 @@ r = ciclo.rodar("BASE", deps({
 }))
 check(r.adotado == true and r.candidato == "B", "candidato A que falha no teste sai; B continua válido")
 
+r = ciclo.rodar("BASE", deps({
+  testar = function(c) if c == "BASE" then error("sem final") end return "saida(" .. c .. ")" end,
+}))
+check(r.adotado == false and r.motivo == "base_sem_resposta", "referência sem resposta: o ciclo não quebra e não adota")
+
 check(adocao.nome_valido("harness.md") and not adocao.nome_valido("../x.md"),
       "nome de arquivo sem barra é aceito; com caminho é recusado")
 

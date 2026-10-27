@@ -75,7 +75,7 @@ function M.build(opts)
     msgs            = {{role = "system",
                        content = prompt_module.build(ws, tools, session.current(), cfg)}},
     MAX_ITER        = cfg.agents.defaults.maxIter or 20,
-    workspace       = ws,
+    workspace       = opts.workspace or ws,
     compaction      = compaction,
     agent_id        = agent_id,
     disabled_tools  = disabled_set,
