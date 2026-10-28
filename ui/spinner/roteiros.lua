@@ -1,7 +1,7 @@
 -- ui/spinner/roteiros.lua — scripts shell do spinner (modo expanded e compact), usados por ui/spinner/launch.lua.
 local SPINNER_SCRIPT = [[
 #!/bin/sh
-trap 'exit 0' TERM
+trap 'exit 0' TERM INT HUP EXIT
 ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
@@ -17,12 +17,7 @@ pick_frame() {
 }
 # show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
 show_line() {
-  if [ -f "$ROWS_F" ]; then
-    R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
-    printf '%s7%s[%s;1H\r%s%s[K%s8' "$ESC" "$ESC" "$R_ROWS" "$1" "$ESC" "$ESC"
-  else
-    printf '\r%s\033[K' "$1"
-  fi
+  printf '\r%s\033[K' "$1"
 }
 ESC=$(printf '\033')
 R="${ESC}[0m"
@@ -85,7 +80,7 @@ done
 
 local COMPACT_SCRIPT = [[
 #!/bin/sh
-trap 'exit 0' TERM
+trap 'exit 0' TERM INT HUP EXIT
 ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
@@ -101,12 +96,7 @@ pick_frame() {
 }
 # show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
 show_line() {
-  if [ -f "$ROWS_F" ]; then
-    R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
-    printf '%s7%s[%s;1H\r%s%s[K%s8' "$ESC" "$ESC" "$R_ROWS" "$1" "$ESC" "$ESC"
-  else
-    printf '\r%s\033[K' "$1"
-  fi
+  printf '\r%s\033[K' "$1"
 }
 ESC=$(printf '\033')
 R="${ESC}[0m"

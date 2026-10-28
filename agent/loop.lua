@@ -107,7 +107,13 @@ function M.rodar(ctx, input, role, max_iter)
   local r = table.pack(rodar_turno(ctx, input, role, max_iter))
   if not (ctx and ctx.is_subagent == true) then
     local rot = require("ui.spinner.rotulo")
-    if rot.regiao_ativa() then r[2] = ui.stop_thinking() end  -- tempo total do turno
+    -- Sem região: stop_thinking já rodou por request; ainda assim garante kill final.
+    -- Com região: acumula o tempo total do turno aqui.
+    if rot.regiao_ativa() then
+      r[2] = ui.stop_thinking()
+    else
+      pcall(ui.kill_spinner)
+    end
     rot.evento("turn_end")
   end
   return table.unpack(r, 1, r.n)

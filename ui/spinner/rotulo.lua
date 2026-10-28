@@ -14,6 +14,9 @@ local ROWS_FILE   = TMPDIR .. "/termai_rows.txt"
 local estado = fase.new()
 local rows_ativas = nil
 
+-- HOTFIX: modo região desligado. Posição absoluta do spinner quebrava com teclado/rotação (#hotfix).
+local REGIAO_ATIVA = false
+
 local function escreve_quadros(rotulo)
   local quadros = shimmer.frames(rotulo)
   local tmp = FRAMES_FILE .. ".tmp"
@@ -34,7 +37,7 @@ local function altura_tela()
 end
 
 local function ativa_regiao()
-  if rows_ativas then return end
+  if not REGIAO_ATIVA or rows_ativas then return end
   local rows = altura_tela()
   if rows < 5 then return end
   rows_ativas = rows
@@ -76,6 +79,8 @@ function M.evento(nome)
   else
     os.remove(FRAMES_FILE)
     desativa_regiao()
+    -- Fim do turno: mata sh e limpa flags/frames residual (evita Requisitando em loop).
+    pcall(function() require("ui.spinner.launch").cleanup_turno() end)
   end
   return estado
 end
