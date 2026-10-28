@@ -7,16 +7,31 @@ local _spin_pid       = TMPDIR .. "/ta_pid"
 local _inject_flag    = TMPDIR .. "/ta_inject.flag"
 local _reasoning_flag = TMPDIR .. "/ta_reasoning.flag"
 local _stream_flag    = TMPDIR .. "/termai_stream.flag"
+local _frames_file    = TMPDIR .. "/termai_frames.txt"
+local _rows_file      = TMPDIR .. "/termai_rows.txt"
 
 local roteiros = require("ui.spinner.roteiros")
 local SPINNER_SCRIPT, COMPACT_SCRIPT = roteiros.SPINNER_SCRIPT, roteiros.COMPACT_SCRIPT
 
+local function _kill_pid()
+  local pid_f = io.open(_spin_pid, "r")
+  if not pid_f then return end
+  local pid = pid_f:read("*l")
+  pid_f:close()
+  if not (pid and pid:match("^%d+$")) then return end
+  -- TERM no processo e no grupo; KILL se ainda vivo.
+  os.execute("kill -TERM " .. pid .. " 2>/dev/null; kill -TERM -" .. pid .. " 2>/dev/null")
+  os.execute("kill -KILL " .. pid .. " 2>/dev/null; kill -KILL -" .. pid .. " 2>/dev/null")
+  os.remove(_spin_pid)
+end
+
 local function _write_and_launch(script)
+  _kill_pid()
   local f = io.open(_spin_sh, "w")
   if not f then return end
   f:write(script)
   f:close()
-  os.execute("sh " .. _spin_sh .. " 2>/dev/null & echo $! > " .. _spin_pid)
+  os.execute("sh -c 'sh \"" .. _spin_sh .. "\" 2>/dev/null & echo $! > \"" .. _spin_pid .. "\"'")
   io.flush()
 end
 
@@ -30,26 +45,25 @@ function M.launch_compact()
   _write_and_launch(COMPACT_SCRIPT)
 end
 
---- Mata o processo do spinner e limpa arquivos temporários/flags.
+--- Para o processo do spinner e limpa a linha atual.
+-- Não apaga termai_frames.txt: no meio do turno o rótulo (Trabalhando) precisa sobreviver
+-- a um stop/start entre tool calls. Quem apaga os frames é o turn_end (rotulo) / cleanup_turno.
 function M.kill_spinner()
-  local pid_f = io.open(_spin_pid, "r")
-  if not pid_f then return end
-  local pid = pid_f:read("*l")
-  pid_f:close()
-  if pid and pid:match("^%d+$") then
-    os.execute("kill " .. pid .. " 2>/dev/null")
-  end
+  _kill_pid()
+  os.remove(_spin_sh)
+  os.remove(_stream_flag)
+  -- Hotfix: só \r + limpa linha. Nunca posição absoluta (arquivo de altura fica velho no teclado).
+  io.write("\r\27[K")
+  io.flush()
+end
+
+--- Limpeza completa no fim do turno: flags, frames e rows residual.
+function M.cleanup_turno()
+  _kill_pid()
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
-    .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag .. " 2>/dev/null")
-  -- Com a região de rolagem ativa, a status line é a última linha: limpa ela, não a linha atual (#176 P3).
-  local rf = io.open(TMPDIR .. "/termai_rows.txt", "r")
-  local rows = rf and tonumber(rf:read("*l") or "") or nil
-  if rf then rf:close() end
-  if rows and rows >= 5 then
-    io.write("\27" .. "7\27[" .. rows .. ";1H\r\27[2K\27" .. "8")
-  else
-    io.write("\r\27[K")
-  end
+    .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag
+    .. " " .. _frames_file .. " " .. _rows_file .. " 2>/dev/null")
+  io.write("\r\27[K")
   io.flush()
 end
 
