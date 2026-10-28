@@ -16,11 +16,13 @@ local rows_ativas = nil
 
 local function escreve_quadros(rotulo)
   local quadros = shimmer.frames(rotulo)
-  local f = io.open(FRAMES_FILE, "w")
+  local tmp = FRAMES_FILE .. ".tmp"
+  local f = io.open(tmp, "w")
   if not f then return end
   f:write(tostring(#quadros), "\n")
   for _, q in ipairs(quadros) do f:write(q, "\n") end
   f:close()
+  os.rename(tmp, FRAMES_FILE)
 end
 
 local function altura_tela()

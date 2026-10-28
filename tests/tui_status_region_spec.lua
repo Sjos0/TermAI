@@ -8,9 +8,9 @@ end
 local function plain(s) return (s:gsub("\27%[[%d;]*m", "")) end
 
 local region = require("ui.status_region")
-check(region.setup(24) == "\27[1;23r", "setup: faixa de rolagem vai até a linha rows-1")
+check(region.setup(24) == "\27" .. "7\27[1;23r\27" .. "8", "setup: salva cursor, define faixa até rows-1 e restaura cursor")
 check(region.setup(2) == "", "setup: terminal pequeno demais não define faixa")
-check(region.teardown(24) == "\27[r\27[24;1H\27[2K", "teardown: libera a faixa e limpa a última linha")
+check(region.teardown(24) == "\27" .. "7\27[24;1H\27[2K\27" .. "8\27" .. "7\27[r\27" .. "8", "teardown: limpa a última linha e solta a faixa sem mover o cursor")
 local d = region.draw_status(24, "Trabalhando")
 check(d:sub(1, 2) == "\27" .. "7", "draw_status: salva o cursor antes de desenhar")
 check(d:sub(-2) == "\27" .. "8", "draw_status: restaura o cursor no fim")

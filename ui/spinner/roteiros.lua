@@ -2,6 +2,7 @@
 local SPINNER_SCRIPT = [[
 #!/bin/sh
 trap 'exit 0' TERM
+ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
 # pick_frame N: lê FRAMES (1ª linha = total) e põe em FRAME o quadro N % total.
@@ -12,12 +13,13 @@ pick_frame() {
     if [ "$tot" -gt 0 ] && [ $((n-1)) -eq $(( $1 % tot )) ]; then FRAME="$fl"; fi
     n=$((n+1))
   done < "$FRAMES"
+  if [ -z "$FRAME" ]; then FRAME="$LABEL"; fi
 }
 # show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
 show_line() {
   if [ -f "$ROWS_F" ]; then
     R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
-    printf '\0337\033[%s;1H\r%s\033[K\0338' "$R_ROWS" "$1"
+    printf '%s7%s[%s;1H\r%s%s[K%s8' "$ESC" "$ESC" "$R_ROWS" "$1" "$ESC" "$ESC"
   else
     printf '\r%s\033[K' "$1"
   fi
@@ -84,6 +86,7 @@ done
 local COMPACT_SCRIPT = [[
 #!/bin/sh
 trap 'exit 0' TERM
+ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
 # pick_frame N: lê FRAMES (1ª linha = total) e põe em FRAME o quadro N % total.
@@ -94,12 +97,13 @@ pick_frame() {
     if [ "$tot" -gt 0 ] && [ $((n-1)) -eq $(( $1 % tot )) ]; then FRAME="$fl"; fi
     n=$((n+1))
   done < "$FRAMES"
+  if [ -z "$FRAME" ]; then FRAME="$LABEL"; fi
 }
 # show_line TEXTO_COLORIDO: desenha na última linha da região (se houver) ou na linha atual.
 show_line() {
   if [ -f "$ROWS_F" ]; then
     R_ROWS=$(cat "$ROWS_F" 2>/dev/null)
-    printf '\0337\033[%s;1H\r%s\033[K\0338' "$R_ROWS" "$1"
+    printf '%s7%s[%s;1H\r%s%s[K%s8' "$ESC" "$ESC" "$R_ROWS" "$1" "$ESC" "$ESC"
   else
     printf '\r%s\033[K' "$1"
   fi

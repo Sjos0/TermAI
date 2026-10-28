@@ -6,14 +6,17 @@ local M = {}
 local ESC = "\27"
 
 -- Faixa de rolagem = linhas 1 até rows-1. A última linha fica de fora.
+-- DECSTBM leva o cursor ao topo: salvamos e restauramos a posição do conteúdo em volta dele.
 function M.setup(rows)
   if rows < 3 then return "" end
-  return ESC .. "[1;" .. (rows - 1) .. "r"
+  return ESC .. "7" .. ESC .. "[1;" .. (rows - 1) .. "r" .. ESC .. "8"
 end
 
 -- Desfaz a faixa e deixa o cursor embaixo, limpando a status line.
+-- Limpa a status line e solta a faixa, sempre devolvendo o cursor ao conteúdo.
 function M.teardown(rows)
-  return ESC .. "[r" .. ESC .. "[" .. rows .. ";1H" .. ESC .. "[2K"
+  return ESC .. "7" .. ESC .. "[" .. rows .. ";1H" .. ESC .. "[2K" .. ESC .. "8"
+      .. ESC .. "7" .. ESC .. "[r" .. ESC .. "8"
 end
 
 -- Escreve o texto na última linha sem mover o cursor do conteúdo.
