@@ -1,6 +1,12 @@
 -- tests/tui_hotfix_spec.lua — Hotfix: a região de rolagem fica desligada e nada no fluxo a emite.
 -- Estresse: vários ciclos de eventos (turnos seguidos) não podem deixar sequências de posição/região.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
+-- CI não tem TMPDIR do Termux: fixa TMPDIR para os módulos gravarem onde o teste lê.
+do
+  local real_getenv = os.getenv
+  local tmp = real_getenv("TMPDIR") or "/tmp"
+  os.getenv = function(k) if k == "TMPDIR" then return tmp end return real_getenv(k) end
+end
 local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
