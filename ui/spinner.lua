@@ -7,6 +7,7 @@ local retry   = require("ui.spinner.retry")
 local M = {}
 
 M.kill_spinner                  = launch.kill_spinner
+M.cleanup_turno                 = launch.cleanup_turno
 M.start_thinking                = compact.start_thinking
 M.update_label                  = compact.update_label
 M.is_running                    = compact.is_running
