@@ -1,5 +1,6 @@
 -- ui/tools_init/edit_renderer.lua — Renderizador especializado de diffs estruturados (Aider-style).
 local core = require("ui.core")
+local card = require("ui.card")
 local c    = core.c
 
 local M = {}
@@ -21,10 +22,14 @@ function M.render_edit_body(lines, ok, tw)
 
   -- 2. Imprime resumo de alterações no topo da box
   local prefix = " │ "
+  -- Linha do card com fundo c.bg (#176 P1). Texto puro + cor; uma única sequência de reset no fim.
+  local function row(p, tc, text)
+    io.write(card.bg_row(c.bg, c.gray, p, tc, text, tw) .. "\n")
+  end
   if added and removed then
     local summary = string.format("Adicionadas %d linha(s), removida(s) %d linha(s)", added, removed)
     local text_color = (added == 0 and removed == 0) and c.red or c.cyan
-    io.write(c.gray .. prefix .. text_color .. "└ " .. require("ui.card").cut(summary, tw - 8) .. c.reset .. "\n")
+    row(prefix, text_color, "└ " .. card.cut(summary, tw - 8))
   end
 
   -- 3. Imprime linhas de diff formatadas
@@ -84,7 +89,6 @@ function M.render_edit_body(lines, ok, tw)
 
   local idx = 1
   local printed = 0
-  local card = require("ui.card")
   while idx <= #lines do
     if idx ~= 1 and idx ~= metrics_idx then
       if show_line[idx] then
@@ -95,7 +99,7 @@ function M.render_edit_body(lines, ok, tw)
             if j ~= metrics_idx and show_line[j] then left = left + 1 end
           end
           if left > 0 then
-            io.write(c.gray .. prefix .. c.dim .. "... (" .. left .. " linhas)" .. c.reset .. "\n")
+            row(prefix, c.dim, "... (" .. left .. " linhas)")
           end
           break
         end
@@ -104,7 +108,7 @@ function M.render_edit_body(lines, ok, tw)
         local ln_str, marker, content = ln:match("^%s*(%d+)%s*([%-%+ ]?)%s*|%s*(.*)$")
 
         if ln:match("^%.%.%.") then
-          io.write(c.gray .. prefix .. c.dim .. ln .. c.reset .. "\n")
+          row(prefix, c.dim, ln)
         elseif ln_str and marker and content then
           local formatted = string.format("%4s %s  %s", ln_str, marker ~= " " and marker or " ", content)
 
@@ -112,14 +116,14 @@ function M.render_edit_body(lines, ok, tw)
           formatted = card.cut(formatted, max_w)
 
           if marker == "-" then
-            io.write(c.gray .. prefix .. c.red .. formatted .. c.reset .. "\n")
+            row(prefix, c.red, formatted)
           elseif marker == "+" then
-            io.write(c.gray .. prefix .. c.green .. formatted .. c.reset .. "\n")
+            row(prefix, c.green, formatted)
           else
-            io.write(c.gray .. prefix .. c.gray .. formatted .. c.reset .. "\n")
+            row(prefix, c.gray, formatted)
           end
         else
-          io.write(c.gray .. prefix .. c.white .. card.cut(ln, tw - 8) .. c.reset .. "\n")
+          row(prefix, c.white, card.cut(ln, tw - 8))
         end
         idx = idx + 1
       else
@@ -129,7 +133,7 @@ function M.render_edit_body(lines, ok, tw)
           idx = idx + 1
         end
         if hidden_count > 0 then
-          io.write(c.gray .. prefix .. c.dim .. "... (" .. hidden_count .. " linhas ocultas) ..." .. c.reset .. "\n")
+          row(prefix, c.dim, "... (" .. hidden_count .. " linhas ocultas) ...")
         end
       end
     else
@@ -139,9 +143,9 @@ function M.render_edit_body(lines, ok, tw)
 
   -- 4. Conclusão Extra de Rodapé
   if ok then
-    io.write(c.gray .. " └─ " .. c.green .. "Substituição concluída ✓" .. c.reset .. "\n")
+    row(" └─ ", c.green, "Substituição concluída ✓")
   else
-    io.write(c.gray .. " └─ " .. c.red .. "Substituição falha ❌" .. c.reset .. "\n")
+    row(" └─ ", c.red, "Substituição falha ❌")
   end
 end
 

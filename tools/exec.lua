@@ -8,6 +8,9 @@ local executor = require("tools.exec.executor")
 
 local M = {}
 
+-- Callback de saída parcial, ligado pela UI só durante uma chamada de Exec (#176 P2).
+M.on_line = nil
+
 function M.register(tools)
   tools.register("Exec",
     [==[Run a shell command on the device and return its output. Use it for system work that no dedicated tool covers: git, builds, luac, package and process commands. Do not use it to read, search, create or edit files when Read, Grep, Find, Write or Edit can do the job; those tools return less noise and are safer. Run independent commands as separate Exec calls, and chain dependent commands with '&&'. Prefer absolute paths over 'cd', and always quote paths that contain spaces. Output over 2000 lines or 100 KB is truncated. On timeout you get the partial output; raise 'timeout' for slow network commands. Never use echo to simulate output. Example: command 'git status'.]==],
@@ -20,7 +23,7 @@ function M.register(tools)
       if timeout then timeout = math.min(math.max(math.floor(timeout), 1), 300) end
 
       -- Passo 2: delegar execução
-      local result = executor.run(cmd, timeout)
+      local result = executor.run(cmd, timeout, M.on_line)
 
       -- Passo 3: formatar mensagem final (responsabilidade de interface)
       if result.timed_out then

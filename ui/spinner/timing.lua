@@ -48,6 +48,11 @@ function M.reset_timers()
   _reasoning_start_ms = nil
 end
 
+--- Zera o início do reasoning para a próxima resposta do mesmo turno.
+function M.reset_reasoning()
+  _reasoning_start_ms = nil
+end
+
 --- Marca o instante em que o reasoning começou (primeiro token).
 function M.mark_reasoning()
   _reasoning_start_ms = M.get_ms_time()

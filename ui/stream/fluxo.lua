@@ -25,12 +25,17 @@ return function(M, N)
 
   function M.stream_token(tok)
     if N.ESTADO.sink then return N.ESTADO.sink.token(tok) end
+    require("ui.spinner.rotulo").evento("agent_turn")
     local s = state._s
     local tmode = get_thinking_mode()
     if tmode == "compact" then
       if not s.compact_thinking_stopped then
         s.compact_thinking_stopped = true
-        spinner.stop_thinking_and_print_compact()
+        if require("ui.spinner.rotulo").regiao_ativa() then
+          spinner.finish_reasoning_region()
+        else
+          spinner.stop_thinking_and_print_compact()
+        end
       end
     else
       if s.reasoning_started then
@@ -51,7 +56,11 @@ return function(M, N)
     if tmode == "compact" then
       if not s.compact_thinking_stopped then
         s.compact_thinking_stopped = true
-        spinner.stop_thinking_and_print_compact()
+        if require("ui.spinner.rotulo").regiao_ativa() then
+          spinner.finish_reasoning_region()
+        else
+          spinner.stop_thinking_and_print_compact()
+        end
       end
     else
       if s.reasoning_started then

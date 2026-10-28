@@ -13,7 +13,7 @@ local xml_path         = require("agent.loop.xml_path")
 
 local M = {}
 
-function M.rodar(ctx, input, role, max_iter)
+local function rodar_turno(ctx, input, role, max_iter)
   require("tools.subagents").bind(ctx)
   local quiet = ctx.is_subagent == true -- clone: sem spinner nem aviso de limite na TUI
   local cur_text   = input
@@ -38,11 +38,15 @@ function M.rodar(ctx, input, role, max_iter)
 
   while iter < limit do
     require("tools.subagents").on_boundary(ctx)
-    if not spinner_started and not quiet then ui.start_thinking() end
+    if not spinner_started and not quiet and not ui.is_running() then ui.start_thinking() end
     spinner_started = false
+    local em_regiao = (not quiet) and require("ui.spinner.rotulo").regiao_ativa()
+    if em_regiao then ui.begin_request_region() end
     local resp, is_overflow, done_flag, reasoning, tool_calls =
       api.pensar_stream(ctx, cur_text, cur_role)
-    elapsed = elapsed + (quiet and 0 or ui.stop_thinking())
+    if em_regiao then ui.end_request_region() end
+    local regiao = require("ui.spinner.rotulo").regiao_ativa()
+    elapsed = elapsed + ((quiet or regiao) and 0 or ui.stop_thinking())
     if done_flag ~= nil then stream_complete = done_flag end
     do -- diagnóstico: uma linha por resposta do modelo (tool calls, tamanho, origem)
       local n = tool_calls and #tool_calls or 0
@@ -96,6 +100,17 @@ function M.rodar(ctx, input, role, max_iter)
 
   if not quiet then ui.agent_limit(limit) end
   return "", elapsed, false, false, stream_complete, ""
+end
+
+-- Fim do turno do agente: volta o rótulo ao ocioso e desfaz a região de rolagem.
+function M.rodar(ctx, input, role, max_iter)
+  local r = table.pack(rodar_turno(ctx, input, role, max_iter))
+  if not (ctx and ctx.is_subagent == true) then
+    local rot = require("ui.spinner.rotulo")
+    if rot.regiao_ativa() then r[2] = ui.stop_thinking() end  -- tempo total do turno
+    rot.evento("turn_end")
+  end
+  return table.unpack(r, 1, r.n)
 end
 
 return M

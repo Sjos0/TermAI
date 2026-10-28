@@ -17,6 +17,7 @@ end
 
 --- Inicia o ciclo de thinking (mata spinner anterior, reseta estado, lança modo).
 function M.start_thinking(label)
+  if label == "Injetando" then require("ui.spinner.rotulo").evento("user_send") end
   launch.kill_spinner()
   retry.clear_retry_lines()
   timing.reset_timers()
@@ -38,13 +39,50 @@ function M.start_thinking(label)
   end
 end
 
+--- Modo região: imprime "Pensou (…)" (se houve reasoning) sem parar o spinner, e zera o reasoning.
+function M.finish_reasoning_region()
+  local LBLUE  = "\27[38;5;117m"
+  local YELLOW = "\27[38;5;220m"
+  local RESET  = "\27[0m"
+  if timing.get_reasoning_start_ms() then
+    io.write("\r\27[K" .. LBLUE .. "⬤ " .. "Pensou " .. RESET
+      .. YELLOW .. "(" .. timing.format_duration(timing.elapsed_ms()) .. ")" .. RESET .. "\n\n")
+    io.flush()
+  end
+  timing.reset_reasoning()
+  launch.clear_reasoning_flag()
+end
+
+--- Modo região: início de cada chamada ao modelo dentro do turno.
+function M.begin_request_region()
+  timing.reset_reasoning()
+  launch.clear_reasoning_flag()
+  local ok_state, state = pcall(require, "ui.stream.state")
+  if ok_state and state and state._s then state._s.compact_thinking_stopped = false end
+end
+
+--- Modo região: fim de cada chamada ao modelo (cobre respostas só com tool call, sem texto).
+function M.end_request_region()
+  local ok_state, state = pcall(require, "ui.stream.state")
+  if not (ok_state and state and state._s) or state._s.compact_thinking_stopped then return end
+  state._s.compact_thinking_stopped = true
+  M.finish_reasoning_region()
+end
+
+--- true se o spinner já está animando (não precisa relançar entre chamadas do mesmo turno).
+function M.is_running()
+  return timing.get_anim_start() ~= nil
+end
+
 --- Atualiza label para "Requisitando" (flag de inject).
 function M.update_label()
+  require("ui.spinner.rotulo").evento("inject_done")
   launch.set_inject_flag()
 end
 
 --- Sinaliza ao spinner compacto que o primeiro token de reasoning chegou.
 function M.mark_reasoning_started()
+  require("ui.spinner.rotulo").evento("agent_turn")
   timing.mark_reasoning()
   launch.set_reasoning_flag()
 end

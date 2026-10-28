@@ -21,6 +21,8 @@ mkdir -p "$HOME/.TermAI"
 WRAPPER="$PREFIX/bin/TermAI"
 cat << 'ENDOFFILE' > "$WRAPPER"
 #!/data/data/com.termux/files/usr/bin/bash
+# Ao sair (inclusive Ctrl+C), solta a região de rolagem do TermAI e limpa a última linha (#176).
+trap 'printf "\033[r\033[999;1H\033[2K"' EXIT INT TERM
 while true; do
   lua5.4 "$HOME/TermAI/main.lua" "$@"
   status=$?

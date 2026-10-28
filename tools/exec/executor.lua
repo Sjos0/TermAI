@@ -14,7 +14,9 @@ local BANNED_COMMANDS = { "wget", "lynx", "w3m" }
 -- command: string do comando
 -- timeout: número de segundos (nil = sem timeout)
 -- Retorna: {output=string, exit_code=string, timed_out=boolean}
-function M.run(command, timeout)
+-- on_line (opcional): recebe cada linha de saída enquanto o comando roda (saída parcial, #176 P2).
+-- A linha de controle __EXIT__ nunca é repassada. Erro no callback não interrompe a execução.
+function M.run(command, timeout, on_line)
   -- Varre de forma robusta por limite de fronteira de palavra (%f) para evitar falsos-bloqueios de substring
   for _, banned in ipairs(BANNED_COMMANDS) do
     if command:match("%f[%w]" .. banned .. "%f[%W]") then
@@ -46,8 +48,18 @@ function M.run(command, timeout)
 
   -- Passo 3: executar e capturar output
   local h   = io.popen(runner)
-  local res = h and h:read("*a") or ""
-  if h then h:close() end
+  local lines = {}
+  if h then
+    for ln in h:lines() do
+      lines[#lines + 1] = ln
+      -- A linha de controle pode vir colada ao fim da última linha (sem \n); remove só ela.
+      local body, n_exit = ln:gsub("__EXIT__:%d+$", "")
+      if on_line and not (n_exit == 1 and body == "") then pcall(on_line, body) end
+    end
+    h:close()
+  end
+  -- Mesmo texto que h:read("*a") devolvia: cada linha termina em \n.
+  local res = #lines > 0 and (table.concat(lines, "\n") .. "\n") or ""
 
   -- Passo 4: limpar tmp file
   os.remove(tmp)
