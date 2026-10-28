@@ -1,7 +1,6 @@
 -- tests/tui_spinner_lifecycle_spec.lua — ciclo de vida do spinner (hotfix + robustez).
 -- Garante: frames sobrevivem a kill no meio do turno; cleanup_turno limpa tudo;
 -- kill nunca emite posicao absoluta; um processo nao fica orfao apos cleanup.
-package.path = "./? .lua;./?/init.lua;./lib/?.lua;" .. package.path
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 do
   local real_getenv = os.getenv
