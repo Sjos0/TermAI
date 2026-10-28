@@ -79,6 +79,8 @@ function M.evento(nome)
   else
     os.remove(FRAMES_FILE)
     desativa_regiao()
+    -- Fim do turno: mata sh e limpa flags/frames residual (evita Requisitando em loop).
+    pcall(function() require("ui.spinner.launch").cleanup_turno() end)
   end
   return estado
 end
