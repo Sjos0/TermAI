@@ -1,7 +1,7 @@
 -- ui/spinner/roteiros.lua — scripts shell do spinner (modo expanded e compact), usados por ui/spinner/launch.lua.
 local SPINNER_SCRIPT = [[
 #!/bin/sh
-trap 'exit 0' TERM
+trap 'exit 0' TERM INT HUP EXIT
 ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
@@ -80,7 +80,7 @@ done
 
 local COMPACT_SCRIPT = [[
 #!/bin/sh
-trap 'exit 0' TERM
+trap 'exit 0' TERM INT HUP EXIT
 ESC=$(printf '\033')
 FRAMES="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_frames.txt"
 ROWS_F="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/termai_rows.txt"
