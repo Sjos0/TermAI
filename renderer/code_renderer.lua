@@ -11,8 +11,23 @@ end
 
 local function wrap_code(s, w)
   s = tostring(s or "")
+  if w < 1 then return { s } end
   if vis_len(s) <= w then return { s } end
+  -- Corta por caracteres UTF-8 quando possível (evita quebrar emoji no meio).
   local segs = {}
+  if utf8 and utf8.len and utf8.offset then
+    local n = utf8.len(s) or #s
+    local i = 1
+    while i <= n do
+      local j = math.min(i + w - 1, n)
+      local a = utf8.offset(s, i) or 1
+      local b = utf8.offset(s, j + 1)
+      local chunk = b and s:sub(a, b - 1) or s:sub(a)
+      segs[#segs + 1] = chunk
+      i = j + 1
+    end
+    return segs
+  end
   while vis_len(s) > w do
     segs[#segs + 1] = s:sub(1, w)
     s = s:sub(w + 1)

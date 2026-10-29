@@ -1,5 +1,4 @@
--- tests/retry_card_inplace_spec.lua — show_retry atualiza no lugar (não empilha)
--- e clear_retry_lines zera o contador (não come a mensagem do usuário depois).
+-- tests/retry_card_inplace_spec.lua — card de retry in-place, sem emoji, transição 2→1 linha.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
@@ -7,7 +6,6 @@ local function T(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
--- stub tw
 package.loaded["ui.core"] = {
   c = {
     reset="\27[0m", gray="\27[38;5;245m", orange="\27[38;5;208m",
@@ -36,7 +34,6 @@ end
 
 local retry = require("ui.spinner.retry")
 
--- 1) três tentativas → não deve haver 6 linhas de conteúdo empilhadas sem cursor-up
 writes = {}
 retry.show_retry(1, 5, "Sem resposta do servidor", 1)
 retry.show_retry(2, 5, "Sem resposta do servidor", 2)
@@ -44,24 +41,48 @@ retry.show_retry(3, 5, "Sem resposta do servidor", 4)
 local joined = table.concat(writes)
 local ups = 0
 for _ in joined:gmatch("\27%[%d+A") do ups = ups + 1 end
-T(ups >= 2, "show_retry reutiliza ESC[nA para redesenhar (ups=" .. ups .. ")")
+T(ups >= 2, "show_retry reutiliza ESC[nA (ups=" .. ups .. ")")
 T(joined:find("Tentativa 3/5", 1, true) ~= nil, "última tentativa visível é 3/5")
-T(joined:find("⚠", 1, true) == nil and joined:find("⏳", 1, true) == nil, "sem emojis no card")
+T(joined:find("⚠", 1, true) == nil and joined:find("⏳", 1, true) == nil, "sem emojis")
 
--- 2) clear zera e não deixa contador residual alto
+-- Transição 2 linhas (com wait) → 1 linha (wait=0): deve ESC[2A
+writes = {}
+retry.clear_retry_lines()
+retry.show_retry(4, 5, "timeout", 2)
+local after4 = table.concat(writes)
+writes = {}
+retry.show_retry(5, 5, "timeout", 0)
+local after5 = table.concat(writes)
+T(after5:find("\27%[2A", 1, true) ~= nil or after5:find("\27%[1A", 1, true) ~= nil,
+  "5/5 apaga card anterior antes de redesenhar")
+T(after5:find("Tentativa 5/5", 1, true) ~= nil, "mostra 5/5")
+T(after5:find("Aguardando", 1, true) == nil, "5/5 sem linha de espera")
+
+-- clear + residual baixo
 retry.clear_retry_lines()
 writes = {}
 retry.show_retry(1, 5, "x", 0)
 retry.clear_retry_lines()
--- após clear, novo show começa do zero (sem A grande)
 local nA = 0
 for n in table.concat(writes):gmatch("\27%[(%d+)A") do nA = nA + tonumber(n) end
 T(nA <= 3, "após clear, cursor-up residual baixo (nA=" .. nA .. ")")
 
--- 3) show_api_error desenha [ERRO]
+-- show_api_error substitui e não deixa contador alto
 writes = {}
+retry.show_retry(5, 5, "fim", 0)
 retry.show_api_error("Falha após 5 tentativas — Sem resposta do servidor")
-T(table.concat(writes):find("%[ERRO%]", 1) ~= nil, "show_api_error emite [ERRO]")
+local err = table.concat(writes)
+T(err:find("%[ERRO%]", 1) ~= nil, "show_api_error emite [ERRO]")
+T(err:find("48;5;52", 1, true) ~= nil, "erro usa fundo bg_error")
+
+-- responsivo: tw estreito não quebra (cut)
+package.loaded["ui.core"].tw = function() return 20 end
+package.loaded["ui.spinner.retry"] = nil
+-- re-require won't reload module state easily; call with short tw via existing module
+-- (module already loaded; tw() is looked up each paint — OK)
+writes = {}
+retry.show_retry(1, 3, "erro bem longo que deveria ser cortado na largura", 0)
+T(#table.concat(writes) > 0, "tw=20 ainda desenha card")
 
 io.write = real_write
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
