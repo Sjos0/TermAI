@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [perf: consumo de processos por frame no spinner (#185)]
+**Contexto:** `altura_tela` (rotulo.lua) spawnava `stty size` a cada chamada — pesado no A20s. Tentativa anterior com Edit corrompeu `escreve_quadros` (CI vermelho).
+**Files Modified:** `ui/spinner/rotulo.lua` — `altura_tela` reutiliza `ui.core.th()` (cache até `invalidate_size`); `escreve_quadros` restaurado intacto. `get_ms_time` NÃO cacheado (quebrou elapsed <1s).
+**Learning:** (1) Não reinventar cache de altura: `core.th()` já existe. (2) Edit parcial em função vizinha pode engolir o `end` — sempre validar sintaxe e specs de quadro após mexer em rotulo.
+**Prevention:** Preferir `core.th()`; `luac`/specs de quadro antes do push.
+**Author:** Ameno (corrigido pelo Arquiteto após inspeção da PR #192).
+**Validation:** CI da branch.
+
 ## 2026-10-29 - [fix: terminal ficando em raw na saída do processo (#184)]
 **Contexto:** `stty raw` só era desfeito por `stty sane` no fim de `M.read`; se o processo saísse por outro caminho, o terminal ficava em raw.
 **Files Modified:** `ui/terminal_safe.lua` (NOVO, instala override de `os.exit` que roda `stty sane` antes de delegar ao original, encadeando com overrides existentes); `agente.lua` (chama `terminal_safe.install()` no início, antes de qualquer módulo); `tests/terminal_safe_spec.lua` (NOVO).

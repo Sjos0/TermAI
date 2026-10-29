@@ -28,11 +28,19 @@ local function escreve_quadros(rotulo)
   os.rename(tmp, FRAMES_FILE)
 end
 
+--- Altura da tela em linhas.
+-- Reutiliza ui.core.th() (já tem cache até invalidate_size) — evita spawn extra de
+-- `stty size` a cada frame (perf #185). Fallback local se core não carregar.
 local function altura_tela()
-  local h = io.popen("stty size 2>/dev/null")
-  if not h then return 0 end
-  local rows = tonumber(h:read("*n") or "")
-  h:close()
+  local ok, core = pcall(require, "ui.core")
+  if ok and type(core) == "table" and type(core.th) == "function" then
+    local h = core.th()
+    return tonumber(h) or 0
+  end
+  local pipe = io.popen("stty size 2>/dev/null")
+  if not pipe then return 0 end
+  local rows = tonumber(pipe:read("*n") or "")
+  pipe:close()
   return rows or 0
 end
 
