@@ -104,8 +104,9 @@ end
 
 -- Fim do turno do agente: volta o rótulo ao ocioso e desfaz a região de rolagem.
 function M.rodar(ctx, input, role, max_iter)
-  local ok, r = pcall(rodar_turno, ctx, input, role, max_iter)
-  -- Garante limpeza do turno (turn_end + kill_spinner) mesmo em caso de erro.
+  local ok, r = pcall(function()
+    return table.pack(rodar_turno(ctx, input, role, max_iter))
+  end)
   if not (ctx and ctx.is_subagent == true) then
     local rot = require("ui.spinner.rotulo")
     -- Sem região: stop_thinking já rodou por request; ainda assim garante kill final.
