@@ -44,40 +44,50 @@ return function(M, N)
       local tc_acc = {}
       local stream_fresh = false
 
-      for line in h:lines() do
-        body = body .. line .. "\n"
-        if line:match("^data: ") then
-          local data = line:sub(7)
-          if data == "[DONE]" then got_data = true; done_received = true; break end
-          local ok, chunk = pcall(json.decode, data)
-          if ok and chunk then
-            if chunk.error then error_reason = chunk.error.message or "API error"; break end
-            if not got_data then ui.stream_confirm() end
-            got_data = true
+      -- Protege o loop de leitura: erro interno não pode vazar sem fechar o pipe
+      -- e remover o payload temporário (#183).
+      local ok_stream, stream_err = pcall(function()
+        for line in h:lines() do
+          body = body .. line .. "\n"
+          if line:match("^data: ") then
+            local data = line:sub(7)
+            if data == "[DONE]" then got_data = true; done_received = true; return end
+            local ok, chunk = pcall(json.decode, data)
+            if ok and chunk then
+              if chunk.error then error_reason = chunk.error.message or "API error"; return end
+              if not got_data then ui.stream_confirm() end
+              got_data = true
 
-            local tok_ok, fresh = tokens_mod.process_tokens(ctx, chunk)
-            if tok_ok then stream_fresh = fresh end
+              local tok_ok, fresh = tokens_mod.process_tokens(ctx, chunk)
+              if tok_ok then stream_fresh = fresh end
 
-            local choice = chunk.choices and chunk.choices[1]
-            local delta  = choice and choice.delta
-            if delta then
-              local r = delta.reasoning or delta.reasoning_content
-              if r and r ~= "" then ui.stream_reasoning(r) end
-              if delta.content and delta.content ~= "" then
-                thinking_parser.feed(delta.content, ui.stream_reasoning, ui.stream_token)
-              end
-              if delta.tool_calls then
-                for _, tcd in ipairs(delta.tool_calls) do tool_parser.feed(tc_acc, tcd) end
+              local choice = chunk.choices and chunk.choices[1]
+              local delta  = choice and choice.delta
+              if delta then
+                local r = delta.reasoning or delta.reasoning_content
+                if r and r ~= "" then ui.stream_reasoning(r) end
+                if delta.content and delta.content ~= "" then
+                  thinking_parser.feed(delta.content, ui.stream_reasoning, ui.stream_token)
+                end
+                if delta.tool_calls then
+                  for _, tcd in ipairs(delta.tool_calls) do tool_parser.feed(tc_acc, tcd) end
+                end
               end
             end
           end
         end
-      end
-      -- Curl que sai com código 0 fechou a conexão de forma limpa — mesmo sem
-      -- o sentinela "[DONE]" explícito, a resposta está completa. Só um exit
-      -- não-zero (ex: 28 = timeout do --max-time) indica corte de verdade.
+      end)
+
+      -- Sempre fecha o pipe e remove o payload, mesmo em erro interno (#183).
       local close_ok = h:close()
       os.remove(tmp_path)
+
+      if not ok_stream and not error_reason then
+        error_reason = "erro interno no streaming: " .. tostring(stream_err)
+      end
+      if not ok_stream then
+        got_data = false
+      end
 
       if got_data then
         thinking_parser.flush(ui.stream_reasoning, ui.stream_token)
