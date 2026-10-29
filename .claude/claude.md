@@ -4,6 +4,17 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: caminho de temp unificado (#186)]
+**Contexto:** os.tmpname no harness e fallback /tmp no streamer/validate quebram no Termux.
+**Files Modified:** agent/api/utils.lua; agent/harness/modelo.lua; streamer/parte_1.lua; models/validate.lua; tests/tmp_path_unificado_spec.lua.
+**Author:** Arquiteto.
+**Validation:** tmp_path_unificado_spec ALL OK.
+
+## 2026-10-29 - [investigação: polling stdin (#187)]
+**Evidência Ubuntu:** VMIN=0 VTIME=10 → ~1 read/s (sem busy loop). VTIME=0 → busy. TermAI usa time 10. Sem mudança de código.
+**Author:** Arquiteto.
+
+
 ## 2026-10-29 - [perf: consumo de processos por frame no spinner (#185)]
 **Contexto:** `altura_tela` (rotulo.lua) spawnava `stty size` a cada chamada — pesado no A20s. Tentativa anterior com Edit corrompeu `escreve_quadros` (CI vermelho).
 **Files Modified:** `ui/spinner/rotulo.lua` — `altura_tela` reutiliza `ui.core.th()` (cache até `invalidate_size`); `escreve_quadros` restaurado intacto. `get_ms_time` NÃO cacheado (quebrou elapsed <1s).

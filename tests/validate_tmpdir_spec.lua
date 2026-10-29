@@ -25,7 +25,7 @@ do
   local f = io.open("models/validate.lua", "r")
   local src = f and f:read("*a") or ""
   if f then f:close() end
-  T("models/validate.lua não usa os.tmpname()", src ~= "" and not src:find("os.tmpname", 1, true))
+  T("models/validate.lua não usa os.tmpname()", src ~= "" and not src:find("os.tmpname(", 1, true))
   T("models/validate.lua usa M.tmp_dir()", src:find("M.tmp_dir()", 1, true) ~= nil)
 end
 

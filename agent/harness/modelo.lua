@@ -20,8 +20,8 @@ end
 local function probe(prompt, tarefa)
   local context = require("agent.context")
   local loop    = require("agent.loop")
-  local tmp = os.tmpname()
-  os.remove(tmp)
+  -- Workspace isolado em TMPDIR (os.tmpname no Termux aponta /tmp read-only).
+  local tmp = require("agent.api.utils").make_tmp_path() .. "_ws"
   os.execute("mkdir -p '" .. tmp .. "'")
   local ctx = context.build({ is_subagent = true, agent_id = "harness2", workspace = tmp })
   ctx.MAX_ITER = 6
