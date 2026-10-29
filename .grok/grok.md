@@ -4,6 +4,14 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [chore: SemVer MAJOR.MINOR.PATCH]
+**Contexto:** Versionamento legado `1.N.10.YYYY` substituído por SemVer de mercado.
+**Baseline:** `1.36.12` (continuidade com o contador anterior; sem o sufixo de ano).
+**Files Modified:** `VERSION`, `README.md` (seção Versionamento), `tests/update_release_spec.lua`, `tools/update/release.lua`.
+**Author:** Arquiteto.
+**Validation:** update_release_spec + CI.
+
+
 ## 2026-10-29 - [TUI: card de retry in-place, code fence, boot pcall, temp paths]
 
 **Contexto:** Lista Claude #181–#187 + bugs de TUI reportados por screenshots (retry empilhado, input sumindo, ``` com buracos pretos, crash `pcall().install`).

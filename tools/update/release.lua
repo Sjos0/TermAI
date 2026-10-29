@@ -4,7 +4,8 @@ local M = {}
 
 M.REPO = "Sjos0/TermAI"
 
--- Lê tag_name do JSON de /repos/<repo>/releases/latest. Só aceita tags seguras (vX.Y.Z).
+-- Lê tag_name do JSON de /repos/<repo>/releases/latest.
+-- SemVer: tags no formato vMAJOR.MINOR.PATCH (ex: v1.36.12). Só aceita tags seguras.
 function M.parse_tag(body)
   if type(body) ~= "string" then return nil end
   local tag = body:match('"tag_name"%s*:%s*"([^"]+)"')

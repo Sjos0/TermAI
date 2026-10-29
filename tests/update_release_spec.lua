@@ -52,9 +52,11 @@ local g = io.open("test_sync_check.txt", "r")
 check(g == nil, "test_sync_check.txt removido da raiz")
 if g then g:close() end
 
--- (6) Versão: formato 1.<dia>.<mês>.<ano> e data de hoje (22/10/2026).
+-- (6) Versão: SemVer MAJOR.MINOR.PATCH (sem sufixo de ano).
 local v = (io.open("VERSION"):read("*a") or ""):gsub("%s", "")
-check(v:match("^1%.%d+%.%d%d%.%d%d%d%d$") ~= nil, "VERSION tem formato 1.<n>.<dd>.<yyyy> (valor exato não é fixado: muda a cada release)")
+check(v:match("^%d+%.%d+%.%d+$") ~= nil, "VERSION tem formato SemVer MAJOR.MINOR.PATCH")
+-- Tags legadas v1.N.10.YYYY ainda parseiam (histórico); tags novas são vX.Y.Z.
+check(rel.parse_tag('{"tag_name":"v1.36.12"}') == "v1.36.12", "parse_tag aceita SemVer puro")
 
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
 os.exit(failures == 0 and 0 or 1)
