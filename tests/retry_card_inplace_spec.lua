@@ -53,8 +53,9 @@ local after4 = table.concat(writes)
 writes = {}
 retry.show_retry(5, 5, "timeout", 0)
 local after5 = table.concat(writes)
-T(after5:find("\27%[2A", 1, true) ~= nil or after5:find("\27%[1A", 1, true) ~= nil,
-  "5/5 apaga card anterior antes de redesenhar")
+-- Após card de 2 linhas, redesenho deve mover cursor para cima (qualquer n>=1).
+local moved = after5:match("\27%[(%d+)A")
+T(moved ~= nil and tonumber(moved) >= 1, "5/5 apaga card anterior (ESC[nA n=" .. tostring(moved) .. ")")
 T(after5:find("Tentativa 5/5", 1, true) ~= nil, "mostra 5/5")
 T(after5:find("Aguardando", 1, true) == nil, "5/5 sem linha de espera")
 
