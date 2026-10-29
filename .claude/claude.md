@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: streaming sem proteção — io.popen sem pcall deixa curl vivo (#183)]
+**Contexto:** O `io.popen` + `h:lines()` no `parte_1.lua` não tinha pcall. Erro no meio deixava o curl vivo, o pipe aberto e o payload temporário para trás.
+**Files Modified:** `agent/api/request_stream/streamer/parte_1.lua` (loop de leitura envolto em `pcall`; `h:close()` e `os.remove(tmp_path)` sempre rodam, mesmo em erro interno; em erro interno força `got_data=false` para ir ao fluxo de erro); `tests/stream_protecao_spec.lua` (NOVO).
+**Learning:** (1) `pcall` no loop garante cleanup (close + remove) mesmo com exceção. (2) Se `got_data` já foi setado antes do erro, é preciso forçar `false` para não processar resposta parcial corrompida.
+**Prevention:** `h:close()` e `os.remove(tmp_path)` ficam FORA do pcall, sempre executados.
+**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
+**Validation:** `tests/stream_protecao_spec.lua` ALL OK (erro injetado em process_tokens: pipe fechado, payload removido, sem overflow).
+
 ## 2026-10-29 - [fix: turno sem proteção — erro em rodar_turno derruba a TUI (#182)]
 **Contexto:** Se `rodar_turno` levantar erro Lua, `turn_end` e `kill_spinner` não rodavam e o processo morria.
 **Files Modified:** `agent/loop.lua` (`M.rodar` agora envolve `rodar_turno` em `pcall`; garante `turn_end` + `kill_spinner` mesmo em erro; exibe o erro em `c.red` sem derrubar a TUI); `tests/loop_turno_erro_spec.lua` (NOVO).
