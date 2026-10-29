@@ -30,6 +30,27 @@ Um agente que roda no bolso — sem daemon permanente, sem servidor próprio —
 
 ---
 
+
+---
+
+## Versionamento
+
+O TermAI usa [**Semantic Versioning**](https://semver.org/) (`MAJOR.MINOR.PATCH`):
+
+| Parte | Quando sobe |
+|-------|-------------|
+| **MAJOR** | Quebra de compatibilidade (config, API, comportamento esperado) |
+| **MINOR** | Feature nova compatível |
+| **PATCH** | Correção de bug, sem feature |
+
+A versão atual está no arquivo `VERSION` na raiz. Tags de release no GitHub seguem `vMAJOR.MINOR.PATCH` (ex.: `v1.36.12`). Releases antigas com sufixo de ano (`v1.36.12.2026`) permanecem no histórico; a partir desta linha o padrão é SemVer puro.
+
+Atualize com:
+
+```bash
+TermAI update
+```
+
 ## Instalação (recomendado)
 
 O caminho oficial de instalação usa o script `install.sh`, que cria o comando global `TermAI` no PATH do Termux (wrapper com loop de restart).

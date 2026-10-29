@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [chore: SemVer MAJOR.MINOR.PATCH]
+**Contexto:** Versionamento legado `1.N.10.YYYY` substituído por SemVer de mercado.
+**Baseline:** `1.36.12` (continuidade com o contador anterior; sem o sufixo de ano).
+**Files Modified:** `VERSION`, `README.md` (seção Versionamento), `tests/update_release_spec.lua`, `tools/update/release.lua`.
+**Author:** Arquiteto.
+**Validation:** update_release_spec + CI.
+
+
 ## 2026-10-29 - [fix(tui): code fence card — messages não destrói o pad]
 **Contexto:** Screenshots: fundo cinza só atrás de palavras; buracos pretos. Causa: `ai_msg_stream` fazia trim + wrap_para + `%S+` nas linhas já renderizadas pelo code_renderer.
 **Files Modified:** `ui/messages.lua` (passa code-card lines íntegras); `renderer/code_renderer.lua` (card.bg_row); `tests/code_fence_messages_spec.lua`.
