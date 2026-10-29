@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: spinner órfão e lixo em $TMPDIR (#181)]
+**Contexto:** O spinner roda como `sh ta_spin.sh &` escrevendo direto no TTY. Se o processo Lua morrer no meio do turno, o sh continua vivo e arquivos (`ta_inject.flag`, `termai_stream.flag`, `ta_payload_*`, `ta_pid`) ficam em $TMPDIR entre execuções.
+**Files Modified:** `ui/spinner/launch.lua` (nova `_is_spinner` valida via `/proc/<pid>/cmdline` antes de matar; novo `cleanup_startup` mata spinner órfão e remove flags/payloads residuais); `ui/spinner.lua` (exporta `cleanup_startup`); `agente.lua` (chama `cleanup_startup` no início do TUI); `tests/tui_spinner_cleanup_startup_spec.lua` (NOVO).
+**Learning:** (1) `os.execute("kill -0 PID")` retorna múltiplos valores (`true, "exit", code`); comparar `os.execute(...) == 0` compara o primeiro valor (`true`) com 0 e é sempre false — a verificação de vida precisa capturar o terceiro retorno. (2) Em $TMPDIR do Termux, `/tmp` não existe; usar sempre `TMPDIR`. (3) Validar o processo antes de matar evita matar um pid reutilizado após morte abrupta.
+**Prevention:** `cleanup_startup` roda no início do TUI (`agente.lua`) antes de qualquer interação; `_is_spinner` só mata se o cmdline contém `ta_spin.sh`.
+**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
+**Validation:** `tests/tui_spinner_cleanup_startup_spec.lua` ALL OK (remove flags/payloads, mata spinner órfão real, NÃO mata pid que não é o spinner). Suíte de regressão do spinner/TUI verde (lifecycle, hotfix, cursor, thinking, cards).
+
 ## 2026-10-26 - [Testes de permissão isolados do config do usuário + ação em lote "Sempre para todas"]
 **Contexto:** Depois de rodar os specs locais, as permissões "sempre" do usuário (Exec, Read, Edit, Grep) eram apagadas e o agente voltava a perguntar a cada ferramenta. O pedido incluiu um botão para liberar todas as ferramentas de uma vez.
 **Files Modified:** `tests/helpers/config_sandbox.lua` (NOVO, isola o PATH do config); `tests/config_isolation_spec.lua` (NOVO, guarda que compara o config real antes e depois de cada spec de permissão); `tests/permissions_bulk_spec.lua` (NOVO); `commands/config/menus/permissions_bulk.lua` (NOVO, lógica pura do lote); `commands/config/menus/permissions.lua` e `commands/config_cli/menus/permissions.lua` (opção "a" com confirmação); `tests/permissions_{check,mode,rules,denial,matcher,session,ui_modal}_spec.lua`, `tests/exec_permissions_spec.lua` e `tests/exec_permissions_extended.lua` (uma linha cada: instalam o sandbox).

@@ -13,12 +13,26 @@ local _rows_file      = TMPDIR .. "/termai_rows.txt"
 local roteiros = require("ui.spinner.roteiros")
 local SPINNER_SCRIPT, COMPACT_SCRIPT = roteiros.SPINNER_SCRIPT, roteiros.COMPACT_SCRIPT
 
+local function _is_spinner(pid)
+  -- Valida que o processo ainda é o spinner (ta_spin.sh) antes de matar.
+  -- Evita matar um pid reutilizado por outro processo após uma morte abrupta.
+  local f = io.open("/proc/" .. pid .. "/cmdline", "r")
+  if not f then return false end
+  local cmdline = f:read("*l") or ""
+  f:close()
+  return cmdline:find("ta_spin.sh", 1, true) ~= nil
+end
+
 local function _kill_pid()
   local pid_f = io.open(_spin_pid, "r")
   if not pid_f then return end
   local pid = pid_f:read("*l")
   pid_f:close()
   if not (pid and pid:match("^%d+$")) then return end
+  if not _is_spinner(pid) then
+    os.remove(_spin_pid)
+    return
+  end
   -- TERM no processo e no grupo; KILL se ainda vivo.
   os.execute("kill -TERM " .. pid .. " 2>/dev/null; kill -TERM -" .. pid .. " 2>/dev/null")
   os.execute("kill -KILL " .. pid .. " 2>/dev/null; kill -KILL -" .. pid .. " 2>/dev/null")
@@ -65,6 +79,18 @@ function M.cleanup_turno()
     .. " " .. _frames_file .. " " .. _rows_file .. " 2>/dev/null")
   io.write("\r\27[K")
   io.flush()
+end
+
+--- Limpeza no início do TUI: mata spinner órfão de execuções anteriores (validando
+--- que o processo ainda é o spinner) e remove flags/payloads residuais em $TMPDIR.
+function M.cleanup_startup()
+  _kill_pid()
+  os.remove(_inject_flag)
+  os.remove(_reasoning_flag)
+  os.remove(_stream_flag)
+  os.remove(_spin_sh)
+  local h = io.popen("rm -f " .. TMPDIR .. "/ta_payload_* 2>/dev/null")
+  if h then h:close() end
 end
 
 --- Sinaliza que a injeção terminou (troca label Injetando → Requisitando).
