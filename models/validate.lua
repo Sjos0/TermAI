@@ -5,10 +5,23 @@ local M = {}
 
 -- Diretório de arquivos temporários: TMPDIR (o Termux sempre define). Sem TMPDIR,
 -- usa /tmp, que é gravável fora do Android. Não se usa a tmpname do Lua: ela fixa /tmp.
+-- Preferência: TMPDIR → Termux → /tmp. Sem os.tmpname (fixa /tmp no Termux).
 M.tmp_dir = function()
-  local dir = os.getenv("TMPDIR")
-  if dir == nil or dir == "" then dir = "/tmp" end
-  return dir
+  local home = os.getenv("HOME") or ""
+  local candidates = {
+    os.getenv("TMPDIR"),
+    "/data/data/com.termux/files/usr/tmp",
+    home ~= "" and (home .. "/.TermAI/tmp") or nil,
+    "/tmp",
+  }
+  for _, dir in ipairs(candidates) do
+    if dir and dir ~= "" then
+      local probe = dir .. "/.ta_wprobe_v"
+      local f = io.open(probe, "w")
+      if f then f:close(); os.remove(probe); return dir end
+    end
+  end
+  return os.getenv("TMPDIR") or "/tmp"
 end
 
 function M.test_connection(active)

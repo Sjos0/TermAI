@@ -14,7 +14,7 @@ return function(M, N)
       return "[ERRO_OVERFLOW] Prompt excede a janela de contexto (local)", true, false, ""
     end
 
-    local flag_path = (os.getenv("TMPDIR") or "/tmp") .. "/termai_stream.flag"
+    local flag_path = (os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp") .. "/termai_stream.flag"
     os.remove(flag_path)
 
     local last_error
