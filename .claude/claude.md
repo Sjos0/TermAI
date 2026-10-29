@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [testes: processo zumbi não conta como vivo no cleanup_startup]
+**Contexto:** O CI do main falhava em `tests/tui_spinner_cleanup_startup_spec.lua` (introduzido pela PR #188). O spinner era morto corretamente, mas `alive()` usava só `kill -0`, que responde para um zumbi (estado Z) cujo pai já saiu.
+**Files Modified:** `tests/tui_spinner_cleanup_startup_spec.lua` (`alive()` checa `/proc/<pid>/stat` e considera Z como morto).
+**Learning:** `kill -0` diz que o pid existe, não que o processo está rodando. Em ambientes com PID 1 que não recolhe órfãos, um filho morto fica Z indefinidamente.
+**Prevention:** Qualquer spec que verifica morte de processo deve tratar o estado Z.
+**Author:** Claude (claude.ai) — a pedido do Samuel.
+**Validation:** Spec isolada: ALL OK (7 checagens). Suíte completa e PTY: ver checks da PR.
+
 ## 2026-10-29 - [fix: terminal ficando em raw na saída do processo (#184)]
 **Contexto:** `stty raw` só era desfeito por `stty sane` no fim de `M.read`; se o processo saísse por outro caminho, o terminal ficava em raw.
 **Files Modified:** `ui/terminal_safe.lua` (NOVO, instala override de `os.exit` que roda `stty sane` antes de delegar ao original, encadeando com overrides existentes); `agente.lua` (chama `terminal_safe.install()` no início, antes de qualquer módulo); `tests/terminal_safe_spec.lua` (NOVO).
