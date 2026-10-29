@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: turno sem proteção — erro em rodar_turno derruba a TUI (#182)]
+**Contexto:** Se `rodar_turno` levantar erro Lua, `turn_end` e `kill_spinner` não rodavam e o processo morria.
+**Files Modified:** `agent/loop.lua` (`M.rodar` agora envolve `rodar_turno` em `pcall`; garante `turn_end` + `kill_spinner` mesmo em erro; exibe o erro em `c.red` sem derrubar a TUI); `tests/loop_turno_erro_spec.lua` (NOVO).
+**Learning:** (1) `pcall` captura o erro e permite garantir a limpeza do turno (turn_end/kill) mesmo em falha. (2) `string.find` com código ANSI (`\27[38;5;203m`) precisa de `plain=true`, pois `[` é classe em Lua pattern.
+**Prevention:** `M.rodar` sempre roda `turn_end` e `kill_spinner` (fora do pcall); em erro retorna valores seguros (`"", 0, false, false, true, ""`).
+**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
+**Validation:** `tests/loop_turno_erro_spec.lua` ALL OK (erro injetado: resp vazio, sem overflow, stream_complete true, erro em c.red, turn_end e kill_spinner rodaram). Suíte de loop existente 111/111.
+
 ## 2026-10-29 - [fix: spinner órfão e lixo em $TMPDIR (#181)]
 **Contexto:** O spinner roda como `sh ta_spin.sh &` escrevendo direto no TTY. Se o processo Lua morrer no meio do turno, o sh continua vivo e arquivos (`ta_inject.flag`, `termai_stream.flag`, `ta_payload_*`, `ta_pid`) ficam em $TMPDIR entre execuções.
 **Files Modified:** `ui/spinner/launch.lua` (nova `_is_spinner` valida via `/proc/<pid>/cmdline` antes de matar; novo `cleanup_startup` mata spinner órfão e remove flags/payloads residuais); `ui/spinner.lua` (exporta `cleanup_startup`); `agente.lua` (chama `cleanup_startup` no início do TUI); `tests/tui_spinner_cleanup_startup_spec.lua` (NOVO).
