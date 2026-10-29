@@ -45,15 +45,16 @@ return function(M)
 
   -- Fechamento quando a requisição inteira falhou (sem stream para truncar).
   function M_.falha_final(ctx, rcfg, last_error)
-      -- Não removemos a mensagem do usuário aqui: falha de rede não pode apagar
-      -- o que ela digitou. Fica em ctx.msgs e é salva normalmente pelo
-      -- persistence.save_exchange no final do turno em main_loop.lua.
+      -- Não removemos a mensagem do usuário: falha de rede não apaga o que digitou.
+    local ui = require("ui")
+    if ui.clear_retry_lines then ui.clear_retry_lines() end
     recovery.recover_tool_seq(ctx.msgs)
-      -- done_flag = nil (não false): não houve stream nenhum pra ficar
-      -- incompleto — a requisição inteira falhou. Retornar false aqui fazia
-      -- main_loop.lua mostrar "Resposta incompleta — stream cortado", que é
-      -- enganoso quando não existe resposta nenhuma pra truncar.
-    return "[ERRO] Falha apos " .. rcfg.max_retries .. " tentativas - " .. last_error, false, nil, ""
+    local msg = "Falha após " .. rcfg.max_retries .. " tentativas — " .. tostring(last_error or "")
+    if ui.show_api_error then
+      ui.show_api_error(msg)
+    end
+      -- done_flag = nil: não houve stream (evita "Resposta incompleta" enganoso).
+    return "[ERRO] " .. msg, false, nil, ""
   end
 
   return M_

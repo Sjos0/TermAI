@@ -11,6 +11,8 @@ core.c = {
   green="\27[38;5;114m", yellow="\27[38;5;220m", red="\27[38;5;203m",
   cyan="\27[38;5;80m", orange="\27[38;5;208m", blue="\27[38;5;39m",
   bg="\27[48;5;234m", bg_user="\27[48;5;236m",
+  bg_error="\27[48;5;52m",   -- vermelho escuro (card de falha de API)
+  bg_code="\27[48;5;236m",   -- cinza do bloco de código
   clear="\27[K", cls="\27[2J\27[H"
 }
 

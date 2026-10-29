@@ -136,13 +136,15 @@ return function(M, N)
       if attempt < rcfg.max_retries then
         local wait = utils.wait_time(attempt, rcfg)
         ui.kill_spinner()
+        -- Card in-place (1/5 → 2/5 no mesmo lugar); não empilha lista.
         ui.show_retry(attempt, rcfg.max_retries, last_error, wait)
         require("tools.subagents.events").retry(ctx, attempt, rcfg.max_retries, last_error, wait)
         os.execute(string.format("sleep %d", wait))
         ui.restart_spinner()
       else
         ui.kill_spinner()
-        ui.show_retry(attempt, rcfg.max_retries, last_error, 0)
+        -- Última tentativa: card some e falha_final desenha [ERRO] no lugar.
+        if ui.clear_retry_lines then ui.clear_retry_lines() end
       end
     end
 

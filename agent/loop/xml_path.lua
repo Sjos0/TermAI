@@ -94,7 +94,8 @@ function M.handle(ctx, resp, reasoning, stream_complete, elapsed, vazio_count, m
     io.write("\27[38;5;203m⚠️  Agente sem resposta após "
       .. max_vazio_retries .. " tentativas automáticas.\27[0m\n\n")
     io.flush()
-  elseif display_text ~= "" then
+  elseif display_text ~= "" and not display_text:match("^%[ERRO") then
+    -- [ERRO] de falha de API já foi desenhado pelo card (show_api_error).
     ui.ai_msg_stream(display_text)
   end
 
