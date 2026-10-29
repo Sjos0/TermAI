@@ -1,7 +1,6 @@
 -- code_renderer.lua — Blocos de código com fundo cinza contínuo (estilo card).
 -- Pad com espaços até a largura do terminal: ESC[K em vários terminais (Termux)
 -- limpa com fundo DEFAULT (preto), gerando "buracos" pretos no card cinza.
-local core = require("ui.core")
 local M = {}
 
 local ESC = "\27["
