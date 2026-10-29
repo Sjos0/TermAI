@@ -5,12 +5,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 ---
 
 ## 2026-10-29 - [perf: consumo de processos por frame no spinner (#185)]
-**Contexto:** `get_ms_time` (timing.lua) spawnava `date` a cada chamada e `altura_tela` (rotulo.lua) spawnava `stty size` a cada chamada — pesado em Galaxy A20s.
-**Files Modified:** `ui/spinner/rotulo.lua` (`altura_tela` com cache de 1s via `os.time()`). `ui/spinner/timing.lua` foi avaliado, mas o cache de 1s em `get_ms_time` quebraria a medição de durações curtas (<1s) — mantido como estava.
-**Learning:** (1) `os.time()` (segundos) serve como revalidação espaçada barata para valores que não mudam com frequência (altura). (2) Cachear `get_ms_time` por 1s quebra `elapsed` para intervalos <1s — não aplicar.
-**Prevention:** cache por segundo no `altura_tela`; `terminal.lua` já tinha cache (W/H).
-**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
-**Validation:** sintaxe OK; suíte de spinner verde (thinking, fase, status_region).
+**Contexto:** `altura_tela` (rotulo.lua) spawnava `stty size` a cada chamada — pesado no A20s. Tentativa anterior com Edit corrompeu `escreve_quadros` (CI vermelho).
+**Files Modified:** `ui/spinner/rotulo.lua` — `altura_tela` reutiliza `ui.core.th()` (cache até `invalidate_size`); `escreve_quadros` restaurado intacto. `get_ms_time` NÃO cacheado (quebrou elapsed <1s).
+**Learning:** (1) Não reinventar cache de altura: `core.th()` já existe. (2) Edit parcial em função vizinha pode engolir o `end` — sempre validar sintaxe e specs de quadro após mexer em rotulo.
+**Prevention:** Preferir `core.th()`; `luac`/specs de quadro antes do push.
+**Author:** Ameno (corrigido pelo Arquiteto após inspeção da PR #192).
+**Validation:** CI da branch.
 
 ## 2026-10-29 - [fix: terminal ficando em raw na saída do processo (#184)]
 **Contexto:** `stty raw` só era desfeito por `stty sane` no fim de `M.read`; se o processo saísse por outro caminho, o terminal ficava em raw.

@@ -17,34 +17,30 @@ local rows_ativas = nil
 -- HOTFIX: modo região desligado. Posição absoluta do spinner quebrava com teclado/rotação (#hotfix).
 local REGIAO_ATIVA = false
 
--- Cache da altura da tela (perf #185): revalidado a cada segundo.
-local _altura_cache = nil
-local _altura_cache_sec = nil
-
 local function escreve_quadros(rotulo)
   local quadros = shimmer.frames(rotulo)
   local tmp = FRAMES_FILE .. ".tmp"
   local f = io.open(tmp, "w")
   if not f then return end
   f:write(tostring(#quadros), "\n")
-local function altura_tela()
-  -- Cache com revalidação espaçada: dentro do mesmo segundo reutiliza a altura
-  -- lida, evitando spawnar `stty size` a cada chamada (perf #185).
-  local agora = os.time()
-  if _altura_cache and _altura_cache_sec == agora then
-    return _altura_cache
-  end
-  local h = io.popen("stty size 2>/dev/null")
-  if not h then return 0 end
-  local rows = tonumber(h:read("*n") or "")
-  h:close()
-  _altura_cache = rows or 0
-  _altura_cache_sec = agora
-  return _altura_cache
+  for _, q in ipairs(quadros) do f:write(q, "\n") end
+  f:close()
+  os.rename(tmp, FRAMES_FILE)
 end
-  if not h then return 0 end
-  local rows = tonumber(h:read("*n") or "")
-  h:close()
+
+--- Altura da tela em linhas.
+-- Reutiliza ui.core.th() (já tem cache até invalidate_size) — evita spawn extra de
+-- `stty size` a cada frame (perf #185). Fallback local se core não carregar.
+local function altura_tela()
+  local ok, core = pcall(require, "ui.core")
+  if ok and type(core) == "table" and type(core.th) == "function" then
+    local h = core.th()
+    return tonumber(h) or 0
+  end
+  local pipe = io.popen("stty size 2>/dev/null")
+  if not pipe then return 0 end
+  local rows = tonumber(pipe:read("*n") or "")
+  pipe:close()
   return rows or 0
 end
 
