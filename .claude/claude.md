@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix(tui): card de retry in-place + fundo contínuo em code fence]
+**Contexto:** Retries 1/5…5/5 empilhavam lista com emoji; clear_retry_lines alto apagava o input do usuário. Blocos ``` tinham "buracos" pretos (ESC[K limpa com bg default no Termux).
+**Files Modified:** `ui/spinner/retry.lua` (card bg_error, in-place, show_api_error); `ui/core.lua` (bg_error/bg_code); `streamer/parte_1.lua` + `fallback.lua`; `xml_path.lua`; `renderer/code_renderer.lua` (pad espaços); specs novos.
+**Learning:** Contar linhas de retry e dar ESC[nA depois do user_msg come a mensagem. Card de altura fixa + clear antes de redesenhar.
+**Author:** Arquiteto.
+**Validation:** retry_card_inplace_spec + code_renderer_bg_spec.
+
+
 ## 2026-10-29 - [fix: agente.lua crash — pcall(require).install indexa boolean]
 **Contexto:** Após update, `TermAI tui` quebrava: `attempt to index a boolean value` em agente.lua:6.
 **Causa:** `pcall(require, "ui.terminal_safe").install()` — pcall devolve (ok:boolean, mod); indexar o 1º valor.

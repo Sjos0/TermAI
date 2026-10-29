@@ -21,5 +21,6 @@ M.stop_thinking_and_print_compact = compact.stop_thinking_and_print_compact
 M.stop_thinking                 = compact.stop_thinking
 M.show_retry                    = retry.show_retry
 M.clear_retry_lines             = retry.clear_retry_lines
+M.show_api_error                = retry.show_api_error
 
 return M
