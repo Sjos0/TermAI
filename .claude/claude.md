@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix(tui): code fence card — messages não destrói o pad]
+**Contexto:** Screenshots: fundo cinza só atrás de palavras; buracos pretos. Causa: `ai_msg_stream` fazia trim + wrap_para + `%S+` nas linhas já renderizadas pelo code_renderer.
+**Files Modified:** `ui/messages.lua` (passa code-card lines íntegras); `renderer/code_renderer.lua` (card.bg_row); `tests/code_fence_messages_spec.lua`.
+**Learning:** Linha pré-formatada com SGR de fundo nunca pode passar por trim/wrap/word-stream.
+**Author:** Arquiteto.
+**Validation:** code_fence_messages_spec + CI.
+
+
 ## 2026-10-29 - [audit: retry card 5/5 + utf8 wrap code]
 **Contexto:** Revisão pós-v1.36: última tentativa não mostrava N/N; wrap_code cortava por byte.
 **Files Modified:** streamer/parte_1.lua (show_retry no último attempt); code_renderer wrap UTF-8; retry_card_inplace_spec reforçado; .grok/grok.md.
