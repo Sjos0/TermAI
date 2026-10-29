@@ -4,6 +4,15 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: agente.lua crash — pcall(require).install indexa boolean]
+**Contexto:** Após update, `TermAI tui` quebrava: `attempt to index a boolean value` em agente.lua:6.
+**Causa:** `pcall(require, "ui.terminal_safe").install()` — pcall devolve (ok:boolean, mod); indexar o 1º valor.
+**Files Modified:** `agente.lua` (captura ok_ts + terminal_safe); `tests/agente_terminal_safe_boot_spec.lua` (NOVO).
+**Learning:** Nunca encadear `.metodo` no retorno de `pcall` sem desempacotar.
+**Author:** Arquiteto.
+**Validation:** spec ALL OK + CI.
+
+
 ## 2026-10-29 - [fix: caminho de temp unificado (#186)]
 **Contexto:** os.tmpname no harness e fallback /tmp no streamer/validate quebram no Termux.
 **Files Modified:** agent/api/utils.lua; agent/harness/modelo.lua; streamer/parte_1.lua; models/validate.lua; tests/tmp_path_unificado_spec.lua.

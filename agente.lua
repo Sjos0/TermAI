@@ -3,7 +3,11 @@
 
 -- Instala a restauração do terminal na saída do processo (stty sane) ANTES
 -- de qualquer outro módulo, para que os overrides de os.exit se encadeiem.
-pcall(require, "ui.terminal_safe").install()
+-- pcall devolve (ok, modulo): NÃO indexar o boolean com .install().
+local ok_ts, terminal_safe = pcall(require, "ui.terminal_safe")
+if ok_ts and type(terminal_safe) == "table" and terminal_safe.install then
+  terminal_safe.install()
+end
 
 local context   = require("agent.context")
 local startup   = require("agent.startup")
