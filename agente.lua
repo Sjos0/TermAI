@@ -1,6 +1,10 @@
 -- agente.lua — Ponto de entrada do TermAI.
 -- Arquivo fachada: inicializa e delega para os módulos em agent/.
 
+-- Instala a restauração do terminal na saída do processo (stty sane) ANTES
+-- de qualquer outro módulo, para que os overrides de os.exit se encadeiem.
+pcall(require, "ui.terminal_safe").install()
+
 local context   = require("agent.context")
 local startup   = require("agent.startup")
 local main_loop = require("agent.main_loop")

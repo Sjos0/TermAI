@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [fix: terminal ficando em raw na saída do processo (#184)]
+**Contexto:** `stty raw` só era desfeito por `stty sane` no fim de `M.read`; se o processo saísse por outro caminho, o terminal ficava em raw.
+**Files Modified:** `ui/terminal_safe.lua` (NOVO, instala override de `os.exit` que roda `stty sane` antes de delegar ao original, encadeando com overrides existentes); `agente.lua` (chama `terminal_safe.install()` no início, antes de qualquer módulo); `tests/terminal_safe_spec.lua` (NOVO).
+**Learning:** (1) `os.exit` sobrescrito encadeia: o último instalado chama o anterior, preservando todos os cleanups. (2) `stty sane` real pode travar no Termux fora de TTY — o teste deve mockar `os.execute` para capturar sem executar.
+**Prevention:** `install()` é idempotente; roda antes de qualquer módulo no `agente.lua`.
+**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
+**Validation:** `tests/terminal_safe_spec.lua` ALL OK (stty sane executado na saída, delegou ao original, idempotente).
+
 ## 2026-10-29 - [fix: streaming sem proteção — io.popen sem pcall deixa curl vivo (#183)]
 **Contexto:** O `io.popen` + `h:lines()` no `parte_1.lua` não tinha pcall. Erro no meio deixava o curl vivo, o pipe aberto e o payload temporário para trás.
 **Files Modified:** `agent/api/request_stream/streamer/parte_1.lua` (loop de leitura envolto em `pcall`; `h:close()` e `os.remove(tmp_path)` sempre rodam, mesmo em erro interno; em erro interno força `got_data=false` para ir ao fluxo de erro); `tests/stream_protecao_spec.lua` (NOVO).
