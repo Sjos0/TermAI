@@ -143,8 +143,8 @@ return function(M, N)
         ui.restart_spinner()
       else
         ui.kill_spinner()
-        -- Última tentativa: card some e falha_final desenha [ERRO] no lugar.
-        if ui.clear_retry_lines then ui.clear_retry_lines() end
+        -- Mostra N/N no mesmo card; falha_final troca por [ERRO] no lugar.
+        ui.show_retry(attempt, rcfg.max_retries, last_error, 0)
       end
     end
 

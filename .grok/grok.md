@@ -4,6 +4,23 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [TUI: card de retry in-place, code fence, boot pcall, temp paths]
+
+**Contexto:** Lista Claude #181–#187 + bugs de TUI reportados por screenshots (retry empilhado, input sumindo, ``` com buracos pretos, crash `pcall().install`).
+
+**Entregas (main):**
+- v1.35.11 — `agente.lua`: pcall não indexa boolean (PR #197)
+- v1.35.10 — temp path unificado TMPDIR (#186, PR #196); #187 fechada sem busy loop (evidência Ubuntu)
+- v1.36.10 — card retry in-place (`ui/spinner/retry.lua` + `bg_error`), `show_api_error`, code_renderer com pad (não ESC[K), PR #198
+- Auditoria pós-merge: CI verde em 48fe466; show 5/5 antes do [ERRO]; wrap UTF-8 no code_renderer; specs reforçados
+
+**Referência Ratatui:** Block+Paragraph com style bg contínuo e wrap por largura — espelhado em `card.bg_row` + pad de espaços.
+
+**Author:** Grok (Arquiteto TermAI)
+
+---
+
+
 ## 2026-08-06 - [Diagnóstico: Cache parcial de grafo é falsa otimização]
 
 **Contexto:** Continuação da sessão de permissões Exec + GraphRAG. Samuel anexou a Spec completa criada pelo Ameno.
