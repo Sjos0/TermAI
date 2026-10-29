@@ -6,13 +6,25 @@ local _start_ms           = nil
 local _reasoning_start_ms = nil
 
 --- Retorna timestamp em milissegundos (date +%s%3N ou fallback os.time).
+-- Cache com revalidação espaçada: dentro do mesmo segundo reutiliza o valor
+-- lido, evitando spawnar `date` a cada chamada (perf #185).
+local _ms_cache = nil
+local _ms_cache_sec = nil
 function M.get_ms_time()
+  local agora = os.time()
+  if _ms_cache and _ms_cache_sec == agora then
+    return _ms_cache
+  end
   local f = io.popen("date +%s%3N")
   if f then
     local s = f:read("*l")
     f:close()
     local val = tonumber(s)
-    if val then return val end
+    if val then
+      _ms_cache = val
+      _ms_cache_sec = agora
+      return val
+    end
   end
   return os.time() * 1000
 end

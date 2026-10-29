@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [perf: consumo de processos por frame no spinner (#185)]
+**Contexto:** `get_ms_time` (timing.lua) spawnava `date` a cada chamada e `altura_tela` (rotulo.lua) spawnava `stty size` a cada chamada — pesado em Galaxy A20s.
+**Files Modified:** `ui/spinner/timing.lua` (`get_ms_time` com cache de 1s via `os.time()`); `ui/spinner/rotulo.lua` (`altura_tela` com cache de 1s); `tests/perf_spawns_spec.lua` (NOVO).
+**Learning:** (1) `os.time()` (segundos) serve como revalidação espaçada barata. (2) Troca: resolução do timer passa a 1s, mas reduz spawns de `date`/`stty` para 1x/segundo.
+**Prevention:** cache por segundo; `terminal.lua` já tinha cache (W/H).
+**Author:** Ameno (TermAI) — a pedido do Claude/Samuel.
+**Validation:** `tests/perf_spawns_spec.lua` ALL OK (só 1 spawn de `date` por segundo, valores consistentes).
+
 ## 2026-10-29 - [fix: terminal ficando em raw na saída do processo (#184)]
 **Contexto:** `stty raw` só era desfeito por `stty sane` no fim de `M.read`; se o processo saísse por outro caminho, o terminal ficava em raw.
 **Files Modified:** `ui/terminal_safe.lua` (NOVO, instala override de `os.exit` que roda `stty sane` antes de delegar ao original, encadeando com overrides existentes); `agente.lua` (chama `terminal_safe.install()` no início, antes de qualquer módulo); `tests/terminal_safe_spec.lua` (NOVO).
