@@ -42,6 +42,11 @@ end
 
 function M.tool_start(cmd)
   require("ui.spinner.rotulo").evento("agent_turn")
+  -- Pausa o spinner sh: o printf \\r dele sobrescrevia o card e deixava
+  -- a bolinha amarela órfã quando tool_end recalculava o cursor (bug intermitente).
+  local TMPDIR = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+  local flag = io.open(TMPDIR .. "/ta_tool_draw.flag", "w")
+  if flag then flag:write("1"); flag:close() end
   local name, arg = parser.parse_cmd(cmd)
   header.write_header(c.yellow, name, arg)
   live_reset()
@@ -77,20 +82,21 @@ function M.tool_end(cmd, out, ok)
   local tw        = core.tw()
   local name, arg = parser.parse_cmd(cmd)
   if name == "Exec" then require("tools.exec").on_line = nil end
-  local vis_len   = header.header_vis_len(name, arg, tw)
-  local lines_up  = math.max(1, math.ceil(vis_len / tw))
+  -- Cabeçalho é sempre 1 linha (write_header corta). Contar só 1 + live.rows
+  -- evita ESC[nA curto/longo e a bolinha amarela residual sob a verde.
+  local lines_up = 1 + live.rows
   if name == "Subagente" then
     lines_up = lines_up + require("ui.subagent").finish_lines()
   end
-  lines_up = lines_up + live.rows               -- apaga também a saída parcial já escrita
   io.write(string.format("\27[%dA\27[0J", lines_up))
   live_reset()
 
-  -- Sincroniza detecção de sucesso real (unificado via parser)
   local actual_ok = parser.is_edit_success(out, ok)
 
   header.write_header(actual_ok and c.green or c.red, name, arg)
   render_subagent_or_body(name, out, actual_ok, tw)
+  local TMPDIR = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+  os.remove(TMPDIR .. "/ta_tool_draw.flag")
   io.write("\n"); io.flush()
 end
 
@@ -116,6 +122,11 @@ function M.tool_replay(cmd, out, ok)
   local actual_ok = ok
   if name == "Edit" then
     actual_ok = parser.is_edit_success(out, ok)
+  end
+  -- Colapsa linhas em branco extras no corpo (replay não deve "esticar" a sessão).
+  if out then
+    out = out:gsub("\n\n\n+", "\n\n")
+    out = out:match("^(.-)%s*$") or out
   end
   header.write_header(actual_ok and c.green or c.red, name, arg)
   render_subagent_or_body(name, out, actual_ok, tw)

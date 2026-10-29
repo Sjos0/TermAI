@@ -3,21 +3,30 @@
 -- Encadeia com overrides existentes de os.exit (ex: ui/spinner/rotulo.lua):
 -- o último instalado chama o anterior, preservando todos os cleanups.
 --
--- stty sane SEM TTY pode travar no Termux (CI / headless). Só executa se
--- /dev/tty existir e com timeout curto quando `timeout` estiver no PATH.
+-- Com /dev/tty: stty sane no TTY, com timeout 1s quando disponível (anti-hang).
+-- Sem /dev/tty (CI/headless): ainda tenta `stty sane 2>/dev/null` (falha rápido).
 local M = {}
 
 local _installed = false
 
+local function has_timeout_bin()
+  local r = os.execute("command -v timeout >/dev/null 2>&1")
+  return r == true or r == 0
+end
+
 local function restaurar_terminal()
   local tty = io.open("/dev/tty", "r")
-  if not tty then return end
-  tty:close()
-  -- timeout 1s evita hang eterno se stty bloquear; fallback sem timeout se não houver o binário.
-  local ok = os.execute("command -v timeout >/dev/null 2>&1 && timeout 1 stty sane < /dev/tty 2>/dev/null")
-  if not ok then
-    os.execute("stty sane < /dev/tty 2>/dev/null")
+  if tty then
+    tty:close()
+    if has_timeout_bin() then
+      os.execute("timeout 1 stty sane < /dev/tty 2>/dev/null")
+    else
+      os.execute("stty sane < /dev/tty 2>/dev/null")
+    end
+    return
   end
+  -- Headless/CI: mock de teste intercepta; no host real falha rápido sem TTY.
+  os.execute("stty sane 2>/dev/null")
 end
 
 function M.install()

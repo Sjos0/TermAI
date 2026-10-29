@@ -65,6 +65,7 @@ end
 function M.kill_spinner()
   _kill_pid()
   os.remove(_spin_sh)
+  os.remove(TMPDIR .. "/ta_tool_draw.flag")
   os.remove(_stream_flag)
   -- Hotfix: só \r + limpa linha. Nunca posição absoluta (arquivo de altura fica velho no teclado).
   io.write("\r\27[K")
@@ -76,7 +77,8 @@ function M.cleanup_turno()
   _kill_pid()
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
     .. " " .. _inject_flag .. " " .. _reasoning_flag .. " " .. _stream_flag
-    .. " " .. _frames_file .. " " .. _rows_file .. " 2>/dev/null")
+    .. " " .. _frames_file .. " " .. _rows_file
+    .. " " .. TMPDIR .. "/ta_tool_draw.flag 2>/dev/null")
   io.write("\r\27[K")
   io.flush()
 end
@@ -89,6 +91,7 @@ function M.cleanup_startup()
   os.remove(_reasoning_flag)
   os.remove(_stream_flag)
   os.remove(_spin_sh)
+  os.remove(TMPDIR .. "/ta_tool_draw.flag")
   local h = io.popen("rm -f " .. TMPDIR .. "/ta_payload_* 2>/dev/null")
   if h then h:close() end
 end

@@ -17,9 +17,15 @@ local launch = require("ui.spinner.launch")
 
 local function write_file(p, s) local f = io.open(p, "w"); f:write(s); f:close() end
 local function exists(p) return io.open(p, "r") ~= nil end
+-- Processo vivo = responde a kill -0 e não é zumbi (estado Z).
 local function alive(pid)
   local ok, _, code = os.execute("kill -0 " .. pid .. " 2>/dev/null")
-  return ok and code == 0
+  if not (ok and code == 0) then return false end
+  local f = io.open("/proc/" .. pid .. "/stat", "r")
+  if not f then return true end
+  local stat = f:read("*l") or ""
+  f:close()
+  return stat:match("%)%s+(%a)") ~= "Z"
 end
 
 -- 1. Flags e payloads residuais são removidos.

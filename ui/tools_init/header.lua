@@ -6,10 +6,10 @@ local c    = core.c
 
 local M = {}
 
--- Corte UTF-8 por colunas: delegado ao componente Card (ui/card.lua), fonte única.
 function M.cut_cols(s, max) return card.cut(s, max) end
 
--- Colunas visíveis do cabeçalho ("⬤ " + nome + " (arg)"), limitadas a tw-1 quando tw é dado.
+-- Colunas do texto do cabeçalho (antes do corte visual). Usado por specs;
+-- tool_end NÃO usa isso para ESC[nA — o header escrito é sempre 1 linha.
 function M.header_vis_len(name, arg, tw)
   local full = 2 + (utf8.len(name or "") or #(name or ""))
   if arg then full = full + 3 + (utf8.len(arg) or #arg) end
@@ -19,13 +19,14 @@ end
 
 function M.write_header(dot_color, name, arg)
   local tw     = core.tw()
-  local avail  = tw - 3                            -- "⬤ " e uma coluna de folga
+  local avail  = tw - 3
   local name_s = M.cut_cols(name, math.max(1, avail))
   local rest   = avail - (utf8.len(name_s) or #name_s)
   local arg_s  = (arg and rest > 3) and M.cut_cols(" (" .. arg .. ")", rest) or ""
-  io.write(dot_color .. "⬤ " .. c.reset .. c.bold .. c.white .. name_s .. c.reset)
-  if arg_s ~= "" then io.write(c.white .. arg_s .. c.reset) end
-  io.write("\n")
+  local prefix = "⬤ "
+  local text   = name_s .. arg_s
+  -- Fundo do card no cabeçalho (live e replay ficam iguais).
+  io.write(card.bg_row(c.bg, dot_color, prefix, c.bold .. c.white, text, tw) .. "\n")
 end
 
 return M
