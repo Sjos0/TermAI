@@ -65,6 +65,7 @@ end
 function M.kill_spinner()
   _kill_pid()
   os.remove(_spin_sh)
+  os.remove(TMPDIR .. "/ta_tool_draw.flag")
   os.remove(_stream_flag)
   -- Hotfix: só \r + limpa linha. Nunca posição absoluta (arquivo de altura fica velho no teclado).
   io.write("\r\27[K")

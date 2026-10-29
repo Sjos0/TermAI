@@ -32,13 +32,18 @@ end
 
 function M.ai_msg(t)
   t = core.render(t)
+  -- Colapsa 3+ newlines no conteúdo (replay / respostas longas não abrem "buracos").
+  t = t:gsub("\n\n\n+", "\n\n")
   local w = core.tw() - 4
   local first_line = true
+  local blank_streak = 0
   for para in (t .. "\n"):gmatch("([^\n]*)\n") do
     local trimmed = para:match("^%s*(.-)%s*$")
     if trimmed == "" then
-      io.write("\n")
+      blank_streak = blank_streak + 1
+      if blank_streak <= 1 then io.write("\n") end
     else
+      blank_streak = 0
       local lines = core.wrap_para(trimmed, w)
       for i, ln in ipairs(lines) do
         if first_line and i == 1 then
