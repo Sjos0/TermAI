@@ -4,6 +4,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#251 formatar_limite]
+**Issue:** #251
+**Veredito:** CONFIRMADA
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#249 layout]
 **Issue:** #249
 **Veredito:** CONFIRMADA
