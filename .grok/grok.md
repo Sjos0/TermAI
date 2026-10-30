@@ -4,6 +4,15 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#239 Streamer real + transporte falso]
+**Issue:** #239
+**Veredito:** CONFIRMADA — spec anterior copiava lógica.
+**Files Modified:** tests/no_retry_after_token_spec.lua
+**Prova de sensibilidade:** got_data=false → HTTP calls=3 no cenário A
+**Evidência:** no_retry_after_token_spec ALL OK (io.popen mock)
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#238 Boot real sem stubs]
 **Issue:** #238
 **Veredito:** CONFIRMADA — spec anterior stubava módulos e não provaria falha.
