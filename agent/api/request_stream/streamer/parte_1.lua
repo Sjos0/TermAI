@@ -137,8 +137,7 @@ return function(M, N)
         ui.restart_spinner()
       else
         ui.kill_spinner()
-        -- #268: não pintar N/N. O bloco de tentativa some; falha_final
-        -- (ou show_api_error) coloca o bloco de erro no lugar.
+        -- #268: não pintar N/N; falha_final/show_api_error coloca o erro.
         if ui.clear_retry_lines then ui.clear_retry_lines() end
       end
     end
