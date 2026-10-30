@@ -54,10 +54,8 @@ function M.cortar(s, max)
   if M.colunas(s) <= max then return s end
   if max == 1 then return "…" end
   local budget = max - 1
-  local used = 0
-  local out = {}
-  local i = 1
-  local prev = nil
+  local used, out, i, prev = 0, {}, 1, nil
+  local had_csi = s:find("\27[", 1, true) ~= nil
   while i <= #s do
     local csi = s:match("^\27%[[0-9;:?]*[A-Za-z]", i)
     if csi then
@@ -77,15 +75,15 @@ function M.cortar(s, max)
     end
   end
   out[#out + 1] = "…"
-  out[#out + 1] = "\27[0m"
+  if had_csi then out[#out + 1] = "\27[0m" end
   local result = table.concat(out)
-  while M.colunas(result) > max and #out > 2 do
-    table.remove(out, #out)
-    table.remove(out, #out)
+  while M.colunas(result) > max and #out > 1 do
+    if had_csi and out[#out] == "\27[0m" then table.remove(out) end
+    if out[#out] == "…" then table.remove(out) end
     while #out > 0 and out[#out]:match("^\27%[") do table.remove(out) end
     if #out > 0 then table.remove(out) end
     out[#out + 1] = "…"
-    out[#out + 1] = "\27[0m"
+    if had_csi then out[#out + 1] = "\27[0m" end
     result = table.concat(out)
   end
   return result
