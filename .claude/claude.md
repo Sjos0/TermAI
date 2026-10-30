@@ -4,6 +4,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#205 stream_complete]
+**Issue:** #205
+**Files Modified:** agent/loop.lua, streamer/parte_1.lua, tests/stream_complete_erro_spec.lua
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#204 Cleanup startup por PID]
 **Issue:** #204
 **Files Modified:** ui/spinner/cleanup_startup.lua, ui/spinner/launch.lua, agent/api/utils.lua, tests/cleanup_startup_pid_spec.lua

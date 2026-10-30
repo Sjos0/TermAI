@@ -119,10 +119,15 @@ function M.rodar(ctx, input, role, max_iter)
     rot.evento("turn_end")
   end
   if not ok then
-    local core = require("ui.core")
-    io.write(core.c.red .. "⚠️ Erro no turno: " .. tostring(r) .. core.c.reset .. "\n")
-    io.flush()
-    return "", 0, false, false, true, ""
+    local msg = tostring(r):gsub("\n", " ")
+    if ui.show_api_error then
+      ui.show_api_error("Erro no turno: " .. msg)
+    else
+      local core = require("ui.core")
+      io.write(core.c.red .. "[ERRO] Erro no turno: " .. msg .. core.c.reset .. "\n")
+      io.flush()
+    end
+    return "", 0, false, false, false, ""
   end
   return table.unpack(r, 1, r.n)
 end

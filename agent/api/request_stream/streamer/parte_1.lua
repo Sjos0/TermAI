@@ -85,9 +85,7 @@ return function(M, N)
       if not ok_stream and not error_reason then
         error_reason = "erro interno no streaming: " .. tostring(stream_err)
       end
-      if not ok_stream then
-        got_data = false
-      end
+      -- #205: nao zerar got_data (evita retry que duplica texto ja exibido)
 
       if got_data then
         thinking_parser.flush(ui.stream_reasoning, ui.stream_token)
