@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#224 Spec no-retry após token]
+**Issue:** #224
+**Veredito:** CONFIRMADA — faltava spec de contagem HTTP.
+**Files Modified:** tests/no_retry_after_token_spec.lua
+**Evidência:** no_retry_after_token_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#223 Boot real agente.lua]
 **Issue:** #223
 **Veredito:** CONFIRMADA — agente_boot_spec só lintava.
