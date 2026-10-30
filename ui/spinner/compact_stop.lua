@@ -1,4 +1,4 @@
--- ui/spinner/compact_stop.lua — parada do thinking (#226)
+-- ui/spinner/compact_stop.lua — parada do thinking (#226, #268)
 local launch = require("ui.spinner.launch")
 local timing = require("ui.spinner.timing")
 local M = {}
@@ -17,6 +17,15 @@ function M.stop_thinking_and_print_compact()
   local elapsed_ms = timing.elapsed_ms()
   launch.kill_spinner()
   timing.clear_anim()
+
+  -- #268: enquanto o card de retry está ativo, não escrever \n.
+  -- A quebra deslocava o cursor e o erase() de retry só apagava a parte de baixo.
+  local ok_r, retry = pcall(require, "ui.spinner.retry")
+  if ok_r and retry and retry.is_active and retry.is_active() then
+    io.write("\r\27[K")
+    io.flush()
+    return
+  end
 
   local LBLUE  = "\27[38;5;117m"
   local YELLOW = "\27[38;5;220m"

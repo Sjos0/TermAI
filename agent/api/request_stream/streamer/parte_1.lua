@@ -137,8 +137,8 @@ return function(M, N)
         ui.restart_spinner()
       else
         ui.kill_spinner()
-        -- Mostra N/N no mesmo card; falha_final troca por [ERRO] no lugar.
-        ui.show_retry(attempt, rcfg.max_retries, last_error, 0)
+        -- #268: não pintar N/N; falha_final/show_api_error coloca o erro.
+        if ui.clear_retry_lines then ui.clear_retry_lines() end
       end
     end
 

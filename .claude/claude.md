@@ -765,3 +765,6 @@ Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
 **Performance:** ~2-2.6x mais rápido no boot com cache quente. `lower()` agora é 1x por arquivo em vez de N (N = nº de tags).
 **Validation:** `luac -p` nos 4 arquivos + sync GitHub commit `9cf95c7`.
 **Author:** Claude Sonnet 5 + Ameno (aplicação + auditoria)
+## 2026-10-30 - PR fix/268-retry-quebra-stream-end
+**Issue:** #268 CONFIRMADA
+**Author:** Grok (xAI)

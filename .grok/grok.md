@@ -479,3 +479,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Status:** Implementação na branch `fix/79-version-2026-10-08-chatgpt-record`; PR #80 aberta para revisão. Merge e publicação do GitHub Release permanecem para decisão humana.
 
 **Correção #253 (2026-10-30):** comprovação anterior fraca (gsub antes de medir; T2/T7 ausentes). Corrigido em #265.
+## 2026-10-30 - [#268 retry quebra stream_end]
+**Issue:** #268
+**Veredito de validade:** CONFIRMADA
+**Files Modified:** ui/spinner/retry.lua, ui/spinner/compact_stop.lua, agent/api/request_stream/streamer/parte_1.lua, tests/retry_stream_end_stack_spec.lua
+**Decisões:** is_active + guarda em compact_stop; último attempt limpa.
+**Prova de sensibilidade:** \n reintroduzida → 4 linhas FAIL; restaurada → green.
+**Evidência de aceite:** caminho real ≤1 residual; após erro 0 + [ERRO]. Specs antigos OK.
+**Erros cometidos nesta issue e correções:** nenhum.
+**Author:** Grok (xAI)
