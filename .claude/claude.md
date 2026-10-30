@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#223 Boot real agente.lua]
+**Issue:** #223
+**Veredito:** CONFIRMADA — agente_boot_spec só lintava.
+**Files Modified:** tests/agente_boot_real_spec.lua
+**Evidência:** agente_boot_real_spec ALL OK (dofile headless)
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#222 ta_pid por instância]
 **Issue:** #222
 **Veredito de validade:** CONFIRMADA — launch.lua:6 `_spin_pid = TMPDIR.."/ta_pid"`; cleanup matava spinner vivo de outra instância.
