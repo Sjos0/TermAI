@@ -4,6 +4,10 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [release v1.37.0]
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#250 rodapé Block]
 **Issue:** #250
 **Veredito:** CONFIRMADA
