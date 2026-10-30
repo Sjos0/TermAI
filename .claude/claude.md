@@ -4,6 +4,13 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#247 Referência Ratatui]
+**Issue:** #247
+**Veredito:** CONFIRMADA
+**Files Modified:** docs/REFERENCIA_RATATUI.md
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#246 AMBIENTE.md]
 **Issue:** #246
 **Veredito:** CONFIRMADA
