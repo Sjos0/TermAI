@@ -1,10 +1,11 @@
--- ui/spinner/retry.lua — Card de retry in-place; conta linhas físicas (#203).
+-- ui/spinner/retry.lua — Card de retry in-place; conta linhas físicas (#203, #268).
 local core = require("ui.core")
 local card = require("ui.card")
 local c    = core.c
 
 local M = {}
 local _retry_lines = 0
+local _active = false
 
 local function bg_error()
   return c.bg_error or "\27[48;5;52m"
@@ -32,6 +33,11 @@ local function erase()
   end
 end
 
+--- true enquanto um card de tentativa está na tela (antes de show_api_error/clear).
+function M.is_active()
+  return _active
+end
+
 function M.show_retry(attempt, max, reason, wait)
   erase()
   reason = tostring(reason or "erro"):gsub("\n", " ")
@@ -48,6 +54,7 @@ function M.show_retry(attempt, max, reason, wait)
     }
   end
   _retry_lines = paint(rows)
+  _active = true
 end
 
 function M.show_api_error(msg)
@@ -59,10 +66,12 @@ function M.show_api_error(msg)
   }
   paint(rows)
   _retry_lines = 0 -- permanente
+  _active = false
 end
 
 function M.clear_retry_lines()
   erase()
+  _active = false
 end
 
 return M
