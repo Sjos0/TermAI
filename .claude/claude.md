@@ -4,6 +4,15 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#203 Retry linhas físicas]
+**Issue:** #203
+**Contexto:** clear_retry com emoji residual; depende de #202.
+**Files Modified:** ui/spinner/retry.lua, tests/retry_linhas_fisicas_spec.lua
+**Decisões:** paint retorna linhas físicas (1 por row cortada); api_error fora de _retry_lines.
+**Validation:** retry_linhas_fisicas_spec + retry_card_inplace ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#202 Largura visual conservadora]
 **Issue:** #202
 **Contexto:** utf8.len subestimava emoji/CJK; ESC[nA deixava cabeçalho amarelo residual.
