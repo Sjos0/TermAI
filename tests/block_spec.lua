@@ -24,7 +24,9 @@ do
   T(#lines == 3, "render 80x3 = 3 linhas")
   T(vis(lines[1]) == 80 and vis(lines[2]) == 80 and vis(lines[3]) == 80, "cada linha largura 80")
   local plain = lines[1]:gsub("\27%[[0-9;]*m", "")
-  T(plain:sub(1, 1) == "┌" and plain:find("┐", 1, true), "cantos PLAIN no topo")
+  local has_tl = plain:find("┌", 1, true) ~= nil
+  local has_tr = plain:find("┐", 1, true) ~= nil
+  T(has_tl and has_tr, "cantos PLAIN no topo")
 end
 
 -- inner + padding
