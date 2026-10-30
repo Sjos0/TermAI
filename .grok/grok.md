@@ -488,3 +488,13 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Evidência de aceite:** caminho real ≤1 residual; após erro 0 + [ERRO]. Specs antigos OK.
 **Erros cometidos nesta issue e correções:** nenhum.
 **Author:** Grok (xAI)
+
+## 2026-10-30 - [#269 Block bg + wrap]
+**Issue:** #269
+**Veredito de validade:** CONFIRMADA (sem bg/wrap no código; specs falharam no main)
+**Files Modified:** ui/widgets/block/render.lua, ui/widgets/block.lua, tests/block_bg_wrap_spec.lua
+**Decisões:** wrap por palavra com largura.colunas; h=nil calcula altura; bg em todas as células.
+**Prova de sensibilidade:** remover bg da borda → FAIL all_have_bg; restaurado green.
+**Evidência de aceite:** bg SGR em todas linhas; wrap longo; palavra sem espaço; regressão OK.
+**Erros cometidos nesta issue e correções:** nenhum.
+**Author:** Grok (xAI)

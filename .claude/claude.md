@@ -768,3 +768,7 @@ Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
 ## 2026-10-30 - PR fix/268-retry-quebra-stream-end
 **Issue:** #268 CONFIRMADA
 **Author:** Grok (xAI)
+
+## 2026-10-30 - PR feat/269-block-bg-wrap
+**Issue:** #269 CONFIRMADA — bg+wrap no Block
+**Author:** Grok (xAI)
