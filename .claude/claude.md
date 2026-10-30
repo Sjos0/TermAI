@@ -4,6 +4,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#208 Política SemVer]
+**Issue:** #208
+**Files Modified:** README.md, tests/update_release_spec.lua, .grok/grok.md
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#207 tmp unificado]
 **Issue:** #207
 **Files Modified:** agent/paths/tmp.lua, agent/api/utils.lua, models/validate.lua

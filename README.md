@@ -43,7 +43,7 @@ O TermAI usa [**Semantic Versioning**](https://semver.org/) (`MAJOR.MINOR.PATCH`
 | **MINOR** | Feature nova compatível |
 | **PATCH** | Correção de bug, sem feature |
 
-A versão atual está no arquivo `VERSION` na raiz. Tags de release no GitHub seguem `vMAJOR.MINOR.PATCH` (ex.: `v1.36.12`). Releases antigas com sufixo de ano (`v1.36.12.2026`) permanecem no histórico; a partir desta linha o padrão é SemVer puro.
+A versão atual está no arquivo `VERSION` na raiz. Tags de release no GitHub seguem **somente** `vMAJOR.MINOR.PATCH` (ex.: `v1.36.12`). Releases antigas com sufixo de ano (`v1.36.12.2026`) são **legadas** — permanecem no histórico, mas o `TermAI update` e a documentação usam a tag SemVer pura. Não apague legadas sem confirmação.
 
 Atualize com:
 

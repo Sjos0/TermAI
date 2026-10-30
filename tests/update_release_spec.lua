@@ -58,5 +58,14 @@ check(v:match("^%d+%.%d+%.%d+$") ~= nil, "VERSION tem formato SemVer MAJOR.MINOR
 -- Tags legadas v1.N.10.YYYY ainda parseiam (histórico); tags novas são vX.Y.Z.
 check(rel.parse_tag('{"tag_name":"v1.36.12"}') == "v1.36.12", "parse_tag aceita SemVer puro")
 
+
+-- (7) #208: VERSION bate com tag SemVer da release mais recente publicada no repo local (arquivo VERSION).
+-- Nao consulta a rede: garante so o formato e que o arquivo existe e e o canônico.
+do
+  local v = (io.open("VERSION"):read("*a") or ""):gsub("%s", "")
+  check(v:match("^%d+%.%d+%.%d+$") ~= nil, "VERSION SemVer puro")
+  check(rel.parse_tag('{"tag_name":"v' .. v .. '"}') == "v" .. v, "tag v" .. v .. " parseia")
+end
+
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
 os.exit(failures == 0 and 0 or 1)

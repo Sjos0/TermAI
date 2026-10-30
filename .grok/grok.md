@@ -4,6 +4,21 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+
+## 2026-10-29 - [#208 Política SemVer]
+**Issue:** #208
+**Contexto:** Duplicidade de tags legadas vs SemVer; registro inconsistente.
+**Equivalências legada → SemVer (referência):**
+| Legada | SemVer |
+|--------|--------|
+| v1.36.12.2026 | v1.36.12 |
+| v1.36.11.2026 | (patch histórico; ver v1.36.12) |
+| v1.36.10.2026 | (histórico) |
+| v1.35.x.2026 | (histórico) |
+**Decisões:** não apagar releases legadas; VERSION e tag vX.Y.Z únicos daqui pra frente.
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#207 tmp unificado]
 **Issue:** #207
 **Files Modified:** agent/paths/tmp.lua, agent/api/utils.lua, models/validate.lua
