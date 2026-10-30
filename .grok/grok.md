@@ -508,3 +508,10 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Evidência de aceite:** moldura+bg; recover no bloco; erro longo quebra; tw estreito.
 **Erros:** spec residual do emulador mínimo — ajustado para ESC[nA + última tentativa.
 **Author:** Grok (xAI)
+
+## 2026-10-30 - [#271 revisão testes retry]
+**Issue:** #271
+**Veredito de validade:** CONFIRMADA (lacunas de path cobertas pelos specs #268/#270)
+**Files Modified:** tests/retry_caminho_real_spec.lua (índice de cobertura)
+**Decisões:** não duplicar lógica; documentar specs que já exercitam stream_end e Block.
+**Author:** Grok (xAI)
