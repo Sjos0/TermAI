@@ -9,10 +9,6 @@ local M = {}
 M.tmp_dir = function()
   return require("agent.paths.tmp").dir()
 end
-    end
-  end
-  return os.getenv("TMPDIR") or "/tmp"
-end
 
 function M.test_connection(active)
   -- Validação de segurança prévia para mitigar injeção de comandos
