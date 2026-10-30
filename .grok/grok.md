@@ -4,6 +4,12 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#249 layout]
+**Issue:** #249
+**Veredito:** CONFIRMADA
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#248 Block]
 **Issue:** #248
 **Veredito:** CONFIRMADA
