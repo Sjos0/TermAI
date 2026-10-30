@@ -4,6 +4,15 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#202 Largura visual conservadora]
+**Issue:** #202
+**Contexto:** utf8.len subestimava emoji/CJK; ESC[nA deixava cabeçalho amarelo residual.
+**Files Modified:** ui/largura.lua, ui/card.lua, ui/tools_init/header.lua, tests/largura_conservadora_spec.lua
+**Decisões:** módulo puro conservador; card e header delegam.
+**Validation:** largura_conservadora_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [chore: SemVer MAJOR.MINOR.PATCH]
 **Contexto:** Versionamento legado `1.N.10.YYYY` substituído por SemVer de mercado.
 **Baseline:** `1.36.12` (continuidade com o contador anterior; sem o sufixo de ano).
