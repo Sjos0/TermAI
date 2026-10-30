@@ -1,3 +1,4 @@
+-- ui/misc.lua — mensagens auxiliares e rodapé em Block (#250).
 local core   = require("ui.core")
 local timing = require("ui.spinner.timing")
 local c = core.c
@@ -11,9 +12,6 @@ function M.divider()
   io.write(c.gray .. string.rep("─", core.tw()) .. c.reset .. "\n")
 end
 
--- Gradiente do footer de tokens: cinza <50%, amarelo crescente 50-89%,
--- vermelho crescente 90%+ (alinhado ao gatilho padrão de compactação
--- em 90%). Ajustar faixas aqui se compactacao_pct mudar.
 local function token_color(pct)
   if pct < 50  then return "\27[38;5;245m" end
   if pct < 65  then return "\27[38;5;229m" end
@@ -24,16 +22,47 @@ local function token_color(pct)
   return "\27[38;5;196m"
 end
 
--- end_time: HH:MM capturado no momento exato em que o stream terminou.
--- Substitui "gw: connected" para mostrar QUANDO a resposta chegou.
--- elapsed agora chega em MILISSEGUNDOS (era segundos inteiros antes).
+--- Rodapé: 3 linhas Block PLAIN branco; tw < 20 → linha simples.
+--- Assinatura inalterada: footer(tokens, limit, elapsed_ms, end_time).
 function M.footer(a, b, elapsed_ms, end_time)
-  local t   = elapsed_ms and string.format(" | %s", timing.format_duration(elapsed_ms)) or ""
-  local ts  = end_time   and string.format(" | %s", end_time) or ""
-  local pct = a / b * 100
-  io.write(token_color(pct)
-    .. ("tokens: %d/%d (%.1f%%)"):format(a, b, pct)
-    .. t .. ts .. c.reset .. "\n\n")
+  local formatar = require("ui.format_num").formatar_limite
+  local pct = (b and b > 0) and (a / b * 100) or 0
+  local tok = token_color(pct)
+    .. ("tokens: %s/%s (%.1f%%)"):format(
+      formatar(a), formatar(b), pct) .. c.reset
+  local tseg = elapsed_ms and timing.format_duration(elapsed_ms) or nil
+  local clock = end_time or nil
+
+  local tw = core.tw()
+  if tw < 20 then
+    local line = tok
+    if tseg then line = line .. " | " .. tseg end
+    if clock then line = line .. " | " .. clock end
+    io.write(line .. "\n\n")
+    return
+  end
+
+  local segs = { tok }
+  if tseg then segs[#segs + 1] = tseg end
+  if clock then segs[#segs + 1] = clock end
+
+  local block = require("ui.widgets.block")
+  local layout = require("ui.widgets.layout")
+  local inner_w = math.max(0, tw - 2)
+  local widths = layout.split_equal(inner_w, #segs)
+  local content = layout.place(segs, widths, inner_w)
+
+  local bobj = block.new({
+    borders = block.BORDERS.ALL,
+    border_type = block.TYPE.PLAIN,
+    border_color = c.white or "\27[37m",
+    content_lines = { content },
+  })
+  local lines = bobj:render({ w = tw, h = 3 })
+  for _, ln in ipairs(lines) do
+    io.write(ln .. "\n")
+  end
+  io.write("\n") -- linha em branco DEPOIS do Block
 end
 
 function M.loading(t)

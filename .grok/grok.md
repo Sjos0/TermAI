@@ -4,6 +4,14 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#250 rodapé Block]
+**Issue:** #250
+**Veredito:** CONFIRMADA
+**Files Modified:** ui/misc.lua, tests/footer_block_spec.lua
+**Evidência:** footer_block_spec ALL OK (tw 40/80/120, 1m, tw<20)
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#251 formatar_limite]
 **Issue:** #251
 **Veredito:** CONFIRMADA
