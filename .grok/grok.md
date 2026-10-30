@@ -4,6 +4,13 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#226 roteiros ≤150]
+**Issue:** #226
+**Veredito:** CONFIRMADA — roteiros.lua 192 linhas.
+**Files Modified:** ui/spinner/roteiros.lua, spinner_script.lua, compact_script.lua
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#225 Legadas e branch]
 **Issue:** #225
 **Veredito:** CONFIRMADA
