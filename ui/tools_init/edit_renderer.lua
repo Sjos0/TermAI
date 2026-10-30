@@ -1,11 +1,9 @@
--- ui/tools_init/edit_renderer.lua — Renderizador especializado de diffs estruturados (Aider-style).
 local core = require("ui.core")
 local card = require("ui.card")
 local c    = core.c
 
 local M = {}
 
--- ok já vem processado (actual_ok do executor), sem necessidade de revalidar
 function M.render_edit_body(lines, ok, tw)
   local added, removed = nil, nil
   local metrics_idx = nil
