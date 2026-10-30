@@ -12,6 +12,9 @@ package.loaded["ui"] = {
   stop_thinking = function() return 0 end,
   kill_spinner = function() events[#events + 1] = "kill_spinner" end,
   agent_limit = function() end,
+  show_api_error = function(msg)
+    io.write("\27[38;5;203m" .. tostring(msg) .. "\27[0m\n")
+  end,
 }
 package.loaded["ui.spinner.rotulo"] = {
   regiao_ativa = function() return false end,
@@ -59,7 +62,7 @@ io.write = real_write
 
 check(resp1 == "", "erro: retorna resp vazio")
 check(ov1 == false, "erro: is_overflow false")
-check(sc1 == true, "erro: stream_complete true (sem aviso de corte)")
+check(sc1 == false, "erro: stream_complete false (#205)")
 check(table.concat(written):find("\27[38;5;203m", 1, true) ~= nil, "erro: exibido em c.red")
 check(table.concat(written):find("erro injetado", 1, true) ~= nil, "erro: mensagem aparece no output")
 
