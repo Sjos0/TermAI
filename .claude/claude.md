@@ -772,3 +772,7 @@ Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
 ## 2026-10-30 - PR feat/269-block-bg-wrap
 **Issue:** #269 CONFIRMADA — bg+wrap no Block
 **Author:** Grok (xAI)
+
+## 2026-10-30 - PR feat/270-blocos-tentativa-erro
+**Issue:** #270 CONFIRMADA
+**Author:** Grok (xAI)
