@@ -4,6 +4,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#226 compact ≤150]
+**Issue:** #226
+**Files Modified:** ui/spinner/compact.lua, compact_stop.lua
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#226 roteiros ≤150]
 **Issue:** #226
 **Veredito:** CONFIRMADA — roteiros.lua 192 linhas.
