@@ -4,6 +4,11 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#225 Legadas e branch]
+**Issue:** #225
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#224 Spec no-retry após token]
 **Issue:** #224
 **Veredito:** CONFIRMADA — faltava spec de contagem HTTP.

@@ -4,6 +4,19 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#225 Legadas e branch]
+**Issue:** #225
+**Veredito:** CONFIRMADA — tags `v1.36.12.2026` etc. sem nota; branch `fix/spinner-hotfix-sem-regiao` no remoto.
+**Ações:** releases legadas marcadas; branch apagada.
+**Equivalências:**
+| Legada | SemVer atual |
+|--------|----------------|
+| v1.36.12.2026 | v1.36.12 / v1.36.13 |
+| v1.36.11.2026 | histórico |
+| v1.36.10.2026 | histórico |
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#224 Spec no-retry após token]
 **Issue:** #224
 **Veredito:** CONFIRMADA — faltava spec de contagem HTTP.
