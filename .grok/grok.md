@@ -4,6 +4,14 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#248 Block]
+**Issue:** #248
+**Veredito:** CONFIRMADA
+**Files Modified:** ui/widgets/block.lua + block/*
+**Evidência:** block_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#247 Referência Ratatui]
 **Issue:** #247
 **Veredito:** CONFIRMADA
