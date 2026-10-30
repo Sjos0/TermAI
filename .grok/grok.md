@@ -4,6 +4,11 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [release v1.36.15]
+**Contexto:** Patch de provas #238/#239
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#239 Streamer real + transporte falso]
 **Issue:** #239
 **Veredito:** CONFIRMADA — spec anterior copiava lógica.
