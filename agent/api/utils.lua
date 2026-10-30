@@ -62,30 +62,8 @@ end
 
 -- Diretório temporário gravável (cacheado). Ordem: TMPDIR → Termux → HOME → /tmp.
 -- os.tmpname no Termux aponta para /tmp read-only; não usar.
-local _tmp_dir_cached = nil
 local function tmp_dir()
-  if _tmp_dir_cached then return _tmp_dir_cached end
-  local home = os.getenv("HOME") or ""
-  local candidates = {
-    os.getenv("TMPDIR"),
-    "/data/data/com.termux/files/usr/tmp",
-    home ~= "" and (home .. "/.TermAI/tmp") or nil,
-    "/tmp",
-  }
-  for _, d in ipairs(candidates) do
-    if d and d ~= "" then
-      local probe = d .. "/.ta_wprobe_" .. tostring(os.time())
-      local f = io.open(probe, "w")
-      if f then
-        f:close()
-        os.remove(probe)
-        _tmp_dir_cached = d
-        return d
-      end
-    end
-  end
-  _tmp_dir_cached = os.getenv("TMPDIR") or "/tmp"
-  return _tmp_dir_cached
+  return require("agent.paths.tmp").dir()
 end
 
 local function make_tmp_path()
