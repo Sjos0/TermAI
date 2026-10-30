@@ -1,4 +1,4 @@
--- ui/misc.lua — mensagens auxiliares e rodapé em Block (#250).
+-- ui/misc.lua — mensagens auxiliares e rodapé em Block (#250/#265).
 local core   = require("ui.core")
 local timing = require("ui.spinner.timing")
 local c = core.c
@@ -22,33 +22,55 @@ local function token_color(pct)
   return "\27[38;5;196m"
 end
 
---- Rodapé: 3 linhas Block PLAIN branco; tw < 20 → linha simples.
---- Assinatura inalterada: footer(tokens, limit, elapsed_ms, end_time).
-function M.footer(a, b, elapsed_ms, end_time)
+--- Prioridade de corte: relógio → tempo → tokens (quando a fatia igual não basta).
+local function build_segments(a, b, elapsed_ms, end_time, inner_w)
   local formatar = require("ui.format_num").formatar_limite
+  local largura = require("ui.largura")
+  local layout = require("ui.widgets.layout")
   local pct = (b and b > 0) and (a / b * 100) or 0
-  local tok = token_color(pct)
-    .. ("tokens: %s/%s (%.1f%%)"):format(
-      formatar(a), formatar(b), pct) .. c.reset
+  local tok_plain = ("tokens: %s/%s (%.1f%%)"):format(formatar(a), formatar(b), pct)
+  local tok = token_color(pct) .. tok_plain .. c.reset
   local tseg = elapsed_ms and timing.format_duration(elapsed_ms) or nil
   local clock = end_time or nil
 
+  local candidates = {}
+  if tseg and clock then candidates[#candidates+1] = { tok, tseg, clock } end
+  if tseg then candidates[#candidates+1] = { tok, tseg } end
+  if clock and not tseg then candidates[#candidates+1] = { tok, clock } end
+  candidates[#candidates+1] = { tok }
+
+  for _, segs in ipairs(candidates) do
+    local widths = layout.split_equal(inner_w, #segs)
+    local tok_slot = widths[1] or inner_w
+    if largura.colunas(tok) <= tok_slot then
+      return segs
+    end
+  end
+  -- Só tokens, e ainda não cabe: corta o texto visível
+  local plain = largura.cortar(tok_plain, inner_w)
+  return { token_color(pct) .. plain .. c.reset }
+end
+
+--- Rodapé: 3 linhas Block PLAIN branco; tw < 20 → linha simples.
+function M.footer(a, b, elapsed_ms, end_time)
+  local formatar = require("ui.format_num").formatar_limite
+  local pct = (b and b > 0) and (a / b * 100) or 0
   local tw = core.tw()
+
   if tw < 20 then
+    local tok = token_color(pct)
+      .. ("tokens: %s/%s (%.1f%%)"):format(formatar(a), formatar(b), pct) .. c.reset
     local line = tok
-    if tseg then line = line .. " | " .. tseg end
-    if clock then line = line .. " | " .. clock end
+    if elapsed_ms then line = line .. " | " .. timing.format_duration(elapsed_ms) end
+    if end_time then line = line .. " | " .. end_time end
     io.write(line .. "\n\n")
     return
   end
 
-  local segs = { tok }
-  if tseg then segs[#segs + 1] = tseg end
-  if clock then segs[#segs + 1] = clock end
-
   local block = require("ui.widgets.block")
   local layout = require("ui.widgets.layout")
   local inner_w = math.max(0, tw - 2)
+  local segs = build_segments(a, b, elapsed_ms, end_time, inner_w)
   local widths = layout.split_equal(inner_w, #segs)
   local content = layout.place(segs, widths, inner_w)
 
@@ -62,7 +84,7 @@ function M.footer(a, b, elapsed_ms, end_time)
   for _, ln in ipairs(lines) do
     io.write(ln .. "\n")
   end
-  io.write("\n") -- linha em branco DEPOIS do Block
+  io.write("\n")
 end
 
 function M.loading(t)
