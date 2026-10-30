@@ -1,4 +1,3 @@
--- agent/api/request_stream/streamer/parte_1.lua — exporta: pensar_stream.
 return function(M, N)
   local fb = require("agent.api.request_stream.streamer.fallback")(M)
   local json, ui, thinking_parser, utils, payload_mod, sync_mod, tool_parser, recovery, tokens_mod, error_log = N.json, N.ui, N.thinking_parser, N.utils, N.payload_mod, N.sync_mod, N.tool_parser, N.recovery, N.tokens_mod, N.error_log
@@ -44,8 +43,6 @@ return function(M, N)
       local tc_acc = {}
       local stream_fresh = false
 
-      -- Protege o loop de leitura: erro interno não pode vazar sem fechar o pipe
-      -- e remover o payload temporário (#183).
       local ok_stream, stream_err = pcall(function()
         for line in h:lines() do
           body = body .. line .. "\n"
@@ -78,7 +75,6 @@ return function(M, N)
         end
       end)
 
-      -- Sempre fecha o pipe e remove o payload, mesmo em erro interno (#183).
       local close_ok = h:close()
       os.remove(tmp_path)
 

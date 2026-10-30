@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#226 limite 150 + size spec]
+**Issue:** #226
+**Veredito:** CONFIRMADA — roteiros 192, compact 157, streamer 154, edit_renderer 152.
+**Files Modified:** streamer/parte_1.lua, edit_renderer.lua, tests/tamanho_150_spec.lua, README.md
+**Evidência:** tamanho_150_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#226 compact ≤150]
 **Issue:** #226
 **Files Modified:** ui/spinner/compact.lua, compact_stop.lua
