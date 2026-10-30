@@ -1,4 +1,4 @@
--- tests/agente_boot_real_spec.lua — #223: carrega agente.lua headless sem crash
+-- tests/agente_boot_real_spec.lua — #238: boot real via subprocesso, sem stubs.
 package.path = "./?.lua;./?/init.lua;./lib/?.lua;" .. package.path
 
 local failures = 0
@@ -6,51 +6,73 @@ local function T(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
 
--- Lint: pcall(...).campo na mesma linha (padrão #191)
 local src = assert(io.open("agente.lua", "r")):read("*a")
-local bad = nil
+local bad_line = nil
 for line in (src .. "\n"):gmatch("([^\n]*)\n") do
-  if line:match("pcall%s*%b()%.%s*[%w_]+") then bad = line; break end
+  if line:match("pcall%s*%b()%.%s*[%w_]+") then bad_line = line; break end
 end
-T(bad == nil, "sem pcall(...).campo")
+T(bad_line == nil, "agente.lua sem pcall(...).campo")
 
--- Execução real: carregar agente.lua sob stubs de TUI/loop
--- Isola HOME e impede main_loop de bloquear
-local real_exit = os.exit
-os.exit = function(code) error("__exit__:" .. tostring(code), 0) end
+local home = "/tmp/termai_boot_home_" .. tostring(os.time())
+local tmp  = "/tmp/termai_boot_tmp_" .. tostring(os.time())
+os.execute("mkdir -p '" .. home .. "/.TermAI/agents/main/agent' '" .. home .. "/.TermAI/workspace' '" .. tmp .. "'")
 
-package.loaded["agent.main_loop"] = {
-  run = function() end,
-}
-package.loaded["agent.context"] = {
-  build = function() return { msgs = {}, cfg = {} }, nil end,
-}
-package.loaded["agent.startup"] = {
-  run = function() end,
-}
-package.loaded["ui.spinner"] = {
-  cleanup_startup = function() end,
-}
-package.loaded["ui.terminal_safe"] = {
-  install = function() end,
-}
+-- config + modelo mínimo para context.build não sair com "nenhum modelo"
+local cfg = [[{
+  "meta": {"version": "0.1.0"},
+  "agents": {
+    "defaults": {
+      "model": {"primary": "test/dummy", "fallbacks": []},
+      "maxIter": 5,
+      "request": {"timeout": 5, "max_retries": 1}
+    },
+    "list": [{"id": "main", "workspace": "workspace", "model": {"primary": "test/dummy"}}]
+  }
+}]]
+local models = [[{
+  "active": "test/dummy",
+  "providers": {
+    "test": {
+      "baseUrl": "http://127.0.0.1:9",
+      "apiKey": "",
+      "api": "openai-completions",
+      "models": [{"id": "dummy", "name": "dummy"}]
+    }
+  }
+}]]
+local f = io.open(home .. "/.TermAI/config.json", "w"); f:write(cfg); f:close()
+f = io.open(home .. "/.TermAI/agents/main/agent/models.json", "w"); f:write(models); f:close()
 
--- agente.lua no final tipicamente chama main_loop — stub evita hang
-local ok, err = pcall(function()
-  -- limpa cache
-  package.loaded["agente"] = nil
-  dofile("agente.lua")
-end)
-os.exit = real_exit
-
-if not ok and tostring(err):find("__exit__") then
-  ok = true -- saiu via os.exit controlado
+local function which_lua()
+  for _, c in ipairs({ "/tmp/lua-5.4.7/src/lua", "lua5.4", "lua54", "lua" }) do
+    local h = io.popen("command -v " .. c .. " 2>/dev/null || test -x " .. c .. " && echo " .. c)
+    local p = h and h:read("*l") or ""
+    if h then h:close() end
+    if p and p ~= "" then return p end
+  end
+  return "lua5.4"
 end
-T(ok == true, "agente.lua carrega sem erro Lua: " .. tostring(err))
+local lua = which_lua()
+local cwd = (io.popen("pwd"):read("*l")) or "."
+local log = tmp .. "/boot.log"
+-- package.path igual ao main.lua: BASE = HOME/TermAI → link simbólico
+os.execute("ln -sfn '" .. cwd .. "' '" .. home .. "/TermAI'")
 
--- Prova de que a linha antiga falharia no lint
-local old = 'local x = pcall(require, "ui.terminal_safe").install()'
-T(old:match("pcall%s*%b()%.%s*[%w_]+") ~= nil, "linha antiga seria detectada pelo lint")
+local cmd = string.format(
+  "cd '%s' && HOME='%s' TMPDIR='%s' TERMAI_BOOT_ONLY=1 %s -e \"package.path='%s/?.lua;%s/?/init.lua;%s/lib/?.lua;'..package.path; dofile('agente.lua')\" </dev/null >'%s' 2>&1; echo EXIT:$? >>'%s'",
+  cwd, home, tmp, lua, cwd, cwd, cwd, log, log
+)
+os.execute(cmd)
+local out = ""
+local lf = io.open(log, "r")
+if lf then out = lf:read("*a") or ""; lf:close() end
 
+T(out:match("EXIT:0") ~= nil, "subprocesso EXIT 0 (log tem EXIT:0)")
+T(not out:find("attempt to index", 1, true), "sem attempt to index")
+T(not out:find("attempt to call a nil", 1, true), "sem attempt to call a nil")
+T(not out:find("bad argument", 1, true), "sem bad argument")
+
+os.execute("rm -rf '" .. home .. "' '" .. tmp .. "'")
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
+if failures > 0 then print("--- boot log ---\n" .. out) end
 os.exit(failures == 0 and 0 or 1)

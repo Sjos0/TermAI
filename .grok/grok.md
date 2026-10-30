@@ -4,6 +4,20 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#238 Boot real sem stubs]
+**Issue:** #238
+**Veredito:** CONFIRMADA — spec anterior stubava módulos e não provaria falha.
+**Contexto:** TERMAI_BOOT_ONLY=1 + subprocesso real.
+**Files Modified:** agente.lua, tests/agente_boot_real_spec.lua, .grok/fluxo_trabalho.md
+**Prova de sensibilidade:** pcall(...).install → "attempt to index a boolean value" EXIT:1
+**Evidência:** agente_boot_real_spec ALL OK com código atual
+**Author:** Grok (xAI)
+
+
+## TERMAI_BOOT_ONLY
+Variável de ambiente de teste: se `TERMAI_BOOT_ONLY=1`, `agente.lua` retorna após `startup.run` e **não** entra no loop interativo. Inerte quando ausente. Usada por `tests/agente_boot_real_spec.lua` (#238).
+
+
 ## 2026-10-29 - [release v1.36.14]
 **Author:** Grok (xAI)
 
