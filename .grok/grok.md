@@ -4,6 +4,14 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#206 Spec boot agente.lua]
+**Issue:** #206
+**Files Modified:** tests/agente_boot_spec.lua
+**Decisões:** lint pcall(...).campo + carga de terminal_safe headless.
+**Validation:** agente_boot_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#203 Retry linhas físicas]
 **Issue:** #203
 **Contexto:** clear_retry com emoji residual; depende de #202.
