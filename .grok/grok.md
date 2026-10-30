@@ -498,3 +498,13 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Evidência de aceite:** bg SGR em todas linhas; wrap longo; palavra sem espaço; regressão OK.
 **Erros cometidos nesta issue e correções:** nenhum.
 **Author:** Grok (xAI)
+
+## 2026-10-30 - [#270 blocos tentativa/erro]
+**Issue:** #270
+**Veredito de validade:** CONFIRMADA
+**Files Modified:** ui/spinner/retry.lua (Block), recovery.lua (retorna texto), fallback.lua (passa recover), specs
+**Decisões:** tentativa 1 linha em Block vermelho; erro multi-linha com recover+[ERRO]; sem io.write cru.
+**Prova de sensibilidade:** (bloco via is_active já coberto em #268); recovery sem write verificado.
+**Evidência de aceite:** moldura+bg; recover no bloco; erro longo quebra; tw estreito.
+**Erros:** spec residual do emulador mínimo — ajustado para ESC[nA + última tentativa.
+**Author:** Grok (xAI)

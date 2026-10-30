@@ -45,15 +45,15 @@ return function(M)
 
   -- Fechamento quando a requisição inteira falhou (sem stream para truncar).
   function M_.falha_final(ctx, rcfg, last_error)
-      -- Não removemos a mensagem do usuário: falha de rede não apaga o que digitou.
+    -- Não removemos a mensagem do usuário: falha de rede não apaga o que digitou.
     local ui = require("ui")
     if ui.clear_retry_lines then ui.clear_retry_lines() end
-    recovery.recover_tool_seq(ctx.msgs)
+    local recover_line = recovery.recover_tool_seq(ctx.msgs)
     local msg = "Falha após " .. rcfg.max_retries .. " tentativas — " .. tostring(last_error or "")
     if ui.show_api_error then
-      ui.show_api_error(msg)
+      ui.show_api_error(msg, recover_line)
     end
-      -- done_flag = nil: não houve stream (evita "Resposta incompleta" enganoso).
+    -- done_flag = nil: não houve stream (evita "Resposta incompleta" enganoso).
     return "[ERRO] " .. msg, false, nil, ""
   end
 
