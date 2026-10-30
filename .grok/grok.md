@@ -4,6 +4,16 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#265 rodapé ANSI]
+**Issue:** #265
+**Veredito:** CONFIRMADA — SGR contado como coluna; T1 media após gsub; T2/T7 ausentes.
+**Files Modified:** ui/largura.lua (visivel), ui/misc.lua (prioridade), tests/footer_tela_emulador_spec.lua
+**Decisões:** colunas/cortar ignoram CSI; cortar preserva SGR; prioridade relógio→tempo→tokens.
+**Prova de sensibilidade:** colunas sem visivel → T4 tempo/relogio FAIL; gsub no emulador esconde defeito de medição.
+**Correção da #253:** comprovação anterior fraca; T1–T7 agora medem com CSI interpretado.
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [release v1.37.0]
 **Author:** Grok (xAI)
 
@@ -467,3 +477,5 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 
 **Author:** Ameno — Agente Implementador
 **Status:** Implementação na branch `fix/79-version-2026-10-08-chatgpt-record`; PR #80 aberta para revisão. Merge e publicação do GitHub Release permanecem para decisão humana.
+
+**Correção #253 (2026-10-30):** comprovação anterior fraca (gsub antes de medir; T2/T7 ausentes). Corrigido em #265.

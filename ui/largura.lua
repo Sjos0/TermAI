@@ -1,6 +1,10 @@
 -- ui/largura.lua — Largura visual conservadora (nunca subestima colunas no terminal).
--- Módulo puro: sem I/O. Emoji/CJK = 2; tab = 8; controle = 0; VS16 após base estreito = +1.
+-- SGR/CSI não contam como coluna (#265): medir e cortar pelo texto visível.
 local M = {}
+
+function M.visivel(s)
+  return (tostring(s or "")):gsub("\27%[[0-9;:?]*[A-Za-z]", "")
+end
 
 local function is_wide(cp)
   if cp >= 0x1100 and cp <= 0x115F then return true end
@@ -28,8 +32,7 @@ local function cp_width(cp, prev)
   return 1
 end
 
-function M.colunas(s)
-  s = tostring(s or "")
+local function colunas_plain(s)
   local n, prev = 0, nil
   local ok = pcall(function()
     for _, cp in utf8.codes(s) do
@@ -41,34 +44,51 @@ function M.colunas(s)
   return n
 end
 
+function M.colunas(s)
+  return colunas_plain(M.visivel(s))
+end
+
 function M.cortar(s, max)
   s = tostring(s or "")
   if max <= 0 then return "" end
   if M.colunas(s) <= max then return s end
   if max == 1 then return "…" end
   local budget = max - 1
-  local used, last_end, prev = 0, 0, nil
-  local ok = pcall(function()
-    for p, cp in utf8.codes(s) do
+  local used = 0
+  local out = {}
+  local i = 1
+  local prev = nil
+  while i <= #s do
+    local csi = s:match("^\27%[[0-9;:?]*[A-Za-z]", i)
+    if csi then
+      out[#out + 1] = csi
+      i = i + #csi
+    else
+      local p = utf8.offset(s, 2, i)
+      local last = p and (p - 1) or #s
+      local ch = s:sub(i, last)
+      local cp = utf8.codepoint(ch)
       local w = cp_width(cp, prev)
-      if used + w > budget then return end
+      if used + w > budget then break end
       used = used + w
-      local nxt = utf8.offset(s, 2, p)
-      last_end = nxt and (nxt - 1) or #s
+      out[#out + 1] = ch
       prev = cp
+      i = last + 1
     end
-  end)
-  if not ok or last_end <= 0 then return "…" end
-  local out = s:sub(1, last_end) .. "…"
-  -- garantia: nunca ultrapassa max
-  while M.colunas(out) > max and last_end > 0 do
-    last_end = last_end - 1
-    while last_end > 0 and s:byte(last_end + 1) and s:byte(last_end + 1) >= 0x80 and s:byte(last_end + 1) < 0xC0 do
-      last_end = last_end - 1
-    end
-    out = s:sub(1, last_end) .. "…"
   end
-  return out
+  out[#out + 1] = "…"
+  out[#out + 1] = "\27[0m"
+  local result = table.concat(out)
+  while M.colunas(result) > max and #out > 2 do
+    table.remove(out, #out)
+    table.remove(out, #out)
+    while #out > 0 and out[#out]:match("^\27%[") do table.remove(out) end
+    if #out > 0 then table.remove(out) end
+    out[#out + 1] = "…"
+    out[#out + 1] = "\27[0m"
+    result = table.concat(out)
+  end
+  return result
 end
 
 return M
