@@ -4,6 +4,18 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#243 Prova Exec caracteres largos]
+**Issue:** #243
+**Veredito:** CONFIRMADA — lacuna de prova e2e.
+**Files Modified:** tests/exec_tela_emulador_spec.lua
+**Prova de sensibilidade:** utf8.len em card.cut/width → Exec×2
+**Evidência:** C1–C5 ALL OK
+**Author:** Grok (xAI)
+
+## 2026-10-30 - [release v1.36.16]
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [release v1.36.15]
 **Contexto:** Patch de provas #238/#239
 **Author:** Grok (xAI)
