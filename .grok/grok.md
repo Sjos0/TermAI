@@ -4,6 +4,52 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#227 Política de evidência]
+**Issue:** #227
+**Veredito de validade:** CONFIRMADA — histórico de PRs #211–#219 e relatórios sem evidência por critério.
+**Contexto:** formalizar checklist e template de evidência.
+**Files Modified:** `.claude/claude.md`, `.grok/grok.md`
+**Evidência de aceite:** regra presente nos dois arquivos (grep "Política de evidência").
+**Author:** Grok (xAI)
+
+
+## Política de evidência de aceite (obrigatória em toda PR) — #227
+
+**Regra:** cada critério de aceite da issue deve ter, no corpo da PR, o **nome do spec ou comando** e a **saída** que o comprovam. Critério sem evidência = não cumprido.
+
+### Antes de abrir a PR
+1. Validar que o problema existe no código atual (reproduzir ou provar por leitura com arquivo+linha).
+2. Checklist explícita de todos os critérios da issue.
+3. Sem checklist completa, não abrir a PR.
+
+### Template de corpo de PR
+```
+Closes #<N>
+
+## Veredito de validade
+CONFIRMADA | PARCIAL | NÃO CONFIRMADA — evidência: <arquivo:linha ou saída>
+
+## Critérios de aceite
+| Critério | Spec/comando | Resultado |
+|----------|--------------|-----------|
+| ... | tests/..._spec.lua | PASS / saída resumida |
+
+## Arquivos
+- path (wc -l antes → depois)
+
+## Validação
+- Suíte: N PASS / 0 FAIL
+- PTY: PASS|FAIL
+
+## Não comprovado
+- <item> — razão
+```
+
+### Relatórios de conclusão
+Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem evidência anexada.
+
+
+
 ## 2026-10-29 - [release v1.36.13]
 **Contexto:** Patch SemVer apos #202–#208.
 **Author:** Grok (xAI)
