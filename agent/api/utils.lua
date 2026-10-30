@@ -90,7 +90,10 @@ end
 
 local function make_tmp_path()
   _tmp_seq = _tmp_seq + 1
-  return tmp_dir() .. "/ta_payload_" .. tostring(os.time()) .. "_" .. tostring(_tmp_seq)
+  local pid = "0"
+  local f = io.open("/proc/self/stat", "r")
+  if f then local s = f:read("*l") or ""; f:close(); pid = s:match("^(%d+)") or "0" end
+  return tmp_dir() .. "/ta_payload_" .. pid .. "_" .. tostring(os.time()) .. "_" .. tostring(_tmp_seq)
 end
 
 local function estimate_tokens(msgs)
