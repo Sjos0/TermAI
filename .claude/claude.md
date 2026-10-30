@@ -4,6 +4,11 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [release v1.36.13]
+**Contexto:** Patch SemVer apos #202–#208.
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#208 Política SemVer]
 **Issue:** #208
 **Files Modified:** README.md, tests/update_release_spec.lua, .grok/grok.md

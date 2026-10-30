@@ -4,6 +4,11 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [release v1.36.13]
+**Contexto:** Patch SemVer apos #202–#208.
+**Author:** Grok (xAI)
+
+
 
 ## 2026-10-29 - [#208 Política SemVer]
 **Issue:** #208
