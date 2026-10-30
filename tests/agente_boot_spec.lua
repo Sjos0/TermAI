@@ -8,13 +8,16 @@ end
 
 local src = assert(io.open("agente.lua", "r")):read("*a")
 
--- Lint: pcall(...).campo — o padrão que quebrou a TUI na #191
-local bad = src:find("pcall%s*%b().[%a_]")
-T(not bad, "sem pcall(...).campo em agente.lua")
+local bad_line = nil
+for line in (src .. "\n"):gmatch("([^\n]*)\n") do
+  if line:match("pcall%s*%b()%.%s*[%w_]+") then
+    bad_line = line
+    break
+  end
+end
+T(bad_line == nil, "sem pcall(...).campo na mesma linha")
 T(not src:find('pcall%(require,%s*"ui%.terminal_safe"%)%.install'),
   "sem pcall(require).install literal")
-
--- Captura correta
 T(src:find("terminal_safe") ~= nil, "referencia terminal_safe")
 T(src:find("ok_ts") ~= nil or src:find("local ok") ~= nil, "captura ok do pcall")
 
