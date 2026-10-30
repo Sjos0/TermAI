@@ -4,6 +4,14 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-30 - [#246 AMBIENTE.md]
+**Issue:** #246
+**Veredito:** CONFIRMADA
+**Files Modified:** docs/AMBIENTE.md, README.md
+**Evidência:** arquivo existe; premissa + ressalva; link no README
+**Author:** Grok (xAI)
+
+
 ## 2026-10-30 - [#243 Prova Exec caracteres largos]
 **Issue:** #243
 **Veredito:** CONFIRMADA — lacuna de prova e2e.
