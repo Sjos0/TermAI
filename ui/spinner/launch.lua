@@ -1,9 +1,19 @@
 -- ui/spinner/launch.lua — scripts shell embutidos + start/kill do spinner.
+-- Slot ta_pid_<dono>: cada instância só toca o próprio arquivo (#222).
 local M = {}
 
-local TMPDIR          = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
-local _spin_sh        = TMPDIR .. "/ta_spin.sh"
-local _spin_pid       = TMPDIR .. "/ta_pid"
+local TMPDIR = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+
+local function _my_pid()
+  local f = io.open("/proc/self/stat", "r")
+  if not f then return "0" end
+  local s = f:read("*l") or ""; f:close()
+  return s:match("^(%d+)") or "0"
+end
+
+local OWNER = _my_pid()
+local _spin_sh        = TMPDIR .. "/ta_spin_" .. OWNER .. ".sh"
+local _spin_pid       = TMPDIR .. "/ta_pid_" .. OWNER
 local _inject_flag    = TMPDIR .. "/ta_inject.flag"
 local _reasoning_flag = TMPDIR .. "/ta_reasoning.flag"
 local _stream_flag    = TMPDIR .. "/termai_stream.flag"
@@ -14,16 +24,14 @@ local roteiros = require("ui.spinner.roteiros")
 local SPINNER_SCRIPT, COMPACT_SCRIPT = roteiros.SPINNER_SCRIPT, roteiros.COMPACT_SCRIPT
 
 local function _is_spinner(pid)
-  -- Valida que o processo ainda é o spinner (ta_spin.sh) antes de matar.
-  -- Evita matar um pid reutilizado por outro processo após uma morte abrupta.
   local f = io.open("/proc/" .. pid .. "/cmdline", "r")
   if not f then return false end
-  local cmdline = f:read("*l") or ""
-  f:close()
-  return cmdline:find("ta_spin.sh", 1, true) ~= nil
+  local cmdline = f:read("*a") or ""; f:close()
+  return cmdline:find("ta_spin", 1, true) ~= nil
 end
 
 local function _kill_pid()
+  -- Só o slot desta instância.
   local pid_f = io.open(_spin_pid, "r")
   if not pid_f then return end
   local pid = pid_f:read("*l")
@@ -33,7 +41,6 @@ local function _kill_pid()
     os.remove(_spin_pid)
     return
   end
-  -- TERM no processo e no grupo; KILL se ainda vivo.
   os.execute("kill -TERM " .. pid .. " 2>/dev/null; kill -TERM -" .. pid .. " 2>/dev/null")
   os.execute("kill -KILL " .. pid .. " 2>/dev/null; kill -KILL -" .. pid .. " 2>/dev/null")
   os.remove(_spin_pid)
@@ -49,30 +56,23 @@ local function _write_and_launch(script)
   io.flush()
 end
 
---- Lança o spinner no modo expanded (com contador de segundos).
 function M.launch()
   _write_and_launch(SPINNER_SCRIPT)
 end
 
---- Lança o spinner no modo compact (com timer de reasoning).
 function M.launch_compact()
   _write_and_launch(COMPACT_SCRIPT)
 end
 
---- Para o processo do spinner e limpa a linha atual.
--- Não apaga termai_frames.txt: no meio do turno o rótulo (Trabalhando) precisa sobreviver
--- a um stop/start entre tool calls. Quem apaga os frames é o turn_end (rotulo) / cleanup_turno.
 function M.kill_spinner()
   _kill_pid()
   os.remove(_spin_sh)
   os.remove(TMPDIR .. "/ta_tool_draw.flag")
   os.remove(_stream_flag)
-  -- Hotfix: só \r + limpa linha. Nunca posição absoluta (arquivo de altura fica velho no teclado).
   io.write("\r\27[K")
   io.flush()
 end
 
---- Limpeza completa no fim do turno: flags, frames e rows residual.
 function M.cleanup_turno()
   _kill_pid()
   os.execute("rm -f " .. _spin_pid .. " " .. _spin_sh
@@ -83,12 +83,9 @@ function M.cleanup_turno()
   io.flush()
 end
 
---- Limpeza no início do TUI: mata spinner órfão de execuções anteriores (validando
---- que o processo ainda é o spinner) e remove flags/payloads residuais em $TMPDIR.
 function M.cleanup_startup()
-  -- Flags/spinner desta instância + payloads/órgãos só de PIDs mortos (#204).
   require("ui.spinner.cleanup_startup").run(TMPDIR, {
-    kill_orphan_spinner = _kill_pid,
+    owner = OWNER,
     is_spinner = _is_spinner,
     inject = _inject_flag,
     reasoning = _reasoning_flag,
@@ -97,18 +94,15 @@ function M.cleanup_startup()
   })
 end
 
---- Sinaliza que a injeção terminou (troca label Injetando → Requisitando).
 function M.set_inject_flag()
   local f = io.open(_inject_flag, "w")
   if f then f:write("1"); f:close() end
 end
 
---- Remove a flag de reasoning (início de uma nova resposta no mesmo turno).
 function M.clear_reasoning_flag()
   os.remove(_reasoning_flag)
 end
 
---- Sinaliza ao spinner compacto que o reasoning começou.
 function M.set_reasoning_flag()
   local f = io.open(_reasoning_flag, "w")
   if f then f:write("1"); f:close() end

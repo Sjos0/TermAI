@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#222 ta_pid por instância]
+**Issue:** #222
+**Veredito de validade:** CONFIRMADA — launch.lua:6 `_spin_pid = TMPDIR.."/ta_pid"`; cleanup matava spinner vivo de outra instância.
+**Files Modified:** ui/spinner/launch.lua, ui/spinner/cleanup_startup.lua, tests/ta_pid_por_instancia_spec.lua, tests/tui_spinner_cleanup_startup_spec.lua
+**Evidência de aceite:** ta_pid_por_instancia_spec ALL OK (A vivo preservado; dono morto limpo; não-spinner vivo).
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#227 Política de evidência]
 **Issue:** #227
 **Veredito de validade:** CONFIRMADA — histórico de PRs #211–#219 e relatórios sem evidência por critério.
