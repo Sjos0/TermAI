@@ -515,3 +515,9 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Files Modified:** tests/retry_caminho_real_spec.lua (índice de cobertura)
 **Decisões:** não duplicar lógica; documentar specs que já exercitam stream_end e Block.
 **Author:** Grok (xAI)
+
+## 2026-10-30 - [release v1.38.0]
+**Issues:** #268 #269 #270 #271 fechadas
+**PRs:** #272 #273 #274 #275 mescladas
+**Versão:** 1.38.0 (MINOR — Block fundo/wrap + blocos tentativa/erro)
+**Author:** Grok (xAI)
