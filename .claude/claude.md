@@ -4,6 +4,12 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#207 tmp unificado]
+**Issue:** #207
+**Files Modified:** agent/paths/tmp.lua, agent/api/utils.lua, models/validate.lua
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#205 stream_complete]
 **Issue:** #205
 **Files Modified:** agent/loop.lua, streamer/parte_1.lua, tests/loop_turno_erro_spec.lua
