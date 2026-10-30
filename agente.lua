@@ -19,4 +19,8 @@ if ok_spin and spin.cleanup_startup then spin.cleanup_startup() end
 
 local ctx, reset_info = context.build()
 startup.run(ctx, reset_info)
+-- TERMAI_BOOT_ONLY=1: encerra após startup (provas de boot / CI sem TTY). Inerte se ausente.
+if os.getenv("TERMAI_BOOT_ONLY") == "1" then
+  return
+end
 main_loop.run(ctx)
