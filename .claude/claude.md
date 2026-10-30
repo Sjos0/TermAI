@@ -4,6 +4,14 @@ Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [#204 Cleanup startup por PID]
+**Issue:** #204
+**Files Modified:** ui/spinner/cleanup_startup.lua, ui/spinner/launch.lua, agent/api/utils.lua, tests/cleanup_startup_pid_spec.lua
+**Decisões:** artefatos com PID; cleanup só remove dono morto; nunca mata não-spinner.
+**Validation:** cleanup_startup_pid_spec ALL OK
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#206 Spec boot agente.lua]
 **Issue:** #206
 **Files Modified:** tests/agente_boot_spec.lua

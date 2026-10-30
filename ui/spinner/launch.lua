@@ -1,14 +1,30 @@
 -- ui/spinner/launch.lua — scripts shell embutidos + start/kill do spinner.
 local M = {}
 
-local TMPDIR          = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
-local _spin_sh        = TMPDIR .. "/ta_spin.sh"
-local _spin_pid       = TMPDIR .. "/ta_pid"
-local _inject_flag    = TMPDIR .. "/ta_inject.flag"
-local _reasoning_flag = TMPDIR .. "/ta_reasoning.flag"
-local _stream_flag    = TMPDIR .. "/termai_stream.flag"
-local _frames_file    = TMPDIR .. "/termai_frames.txt"
-local _rows_file      = TMPDIR .. "/termai_rows.txt"
+local TMPDIR = os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp"
+local function _my_pid()
+  local f = io.open("/proc/self/stat", "r")
+  if not f then return "0" end
+  local s = f:read("*l") or ""; f:close()
+  return (s:match("^(%d+)") or "0")
+end
+local PID = _my_pid()
+local _spin_sh        = TMPDIR .. "/ta_spin_" .. PID .. ".sh"
+local _spin_pid       = TMPDIR .. "/ta_pid_" .. PID
+local _inject_flag    = TMPDIR .. "/ta_inject_" .. PID .. ".flag"
+local _reasoning_flag = TMPDIR .. "/ta_reasoning_" .. PID .. ".flag"
+local _stream_flag    = TMPDIR .. "/termai_stream_" .. PID .. ".flag"
+local _frames_file    = TMPDIR .. "/termai_frames_" .. PID .. ".txt"
+local _rows_file      = TMPDIR .. "/termai_rows_" .. PID .. ".txt"
+
+local function _pid_alive(pid)
+  local f = io.open("/proc/" .. pid .. "/stat", "r")
+  if not f then return false end
+  local s = f:read("*l") or ""; f:close()
+  -- estado Z = zumbi: trata como morto
+  local state = s:match("^%d+ %S+ (%S)")
+  return state ~= nil and state ~= "Z"
+end
 
 local roteiros = require("ui.spinner.roteiros")
 local SPINNER_SCRIPT, COMPACT_SCRIPT = roteiros.SPINNER_SCRIPT, roteiros.COMPACT_SCRIPT
@@ -86,14 +102,7 @@ end
 --- Limpeza no início do TUI: mata spinner órfão de execuções anteriores (validando
 --- que o processo ainda é o spinner) e remove flags/payloads residuais em $TMPDIR.
 function M.cleanup_startup()
-  _kill_pid()
-  os.remove(_inject_flag)
-  os.remove(_reasoning_flag)
-  os.remove(_stream_flag)
-  os.remove(_spin_sh)
-  os.remove(TMPDIR .. "/ta_tool_draw.flag")
-  local h = io.popen("rm -f " .. TMPDIR .. "/ta_payload_* 2>/dev/null")
-  if h then h:close() end
+  require("ui.spinner.cleanup_startup").run(TMPDIR)
 end
 
 --- Sinaliza que a injeção terminou (troca label Injetando → Requisitando).
