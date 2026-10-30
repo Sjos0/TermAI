@@ -4,6 +4,10 @@ Registro de contribuições do Grok (xAI) ao projeto TermAI.
 
 ---
 
+## 2026-10-29 - [release v1.36.14]
+**Author:** Grok (xAI)
+
+
 ## 2026-10-29 - [#226 limite 150 + size spec]
 **Issue:** #226
 **Veredito:** CONFIRMADA — roteiros 192, compact 157, streamer 154, edit_renderer 152.
