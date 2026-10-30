@@ -37,6 +37,12 @@ Um agente que roda no bolso — sem daemon permanente, sem servidor próprio —
 
 > **Nota de arquitetura:** arquivos em `lib/` (ex.: `lib/json.lua`, vendorizado de rxi/json) ficam fora do limite de 150 linhas por serem código de terceiros.
 
+
+
+## Ambiente
+
+Validação Ubuntu (CI) vs Termux (aparelho): ver [`docs/AMBIENTE.md`](docs/AMBIENTE.md).
+
 ## Versionamento
 
 O TermAI usa [**Semantic Versioning**](https://semver.org/) (`MAJOR.MINOR.PATCH`):
