@@ -760,3 +760,11 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Refactor:** #325 lote 1 — simbolos de status viram palavras em `ui/`, `channels/`, `providers/`.
 **Processo:** fluxo remoto (`.claude/fluxo_remoto.md`), regra de contagem na #325, verificacao pelo orquestrador.
 **Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
+
+## 2026-10-31 - [#325 lote 2: simbolos de status viram palavras em agent/]
+**Escopo:** `agent/` — 21 arquivos de producao + 1 spec. Simbolos de status viram `[OK]`/`[FAIL]`/`[WARN]`/`[RESTART]` etc.; nenhuma mudanca de logica (62 insercoes / 62 delecoes, so texto).
+**Medicao (criterio A, o oficial da issue):** `agent/` = 71 ocorrencias na `main` -> **0** depois. Scanner por faixa Unicode (`grep -rE` com a lista de status) em `agent/`: 0 linhas. Estruturais (`⬤ ❯ ─ │ ┌ ┐…`) intactos.
+**Spec corrigido (Tarefa 3 da issue):** `tests/lib_result_spec.lua` secao 8 esperava o literal antigo `"❌ Action cancelled by user."` em `agent/loop/tool_runner/executor/nucleo_2.lua` e `nucleo_3.lua` (migrados neste lote) -> passou a esperar `"[FAIL] Action cancelled by user."`; o cabecalho do spec tambem foi ajustado. `lib/tools/chamada.lua`, `tools/memory.lua` e `tools/grep/formatter.lua` continuam com o simbolo (lotes 3/4 e D6). Spec: **88/88**.
+**Specs rodados no celular:** `loop_units_spec` 111/111; `subagents_runtime_spec` OK; `tui_cards_spec` ALL OK; `web_search_fallback_spec` 12/12; `lib_result_spec` 88/88; `permissions_bulk_spec` 8/8; `flush_avisos_sem_simbolo_spec` PASS; `flush_provedor_falso_spec` PASS. Sintaxe OK nos 22 arquivos (`luac -p`).
+**Sensibilidade:** reintroduzido `⚠️` em `agent/context.lua:25` e `agent/flush/loop.lua:113` -> scanner `agent/` 0 -> 2 linhas e `flush_avisos_sem_simbolo_spec` **FAIL (2 verificacoes)**; restaurado -> scanner 0 e spec PASS.
+**Author:** Grok (xAI)

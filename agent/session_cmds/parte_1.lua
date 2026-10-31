@@ -10,13 +10,13 @@ return function(M, N)
     -- Nova sessão começa do zero: flush_state = 0
     -- Próximo flush acontecerá ao atingir flush_tokens normalmente.
     mf.marcar_flush(0)
-    io.write("\27[38;5;114m✅ Nova sessão: " .. session.current() .. "\27[0m\n\n")
+    io.write("\27[38;5;114m[OK] Nova sessão: " .. session.current() .. "\27[0m\n\n")
     io.flush()
   end
 
 
   function M.do_reset(ctx)
-    io.write("\27[38;5;220m⚠️  Limpar conversa atual? (s/N): \27[0m")
+    io.write("\27[38;5;220m[WARN] Limpar conversa atual? (s/N): \27[0m")
     io.flush()
     local confirm = io.read()
     if confirm and confirm:lower() == "s" then
@@ -24,7 +24,7 @@ return function(M, N)
       rebuild_ctx(ctx)
       -- Sessão resetada: reinicia ciclo de flush do zero
       mf.marcar_flush(0)
-      io.write("\27[38;5;114m✅ Conversa resetada. Sessão: "
+      io.write("\27[38;5;114m[OK] Conversa resetada. Sessão: "
         .. session.current() .. "\27[0m\n\n")
     else
       io.write("\27[38;5;245mCancelado.\27[0m\n\n")
@@ -34,12 +34,12 @@ return function(M, N)
 
 
   function M.do_clear(ctx)
-    io.write("\27[38;5;203m⚠️  Deletar permanentemente a conversa atual? (s/N): \27[0m")
+    io.write("\27[38;5;203m[WARN] Deletar permanentemente a conversa atual? (s/N): \27[0m")
     io.flush()
     local confirm = io.read()
     if confirm and confirm:lower() == "s" then
       local next_id = session.delete_current()
-      io.write("\27[38;5;114m✅ Conversa deletada. Migrando para: " .. next_id .. "\27[0m\n")
+      io.write("\27[38;5;114m[OK] Conversa deletada. Migrando para: " .. next_id .. "\27[0m\n")
       io.write("\27[38;5;243mA TUI vai reiniciar...\27[0m\n\n")
       io.flush()
       restart_mod.restart_now()
@@ -53,7 +53,7 @@ return function(M, N)
   function M.do_status(ctx)
     local st = session.status()
     if not st then
-      io.write("\27[38;5;203m❌ Nenhuma sessão ativa.\27[0m\n\n")
+      io.write("\27[38;5;203m[FAIL] Nenhuma sessão ativa.\27[0m\n\n")
       io.flush(); return
     end
     local tw  = require("ui.core").tw()

@@ -88,7 +88,7 @@ function M._pre_tool_use(tool_name, tool_arg)
     local target = (tool_name == "Exec" and suggested_pattern ~= "") and suggested_pattern or tool_name
     local threshold_reached = perms.increment_denial(target)
     if threshold_reached then
-      io.write("\n\27[38;5;220m⚠️  Você recusou '" .. target .. "' consecutivamente.\n")
+      io.write("\n\27[38;5;220m[WARN] Você recusou '" .. target .. "' consecutivamente.\n")
       io.write("Deseja BLOQUEAR permanentemente para evitar novas perguntas? (s/N): \27[0m")
       io.flush()
       local block_ans = (io.read("*l") or ""):lower():match("^%s*(.-)%s*$")
@@ -100,7 +100,7 @@ function M._pre_tool_use(tool_name, tool_arg)
           local compat_perms = require("agent.hooks.permissions")
           compat_perms.set(tool_name, "blocked")
         end
-        io.write("\27[38;5;203m🚫 Bloqueado permanentemente.\n\n\27[0m")
+        io.write("\27[38;5;203m[BLOCKED] Bloqueado permanentemente.\n\n\27[0m")
         io.flush()
       end
     end
@@ -126,7 +126,7 @@ function M._run_user_scripts(event, ...)
       if fname:match("%.lua$") then
         local ok, err = pcall(dofile, fpath)
         if not ok then
-          io.write("\27[38;5;203m⚠️  Hook Lua falhou ["
+          io.write("\27[38;5;203m[WARN] Hook Lua falhou ["
             .. event .. "/" .. fname .. "]: "
             .. tostring(err) .. "\27[0m\n")
           io.flush()

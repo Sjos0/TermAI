@@ -23,7 +23,7 @@ function M.route(input, ctx, flush_msgs_start)
     out = id ~= "" and control.log({ runId = id, lines = tonumber(extra) }) or USAGE
   elseif sub == "gc" then
     local n = require("tools.subagents.cleanup").sweep()
-    io.write("\27[38;5;114m✓\27[0m " .. n .. " run(s) antigo(s) removido(s) (guardados: 50 runs ou 7 dias)\n\n")
+    io.write("\27[38;5;114m[OK]\27[0m " .. n .. " run(s) antigo(s) removido(s) (guardados: 50 runs ou 7 dias)\n\n")
   elseif sub == "send" or sub == "steer" then
     local msg = rest:match("^%S+%s+%S+%s+(.*)$") or ""
     out = control.enviar({ runId = id, message = msg }, ctx, sub == "steer" and "redirect" or "message")

@@ -22,7 +22,7 @@ function M.build(opts)
 
   local active = models_mod.resolve(opts.model or cfg.agents.defaults.model.primary)
   if not active then
-    print("\27[38;5;220m⚠️  Nenhum modelo configurado ainda.\27[0m")
+    print("\27[38;5;220m[WARN] Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
     print("Depois defina:  \27[1mTermAI models set <provider>/<modelo>\27[0m")
     os.exit(1)

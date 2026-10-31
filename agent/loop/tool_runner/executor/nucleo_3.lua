@@ -21,7 +21,7 @@ return function(M)
       local start_t = get_wall_time()
       local result
       if denied[i] then
-        result = "❌ [PERMISSÃO NEGADA] " .. denied[i]
+        result = "[FAIL] [PERMISSÃO NEGADA] " .. denied[i]
         if denied[i]:find("negada pelo usuário") then ctx.tool_cancelled = true end
       else
         -- skip_pretool: o PreToolUse já rodou acima; não rodar de novo. Filtro de desativação mantido (#32/#49).
@@ -40,7 +40,7 @@ return function(M)
 
       if last_app == "CANCELLED" then
         ctx.tool_cancelled = true
-        result = "❌ Action cancelled by user."
+        result = "[FAIL] Action cancelled by user."
       end
 
       local ok = resultado.sucesso(result)

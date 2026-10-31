@@ -15,7 +15,7 @@ local timestamp   = require("agent.main_loop.timestamp")
 local M = {}
 
 local function handle(ctx, stamped_input, msgs_before, flush_msgs_start)
-  io.write("\27[38;5;220m⚠️  Contexto excedido!"
+  io.write("\27[38;5;220m[WARN] Contexto excedido!"
     .. " Compactando com LLM e tentando novamente...\27[0m\n\n")
   io.flush()
 
@@ -31,7 +31,7 @@ local function handle(ctx, stamped_input, msgs_before, flush_msgs_start)
     -- O histórico é preservado. A requisição provavelmente falhará
     -- novamente, mas pelo menos não perdemos dados.
     if motivo == "api_error" or motivo == "thrashing" then
-      io.write("\27[38;5;203m   ❌ Compactação de emergência falhou."
+      io.write("\27[38;5;203m   [FAIL] Compactação de emergência falhou."
         .. " O histórico foi preservado.\27[0m\n")
       io.write("\27[38;5;245m   Tente usar /reset para limpar o contexto"
         .. " ou aguarde a recuperação da API.\27[0m\n\n")

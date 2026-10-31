@@ -29,8 +29,8 @@ local function route(input, ctx, flush_msgs_start)
     local dry = input:match("--dry%-run") ~= nil
     local removed, kept = session.cleanup(dry)
     io.write(dry
-      and "\27[38;5;220m⚠️  Dry-run — nada foi removido.\27[0m\n"
-      or  "\27[38;5;114m✅ Limpeza concluída.\27[0m\n")
+      and "\27[38;5;220m[WARN] Dry-run — nada foi removido.\27[0m\n"
+      or  "\27[38;5;114m[OK] Limpeza concluída.\27[0m\n")
     io.write("\27[38;5;245m  Removidas: " .. #removed
       .. "  Mantidas: " .. #kept .. "\27[0m\n")
     if dry and #removed > 0 then

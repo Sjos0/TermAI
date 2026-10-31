@@ -111,7 +111,7 @@ function M.run(ctx)
 
     -- Aviso se o stream foi cortado por timeout (resposta incompleta)
     if stream_complete == false and not is_overflow then
-      io.write("\n\27[38;5;220m⚠️  Resposta incompleta — o stream foi cortado"
+      io.write("\n\27[38;5;220m[WARN] Resposta incompleta — o stream foi cortado"
         .. " (timeout de " .. api.CURL_TIMEOUT .. "s).\27[0m\n")
       io.write("\27[38;5;245m   A resposta acima pode estar truncada."
         .. " Se necessário, peça para continuar.\27[0m\n\n")

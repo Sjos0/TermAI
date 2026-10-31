@@ -928,3 +928,10 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Refactor:** #325 lote 1 — simbolos de status viram palavras em `ui/`, `channels/`, `providers/`.
 **Processo:** fluxo remoto (`.claude/fluxo_remoto.md`), regra de contagem na #325, verificacao pelo orquestrador.
 **Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
+
+## 2026-10-31 - PR feat/325-lote2-agent-simbolos
+**Refs #325** (lote 2 — `agent/`; a issue fecha no lote 4 com `Closes`)
+**Mudanca:** simbolos de status viram palavras em 21 arquivos de `agent/` (`⚠️` -> `[WARN]`, `❌` -> `[FAIL]`, `✅` -> `[OK]`, `🔄` -> `[RESTART]`, entre outros). So texto: 62 insercoes / 62 delecoes, sem mudanca de logica. Estruturais preservados.
+**Files Modified:** `agent/api/summarizer/runner/parte_2.lua`, `agent/banners.lua`, `agent/compaction/parte_2.lua`, `agent/context.lua`, `agent/flush/tests/test_T1.lua`, `agent/hooks/bash_patterns/ui.lua`, `agent/hooks/engine.lua`, `agent/loop/tool_runner/executor/nucleo_2.lua`, `agent/loop/tool_runner/executor/nucleo_3.lua`, `agent/loop/xml_path.lua`, `agent/main_loop.lua`, `agent/main_loop/commands_router/{lifecycle,simple,subagents}.lua`, `agent/main_loop/{compaction_handler,overflow_handler}.lua`, `agent/restart.lua`, `agent/session_cmds/{parte_1,parte_2}.lua`, `agent/startup/{parte_1,reasoning_renderer}.lua`; `tests/lib_result_spec.lua` (Tarefa 3: secao 8 passa a esperar `[FAIL]` nos dois produtores migrados; cabecalho ajustado).
+**Evidencia:** scanner `agent/` = 0 linhas com simbolo de status (era 71 ocorrencias na `main`); `luac -p` OK nos 22 arquivos; `lib_result_spec` 88/88; `loop_units_spec` 111/111; `subagents_runtime_spec` OK; `tui_cards_spec` ALL OK; `web_search_fallback_spec` 12/12; `permissions_bulk_spec` 8/8; `flush_avisos_sem_simbolo_spec` PASS; `flush_provedor_falso_spec` PASS. Sensibilidade: `⚠️` reintroduzido em `agent/context.lua:25` e `agent/flush/loop.lua:113` -> scanner 2 linhas e spec do flush FAIL (2 verificacoes); restaurado -> 0 e PASS.
+**Author:** Grok (xAI)

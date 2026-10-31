@@ -73,12 +73,12 @@ return function(M, N)
     end
 
     if not processed_summary then
-      io.write("\n\27[38;5;203m❌ Falha na compactação: nenhuma tentativa de resumo foi gerada.\27[0m\n\n")
+      io.write("\n\27[38;5;203m[FAIL] Falha na compactação: nenhuma tentativa de resumo foi gerada.\27[0m\n\n")
       io.flush()
       return false, "api_error"
     end
     if not confirmado then
-      io.write("\n\27[38;5;220m⚠️  Resumo não confirmado no turno de verificação — usando a melhor versão gerada.\27[0m\n\n")
+      io.write("\n\27[38;5;220m[WARN] Resumo não confirmado no turno de verificação — usando a melhor versão gerada.\27[0m\n\n")
       io.flush()
     end
 
