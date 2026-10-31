@@ -905,3 +905,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Arquivos (specs):** `tests/google_grounding_units_spec/01_n_unit_tests_google_ground.lua:46` (literal `❌ …` → `[FAIL] …`; exigido pela Tarefa 3) e `tests/lote1_avisos_sem_simbolo_spec.lua` (novo — aviso sem ⚠/U+FE0F e dentro de tw 40/50/54; ponto anexado ao lote pelo gerente).
 **Evidência:** grep de símbolos de status + U+FE0F em `ui/`, `channels/`, `providers/` → zero; sintaxe OK nos 14 arquivos tocados; specs locais: `google_grounding_units_spec` 28/28, `largura_misc_symbols_spec` ALL OK, `edit_diff_display_spec` 37/37, `lote1_avisos_sem_simbolo_spec` PASS. Validação final (specs pesadas e suíte) pela CI.
 **Author:** Ameno (orquestrador)
+
+## 2026-10-31 - PR fix/335-releitura-largura
+**Closes #335**
+**Author:** Grok (xAI)
