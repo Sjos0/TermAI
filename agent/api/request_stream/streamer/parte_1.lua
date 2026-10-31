@@ -98,7 +98,10 @@ return function(M, N)
         error_reason = error_log.extract_from_body(body:gsub("%s+$", ""))
       end
       last_error = error_reason or "Sem resposta do servidor"
-      local retryable, http_status = error_log.should_retry(last_error, body)
+      local retryable, http_status = true, nil
+      if error_log.should_retry then
+        retryable, http_status = error_log.should_retry(last_error, body)
+      end
       if http_status then
         last_error = last_error .. " (HTTP " .. tostring(http_status) .. ")"
       end
