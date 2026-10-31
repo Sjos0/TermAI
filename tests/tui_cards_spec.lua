@@ -8,8 +8,9 @@ local failures = 0
 local function check(cond, msg)
   if cond then print("OK:   " .. msg) else failures = failures + 1; print("FAIL: " .. msg) end
 end
-local function plain(s) return (s:gsub("\27%[[%d;]*m", "")) end
-local function width(s) return utf8.len(plain(s)) or #plain(s) end
+local function plain(s) return (s:gsub("\27%[[%d;:?]*[A-Za-z]", ""):gsub("\n", "")) end
+local largura = require("ui.largura")
+local function width(s) return largura.colunas(s) end
 
 local root = portable_tmp.name("termai_cards_test")
 os.execute("mkdir -p '" .. root .. "'")
