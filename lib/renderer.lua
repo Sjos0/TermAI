@@ -47,7 +47,7 @@ function M.render(s)
       tbl_buf[#tbl_buf + 1] = line
     else
       close_table()
-      out[#out + 1] = md.render_line(line)
+      out[#out + 1] = md.render_line(line, width)
     end
   end
 

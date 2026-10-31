@@ -1,7 +1,7 @@
 -- markdown.lua — Renderização de markdown em ANSI: formatação inline e por linha.
--- render_inline cobre code/bold/italic/bold+italic/underline; render_line cobre
--- headers, separadores, bullets, listas numeradas e blockquotes, delegando o
--- restante a render_inline.
+-- render_inline cobre code/bold/italic/bold+italic/underline; render_line(s, tw)
+-- cobre headers, separadores (linha horizontal com tw colunas), bullets, listas
+-- numeradas e blockquotes, delegando o restante a render_inline.
 -- Dependências externas: nenhuma (Lua puro).
 local M = {}
 
@@ -16,7 +16,7 @@ local function render_inline(s)
   return s
 end
 
-local function render_line(s)
+local function render_line(s, tw)
   if s:match("^#### ") then
     return ESC.."1m"..ESC.."38;5;220m▸ "..render_inline(s:sub(6))..ESC.."0m"
   elseif s:match("^### ") then
@@ -27,7 +27,7 @@ local function render_line(s)
     return ESC.."1m"..ESC.."38;5;255m"..render_inline(s:sub(3))..ESC.."0m"
   end
   if s:match("^%-%-%-+$") or s:match("^%*%*%*+$") then
-    return ESC.."38;5;238m"..string.rep("─", 40)..ESC.."0m"
+    return ESC.."38;5;238m"..string.rep("─", tw or 80)..ESC.."0m"
   end
   s = s:gsub("^%s*[%-%*•] (.+)$", function(body)
     return "  "..ESC.."38;5;245m•"..ESC.."0m "..render_inline(body)
