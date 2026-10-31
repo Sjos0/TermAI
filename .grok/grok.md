@@ -572,3 +572,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Correção:** adjust_before percorre de n→1.
 **Erro anterior:** primeira ocorrência podia apontar mensagem antiga.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#277 rodapé Tokens]
+**Issue:** #277
+**Veredito:** CONFIRMADA
+**Files:** ui/misc.lua, ui/widgets/layout.lua, tests/rodape_tokens_spec.lua
+**Decisões:** place_natural; Tokens:; corte pct→sem pct→sem tempo; relógio por último
+**Sensibilidade:** split_equal tw50 → relógio ausente
+**Erros:** nenhum
+**Author:** Grok (xAI)
