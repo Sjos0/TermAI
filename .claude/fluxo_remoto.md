@@ -11,6 +11,8 @@ Regra do projeto: o trabalho acontece no GitHub (API e CI). O celular so le o re
 5. **Leia a validacao pela API**, nos check runs do ultimo commit. Nao rode a suite no celular.
 6. **Se o contexto estiver acabando, commit e push primeiro**, antes de qualquer outra coisa.
 7. **Voce NAO mescla.** Entrega a PR PRONTA (sai de rascunho) com CI verde, comenta a evidencia na issue, e PARA. Quem verifica, mescla, fecha a issue e apaga a branch e o **orquestrador**. Mesclar sozinho viola o processo.
+
+   **Nota de rastreabilidade:** o campo `merged_by` da API **nao** identifica quem mesclou, porque todos usam o mesmo token. A evidencia de que o orquestrador verificou fica num **comentario dele na PR ou na issue**, com os numeros da verificacao (PR, CI, medicao, sensibilidade, branch).
 8. **Relatorios em palavras, nao em simbolos** (ver #325).
 
 ## Fonte de verdade (obrigatorio)
