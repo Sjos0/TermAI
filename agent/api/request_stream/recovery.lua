@@ -15,9 +15,9 @@ local function has_tool_reply(msgs, start_i, tc_id)
   return false
 end
 
---- Remove apenas assistant com tool_calls sem tool correspondente (e tools órfãs).
---- Não apaga mensagens posteriores de user/assistant válidas.
---- Retorna "[recover] …" se removeu algo; nil caso contrário.
+--- Remove o assistant com tool_calls órfão e as respostas tool do mesmo grupo
+--- (inclusive respostas válidas: a API não aceita tool sem a chamada de origem).
+--- Não apaga mensagens posteriores de user/assistant. Retorna "[recover] …" ou nil.
 function M.recover_tool_seq(msgs)
   if not msgs or #msgs == 0 then return nil end
   local removed_names = {}

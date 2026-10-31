@@ -89,6 +89,9 @@ function M.should_retry(reason, body)
     or text:match("%[(%d%d%d)%]")
     or text:match("HTTP[ ]*(%d%d%d)")
     or text:match("\"status\":[ ]*(%d%d%d)")
+    or text:match("\"code\":[ ]*(%d%d%d)")
+    or text:match("code[=:][ ]*(%d%d%d)")
+    or text:match("code[ ]*(%d%d%d)")
   code = tonumber(code)
   if not code then return true, nil end
   if code == 400 or code == 401 or code == 403 or code == 404 or code == 422 then

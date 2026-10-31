@@ -820,3 +820,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/294-block-sem-perda
 **Fase C**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/295-classificacao-json
+**Fase D**
+**Author:** Grok (xAI)
