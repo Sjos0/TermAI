@@ -39,7 +39,7 @@ local function show_reasoning_box(reasoning)
   local tw = core.tw()
   local w  = tw - 4
   io.write(c.dim .. c.gray .. " ╭─ Pensamento Concluído "
-    .. DARK_GREEN .. "✓" .. c.reset .. "\n")
+    .. DARK_GREEN .. "[OK]" .. c.reset .. "\n")
   local rendered = core.render_dim(reasoning)
 
   -- v2: junta todas as linhas primeiro pra poder colapsar como no live.

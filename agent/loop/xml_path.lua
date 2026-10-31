@@ -91,7 +91,7 @@ function M.handle(ctx, resp, reasoning, stream_complete, elapsed, vazio_count, m
 
   -- Resposta final (ou esgotou retries)
   if is_vazio then
-    io.write("\27[38;5;203m⚠️  Agente sem resposta após "
+    io.write("\27[38;5;203m[WARN] Agente sem resposta após "
       .. max_vazio_retries .. " tentativas automáticas.\27[0m\n\n")
     io.flush()
   elseif display_text ~= "" and not display_text:match("^%[ERRO") then

@@ -88,7 +88,7 @@ return function(M, N)
                 return stripped
               else
                 last_fallback = stripped
-                io.write("\27[38;5;245m     ⚠️  Resumo gerado fora do padrão estrutural (tentativa " .. attempt .. "). Re-tentando...\27[0m\n")
+                io.write("\27[38;5;245m     [WARN] Resumo gerado fora do padrão estrutural (tentativa " .. attempt .. "). Re-tentando...\27[0m\n")
                 io.flush()
               end
             end
@@ -102,7 +102,7 @@ return function(M, N)
     end
 
     if last_fallback then
-      io.write("\27[38;5;220m     ⚠️  Aviso: Não foi possível obter um resumo 100% estruturado após várias tentativas. Usando melhor versão disponível.\27[0m\n")
+      io.write("\27[38;5;220m     [WARN] Aviso: Não foi possível obter um resumo 100% estruturado após várias tentativas. Usando melhor versão disponível.\27[0m\n")
       io.flush()
       return last_fallback
     end

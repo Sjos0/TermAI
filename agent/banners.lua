@@ -33,7 +33,7 @@ function M.compactacao(tokens, mf_cfg)
   local reserva = limites.reserve_tokens or 16384
   local limite  = (mf_cfg.max_contexto or 0) - reserva
   io.write("\n\27[38;5;203m" .. linha .. "\27[0m\n")
-  io.write("\27[1m\27[38;5;203m 🔄 COMPACTAÇÃO DE CONTEXTO\27[0m\n")
+  io.write("\27[1m\27[38;5;203m [RESTART] COMPACTAÇÃO DE CONTEXTO\27[0m\n")
   io.write(string.format(
     "\27[38;5;245m tokens agora    : %d\n limite (reserva): %d\27[0m\n",
     tokens, limite))

@@ -15,7 +15,8 @@
 --      extração do corpo da mensagem, em tools/error_feedback/post_exec.lua);
 --   3. os consumidores migrados leem o prefixo SÓ pelo helper — nenhum `match("^❌")`
 --      cru volta a aparecer num consumidor (é a prova de sensibilidade da issue);
---   4. os PRODUTORES seguem emitindo o formato antigo (o contrato vale até o D6).
+--   4. cada PRODUTOR emite o formato do seu lote: agent/ já migrou (lote 2 do #325);
+--      lib/ e tools/ ainda emitem o símbolo, e só saem no D6 (fim do formato antigo).
 --
 -- A integração do fallback da busca depois da migração de tools/web.lua continua
 -- coberta por tests/web_search_fallback_spec.lua (#338).
@@ -187,18 +188,20 @@ for _, rel in ipairs(CONSUMIDORES) do
   end
 end
 
--- 8. PRODUTORES INTACTOS (o formato antigo só sai quando o D6 mandar)
-SEC("8. Produtores: seguem emitindo o formato antigo nesta PR")
+-- 8. PRODUTORES: cada um emite o formato do seu lote
+-- (o lote 2 do #325 migrou os produtores de agent/ para [FAIL]; lib/ e tools/ ainda
+--  emitem o símbolo — a remoção do formato antigo do contrato é o D6.)
+SEC("8. Produtores: emitem o formato do seu lote (agent/ migrado, lib/ e tools/ ainda simbolo)")
 local PRODUTORES = {
   { "lib/tools/chamada.lua",                        'return "❌ Erro: Sintaxe inválida."' },
-  { "agent/loop/tool_runner/executor/nucleo_2.lua", '"❌ Action cancelled by user."' },
-  { "agent/loop/tool_runner/executor/nucleo_3.lua", '"❌ Action cancelled by user."' },
+  { "agent/loop/tool_runner/executor/nucleo_2.lua", '"[FAIL] Action cancelled by user."' },
+  { "agent/loop/tool_runner/executor/nucleo_3.lua", '"[FAIL] Action cancelled by user."' },
   { "tools/memory.lua",                             '"📭 Nenhum arquivo de memória' },
   { "tools/grep/formatter.lua",                     '"🔍 Nenhum resultado encontrado' },
 }
 for _, p in ipairs(PRODUTORES) do
   local src = ler(p[1])
-  TEST("produtor emite o formato antigo: " .. p[1],
+  TEST("produtor emite o formato esperado: " .. p[1],
     src ~= nil and src:find(p[2], 1, true) ~= nil, "esperado: " .. p[2])
 end
 

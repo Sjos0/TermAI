@@ -15,11 +15,11 @@ return function(M, N)
     if switch_id and switch_id ~= "" then
       local hist = session.switch(switch_id)
       if not hist then
-        io.write("\27[38;5;203m❌ Sessão não encontrada: "
+        io.write("\27[38;5;203m[FAIL] Sessão não encontrada: "
           .. switch_id .. "\27[0m\n\n")
         io.flush(); return
       end
-      io.write("\27[38;5;114m✅ Sessão ativa alterada. Reiniciando TUI...\27[0m\n\n")
+      io.write("\27[38;5;114m[OK] Sessão ativa alterada. Reiniciando TUI...\27[0m\n\n")
       io.flush()
       restart_mod.restart_now()
       return
@@ -60,24 +60,24 @@ return function(M, N)
     end
 
     if num < 1 or num > #list then
-      io.write("\27[38;5;203m  ❌ Opção inválida.\27[0m\n\n")
+      io.write("\27[38;5;203m  [FAIL] Opção inválida.\27[0m\n\n")
       io.flush(); return
     end
 
     local target = list[num]
     if target.is_active then
-      io.write("\27[38;5;220m  ⚠️  Essa já é a sessão ativa.\27[0m\n\n")
+      io.write("\27[38;5;220m  [WARN] Essa já é a sessão ativa.\27[0m\n\n")
       io.flush(); return
     end
 
     local hist = session.switch(target.id)
     if not hist then
-      io.write("\27[38;5;203m  ❌ Falha ao acessar a sessão: "
+      io.write("\27[38;5;203m  [FAIL] Falha ao acessar a sessão: "
         .. target.id .. "\27[0m\n\n")
       io.flush(); return
     end
 
-    io.write("\27[38;5;114m  ✅ Trocando para " .. target.id
+    io.write("\27[38;5;114m  [OK] Trocando para " .. target.id
       .. ". Reiniciando TUI...\27[0m\n\n")
     io.flush()
     restart_mod.restart_now()

@@ -16,7 +16,7 @@ return function(M)
       local avail = {}
       for n in pairs(tools_mod.registry) do avail[#avail + 1] = n end
       table.sort(avail)
-      result = "❌ Ferramenta '" .. bad .. "' não existe. Disponíveis: "
+      result = "[FAIL] Ferramenta '" .. bad .. "' não existe. Disponíveis: "
              .. table.concat(avail, ", ")
       ui_end(ctx, disp, result, false)
     else
@@ -26,7 +26,7 @@ return function(M)
       if ctx.last_tool_sig == tc_sig and (tc.name == "Write" or tc.name == "Edit") then
         local display_str = display.tc_display(tc) .. " [REDUNDANTE]"
         ui_start(ctx, display_str)
-        result = "⚠️ [Harness] Bloqueio de redundância: Esta mesma chamada de ferramenta (" .. tc.name
+        result = "[WARN] [Harness] Bloqueio de redundância: Esta mesma chamada de ferramenta (" .. tc.name
                .. ") com os mesmos argumentos exatos já foi executada na iteração anterior. "
                .. "Se você precisa verificar o resultado ou realizar outro ajuste, prossiga de outra forma."
         ui_end(ctx, display_str, result, false)
@@ -41,7 +41,7 @@ return function(M)
 
         if not allowed then
           ui_start(ctx, display_str)
-          result = "❌ [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
+          result = "[FAIL] [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
           ui_end(ctx, display_str, result, false)
           ctx.msgs[#ctx.msgs + 1] = {
             role         = "tool",
@@ -73,7 +73,7 @@ return function(M)
 
         if last_app == "CANCELLED" then
           ctx.tool_cancelled = true
-          result = "❌ Action cancelled by user."
+          result = "[FAIL] Action cancelled by user."
         end
 
         local success = resultado.sucesso(result)

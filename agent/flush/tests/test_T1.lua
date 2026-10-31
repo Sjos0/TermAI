@@ -24,7 +24,7 @@ assert(flush_state.exec == false, "exec deveria ser false inicialmente")
 assert(flush_state.read == false, "read deveria ser false inicialmente")
 assert(flush_state.edit == false, "edit deveria ser false inicialmente")
 assert(flush_state.done == false, "done deveria ser false inicialmente")
-print("✅ Teste 1: Estado inicial (4 campos false)")
+print("[OK] Teste 1: Estado inicial (4 campos false)")
 
 -- Teste 2: Marcação individual
 flush_state.exec = true
@@ -37,7 +37,7 @@ flush_state.edit = true
 assert(flush_state.edit == true, "edit=true falhou")
 flush_state.done = true
 assert(flush_state.done == true, "done=true falhou")
-print("✅ Teste 2: Marcação individual funciona (sem contaminação entre campos)")
+print("[OK] Teste 2: Marcação individual funciona (sem contaminação entre campos)")
 
 -- Teste 3: Reset
 flush_state.reset()
@@ -45,7 +45,7 @@ assert(flush_state.exec == false, "reset: exec deveria voltar a false")
 assert(flush_state.read == false, "reset: read deveria voltar a false")
 assert(flush_state.edit == false, "reset: edit deveria voltar a false")
 assert(flush_state.done == false, "reset: done deveria voltar a false")
-print("✅ Teste 3: Reset funciona (4 campos voltam a false)")
+print("[OK] Teste 3: Reset funciona (4 campos voltam a false)")
 
 -- Teste 4: Todos simultâneos
 flush_state.exec = true
@@ -56,21 +56,21 @@ assert(flush_state.exec == true, "todos: exec")
 assert(flush_state.read == true, "todos: read")
 assert(flush_state.edit == true, "todos: edit")
 assert(flush_state.done == true, "todos: done")
-print("✅ Teste 4: Marcação simultânea funciona")
+print("[OK] Teste 4: Marcação simultânea funciona")
 
 -- Teste 5: Reset pós-tudo-marcado
 flush_state.reset()
 assert(flush_state.exec == false and flush_state.done == false, "reset pós-total falhou")
-print("✅ Teste 5: Reset pós-marcação total funciona")
+print("[OK] Teste 5: Reset pós-marcação total funciona")
 
 print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-print("✅ T1: FlushState — TODOS OS 5 TESTES PASSARAM")
+print("[OK] T1: FlushState — TODOS OS 5 TESTES PASSARAM")
 print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 
 -- 3. Nota: série T1/T2/T4 (T3 ausente no tree). Não há validate_T1.lua;
 --    este arquivo testa apenas o conceito local de flush_state (Issue #64).
 print("---")
-print("⚠️  ATENÇÃO: Teste isolado do CONCEITO passou!")
+print("[WARN] ATENÇÃO: Teste isolado do CONCEITO passou!")
 print("   Não existe validate_T1.lua nem test_T3.lua neste diretório.")
 print("   Path correto do diretório: agent/flush/tests/ (não agente/).")
 print("---")

@@ -59,14 +59,14 @@ function M.ask_user(cmd, failed_sub)
   if choice == "1" or choice == "" then
     M.last_approval_type = "APPROVED_ONCE"
     session_denials[pattern] = 0
-    io.write(y .. "✅ Comando aprovado.\n" .. rs .. "\n")
+    io.write(y .. "[OK] Comando aprovado.\n" .. rs .. "\n")
     io.flush()
     return true
   elseif choice == "2" then
     M.last_approval_type = "PERMANENTLY_APPROVED"
     session_denials[pattern] = 0
     rules.add_pattern(pattern)
-    io.write(y .. "✅ Regra adicionada: Comandos iniciando com '" .. pattern .. "' estão liberados.\n" .. rs .. "\n")
+    io.write(y .. "[OK] Regra adicionada: Comandos iniciando com '" .. pattern .. "' estão liberados.\n" .. rs .. "\n")
     io.flush()
     return true
   else
@@ -74,19 +74,19 @@ function M.ask_user(cmd, failed_sub)
 
     session_denials[pattern] = (session_denials[pattern] or 0) + 1
     if session_denials[pattern] >= 3 then
-      io.write(y .. "⚠️  Você recusou o padrão '" .. pattern .. "' 3 vezes seguidas.\n")
+      io.write(y .. "[WARN] Você recusou o padrão '" .. pattern .. "' 3 vezes seguidas.\n")
       io.write("Deseja BLOQUEAR permanentemente a ferramenta de comandos? (s/N): " .. rs)
       io.flush()
       local block_ans = (io.read("*l") or ""):lower():match("^%s*(.-)%s*$")
       if block_ans == "s" or block_ans == "sim" then
         local perms = require("agent.hooks.permissions")
         perms.set("Exec", "blocked")
-        io.write(y .. "🚫 Ferramenta 'Exec' configurada como BLOQUEADA permanentemente.\n\n" .. rs)
+        io.write(y .. "[BLOCKED] Ferramenta 'Exec' configurada como BLOQUEADA permanentemente.\n\n" .. rs)
       end
       session_denials[pattern] = 0
     end
 
-    io.write("\27[38;5;203m🚫 Cancelado.\n" .. rs .. "\n")
+    io.write("\27[38;5;203m[BLOCKED] Cancelado.\n" .. rs .. "\n")
     io.flush()
     return false
   end

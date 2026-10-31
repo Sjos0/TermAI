@@ -9,7 +9,7 @@ return function(M, N)
     ui.header(ctx.active.name or ctx.active.ref, session.current())
     if reset_info then
       local reason = reset_info.reason == "daily" and "diário" or "por inatividade"
-      io.write("\27[38;5;245m↻ Reset automático (" .. reason .. "): "
+      io.write("\27[38;5;245m[RESET] Reset automático (" .. reason .. "): "
         .. reset_info.from .. " → " .. reset_info.to .. "\27[0m\n\n")
       io.flush()
     end
@@ -81,7 +81,7 @@ return function(M, N)
         last_tool_cmd, tc_id_map, tc_group_map, pending_groups = nil, {}, {}, {}
         local preview = msg.content or ""
         if #preview > 300 then preview = preview:sub(1, 297) .. "..." end
-        io.write("\27[38;5;245m⟳ " .. preview .. "\27[0m\n\n")
+        io.write("\27[38;5;245m[COMPACT] " .. preview .. "\27[0m\n\n")
       elseif msg.role == "assistant" and msg.tool_calls then
         -- v2.4/2.5: NÃO chama tool_start aqui — replay não anima "em progresso",
         -- só mapeia (individual ou agrupado) pro que vem depois usar.

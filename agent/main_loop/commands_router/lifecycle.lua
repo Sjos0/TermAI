@@ -47,9 +47,9 @@ local function route(input, ctx, flush_msgs_start)
         if done then
           mf.marcar_flush(ctx.tokens)
           if session.save_flush_index then session.save_flush_index(#ctx.msgs) end
-          io.write("\n\27[38;5;114m✅ Memória de encerramento salva com sucesso!\27[0m\n\n")
+          io.write("\n\27[38;5;114m[OK] Memória de encerramento salva com sucesso!\27[0m\n\n")
         else
-          io.write("\n\27[38;5;203m⚠️  Falha no flush de encerramento. Dados mantidos na sessão.\27[0m\n\n")
+          io.write("\n\27[38;5;203m[WARN] Falha no flush de encerramento. Dados mantidos na sessão.\27[0m\n\n")
         end
         io.flush()
       end
@@ -85,19 +85,19 @@ local function route(input, ctx, flush_msgs_start)
     local new_start = flush_msgs_start
     if sucesso then
       new_start = #ctx.msgs + 1
-      local msg = "✅ Compactação manual (State Reset) concluída."
+      local msg = "[OK] Compactação manual (State Reset) concluída."
       if instructions then msg = msg .. " Foco: " .. instructions end
       ui.ai_msg_stream(msg)
     else
       if motivo == "api_error" then
-        io.write("\n\27[38;5;220m⚠️  Compactação manual abortada por falha na API."
+        io.write("\n\27[38;5;220m[WARN] Compactação manual abortada por falha na API."
           .. " O histórico foi preservado.\27[0m\n\n")
         io.flush()
       elseif motivo == "short_history" then
-        io.write("\n\27[38;5;245mℹ️  Histórico curto demais para compactar.\27[0m\n\n")
+        io.write("\n\27[38;5;245m[INFO] Histórico curto demais para compactar.\27[0m\n\n")
         io.flush()
       elseif motivo == "empty_summary" then
-        io.write("\n\27[38;5;220m⚠️  Compactação manual abortada: resumo vazio retornado pelo modelo."
+        io.write("\n\27[38;5;220m[WARN] Compactação manual abortada: resumo vazio retornado pelo modelo."
           .. " O histórico foi preservado.\27[0m\n\n")
         io.flush()
       end
@@ -106,7 +106,7 @@ local function route(input, ctx, flush_msgs_start)
   end
 
   if input == "/models" then
-    io.write("\n\27[38;5;114m⚙  Abrindo configurações de modelos...\27[0m\n")
+    io.write("\n\27[38;5;114m[CONFIG] Abrindo configurações de modelos...\27[0m\n")
     io.write("\27[38;5;243mA TUI vai reiniciar ao terminar.\27[0m\n\n")
     os.execute("lua5.4 " .. BASE .. "/main.lua models")
     restart_mod.restart_now()

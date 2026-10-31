@@ -15,7 +15,7 @@ local function do_restart()
     session.save_message("system", "[SYSTEM_AUDIT] O sistema foi reiniciado intencionalmente para atualização de estado/configuração.", 0, true)
   end)
 
-  io.write("\n\27[38;5;114m🔄 Reiniciando TermAI...\27[0m\n\n")
+  io.write("\n\27[38;5;114m[RESTART] Reiniciando TermAI...\27[0m\n\n")
   io.flush()
   io.write("\27[?1049l"); io.flush()
   io.write("\27[?2004l"); io.flush()
