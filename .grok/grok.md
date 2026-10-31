@@ -590,3 +590,7 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Sensibilidade:** classificação removida → 400 repete.
 **Erros:** parte_1 passou de 150 linhas → blanks removidos (132).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.1]
+**PATCH** correções #277–#282 (e #279 complemento).
+**Author:** Grok (xAI)
