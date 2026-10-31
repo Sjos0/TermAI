@@ -654,3 +654,7 @@ Card fundo sólido no replay para todo SGR.
 **Veredito:** CONFIRMADA — TAB não pinta células; expand antes de bg_row
 **Erro de prova anterior:** #302/#305 não cobriam TAB
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.4]
+Inclui #305 fundo seletivo + #307 TAB expand.
+**Author:** Grok (xAI)
