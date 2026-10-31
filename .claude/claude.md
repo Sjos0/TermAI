@@ -780,3 +780,7 @@ Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
 ## 2026-10-31 - [#281]
 Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR test/282-emulador-celulas
+**Issue:** #282 CONFIRMADA — emulador por célula + migração block_bg_wrap
+**Author:** Grok (xAI)
