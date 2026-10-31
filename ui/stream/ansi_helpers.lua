@@ -14,7 +14,7 @@ end
 local function header_label(concluded, dots)
   if concluded then
     return c.dim .. c.gray .. " ╭─ Pensamento Concluído "
-      .. DARK_GREEN .. "✓" .. "\27[K" .. c.reset
+      .. DARK_GREEN .. "[OK]" .. "\27[K" .. c.reset
   end
   return c.dim .. c.gray .. " ╭─ Pensando"
     .. dots_str(dots or 1) .. "\27[K" .. c.reset

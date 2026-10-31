@@ -70,7 +70,7 @@ function M.handle_update(ctx, token, update)
   api.finalize(token, chat_id, placeholder_id, resp or "")
 
   if stream_complete == false then
-    api.send_message(token, chat_id, "⚠️ Resposta incompleta (timeout de stream).")
+    api.send_message(token, chat_id, "[WARN] Resposta incompleta (timeout de stream).")
   end
 end
 

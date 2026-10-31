@@ -51,7 +51,7 @@ function M.search(query)
   local web_cfg = cfg.web_tools or {}
 
   if not web_cfg.enabled then
-    return "❌ Web Tools desativadas. Ative em Config › Pesquisa Web."
+    return "[FAIL] Web Tools desativadas. Ative em Config › Pesquisa Web."
   end
 
   local esc_query = url_encode(query)
@@ -65,11 +65,11 @@ function M.search(query)
   if h then h:close() end
 
   if html == "" then
-    return "❌ Falha na conexão com o DuckDuckGo. Verifique sua rede."
+    return "[FAIL] Falha na conexão com o DuckDuckGo. Verifique sua rede."
   end
 
   if html:match("g-recaptcha") or html:match("challenge-form") then
-    return "❌ Busca bloqueada temporariamente pelo DuckDuckGo (Bot Challenge)."
+    return "[FAIL] Busca bloqueada temporariamente pelo DuckDuckGo (Bot Challenge)."
   end
 
   local results = {}
@@ -88,11 +88,11 @@ function M.search(query)
   end
 
   if #results == 0 then
-    return "🔍 Nenhum resultado para: " .. query
+    return "[SEARCH] Nenhum resultado para: " .. query
   end
 
   -- Formata a saída no mesmo layout que o Google Grounding espera
-  local out = { "🔍 **Resultado (DuckDuckGo):** \"" .. query .. "\"\n" }
+  local out = { "[SEARCH] **Resultado (DuckDuckGo):** \"" .. query .. "\"\n" }
   for i = 1, math.min(#results, 5) do
     local r = results[i]
     out[#out + 1] = string.format("%d. **%s**", i, r.title)

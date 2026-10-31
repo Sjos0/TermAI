@@ -141,9 +141,9 @@ function M.render_edit_body(lines, ok, tw)
 
   -- 4. Conclusão Extra de Rodapé
   if ok then
-    row(" └─ ", c.green, "Substituição concluída ✓")
+    row(" └─ ", c.green, "Substituição concluída [OK]")
   else
-    row(" └─ ", c.red, "Substituição falha ❌")
+    row(" └─ ", c.red, "Substituição falha [FAIL]")
   end
 end
 
