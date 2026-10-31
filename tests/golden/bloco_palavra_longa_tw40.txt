@@ -1,5 +1,5 @@
 ┌──────────────────────────────────────┐[0m
-│[0mAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA…[0m│[0m
-│[0mAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA…[0m│[0m
+│[0mAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA[0m│[0m
+│[0mAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA[0m│[0m
 │[0mAAAA                                  [0m│[0m
 └──────────────────────────────────────┘[0m

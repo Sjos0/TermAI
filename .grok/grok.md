@@ -608,3 +608,9 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Goldens alterados:** card_corpo_reset_tw40/80 — células após \27[0m passam a ter bg 236
 **Sensibilidade:** sem fundo_seguro → FAIL card_corpo_reset
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [C #294 block sem perda]
+**Fase:** C
+**Goldens:** só bloco_palavra_longa_tw40/80
+**Sensibilidade:** #piece → FAIL conservação
+**Author:** Grok (xAI)

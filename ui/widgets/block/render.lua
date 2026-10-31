@@ -17,39 +17,9 @@ local function pad_to(s, w)
   return s .. string.rep(" ", w - vis)
 end
 
-local function wrap_text(text, max_w)
-  if max_w <= 0 then return {} end
-  text = tostring(text or "")
-  local lines = {}
-  local function push(chunk)
-    if chunk == "" and #lines > 0 then return end
-    lines[#lines + 1] = chunk
-  end
-  for paragraph in (text .. "\n"):gmatch("([^\n]*)\n") do
-    if paragraph == "" then push("")
-    else
-      local cur = ""
-      for word in paragraph:gmatch("%S+%s*") do
-        local candidate = cur .. word
-        if largura.colunas(candidate) <= max_w then cur = candidate
-        else
-          if cur ~= "" then push(cur:gsub("%s+$", "")) end
-          while largura.colunas(word) > max_w do
-            local piece = largura.cortar(word, max_w)
-            push(piece)
-            local plen = #piece
-            while plen > 0 and largura.colunas(word:sub(1, plen)) > max_w do plen = plen - 1 end
-            word = word:sub(plen + 1)
-          end
-          cur = word
-        end
-      end
-      if cur ~= "" then push(cur:gsub("%s+$", "")) end
-    end
-  end
-  if #lines == 0 then lines[1] = "" end
-  return lines
-end
+
+local wrap_mod = require("ui.widgets.block.wrap")
+local wrap_text = wrap_mod.wrap_text
 
 -- Reaplica fundo do interior após qualquer reset na linha.
 local function interior_bg(bg)
