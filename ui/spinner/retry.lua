@@ -39,7 +39,7 @@ end
 
 function M.show_retry(attempt, max, reason, wait)
   erase()
-  reason = tostring(reason or "erro"):gsub("\n", " ")
+  reason = select(1, require("ui.cell.sanitize").sanitize_line(tostring(reason or "erro"):gsub("\n", " ")))
   local head = string.format("Tentativa %d/%d — %s", attempt, max, reason)
   if wait and wait > 0 then
     head = head .. string.format(" · aguardando %ss", wait)

@@ -844,3 +844,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR feat/306-cell-sanitize
 **Refs #306**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR feat/306-card-render-unico
+**Refs #306**
+**Author:** Grok (xAI)

@@ -663,3 +663,8 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Fase:** E2
 **Módulos:** ui/cell/{sanitize,estilo,buffer}.lua
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#306 card render + block sanitize]
+**Fase:** E3/E4
+**Card e executor usam sanitize; retry/error também.
+**Author:** Grok (xAI)

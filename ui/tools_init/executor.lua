@@ -62,7 +62,7 @@ function M.tool_chunk(line)
   local tw   = core.tw()
   live.n = live.n + 1
   if live.n <= card.MAX_BODY then
-    local line_exp = require("ui.largura").expand_tabs(line)
+    local line_exp = select(1, require("ui.cell.sanitize").sanitize_line(line))
     io.write(card.bg_row(c.bg, c.gray, " │ ", c.white, card.cut(line_exp, tw - 8), tw) .. "\n")
     live.rows = live.rows + 1
   else
