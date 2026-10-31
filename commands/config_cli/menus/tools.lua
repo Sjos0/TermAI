@@ -59,7 +59,7 @@ function M.run(config_mod, ui)
   Permissões (ask/block) são outra coisa — só valem para tools ativas.
 ]]..ui.R.."\n")
 
-    io.write(ui.GR.."  ── Tools "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  ── Tools "..ui.SEP2("  ── Tools ")..ui.R.."\n")
     for i, name in ipairs(names) do
       local data = tools_mod.registry[name]
       local desc = (data and data.desc) or ""
@@ -71,7 +71,7 @@ function M.run(config_mod, ui)
         ui.B, i, ui.R, name, status, ui.DM, desc, ui.R))
     end
 
-    io.write("\n"..ui.GR.."  ── Ações "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  ── Ações "..ui.SEP2("  ── Ações ")..ui.R.."\n")
     io.write("  "..ui.B.."N."..ui.R.."  Toggle da tool número N\n")
     io.write("  "..ui.B.."A."..ui.R.."  Desativar todas\n")
     io.write("  "..ui.B.."R."..ui.R.."  Reativar todas\n")

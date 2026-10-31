@@ -4,8 +4,12 @@ local config_mod  = require("config")
 local perms_menu  = require("commands.config.menus.permissions")
 local bash_menu   = require("commands.config.menus.bash_patterns")
 local c = ui.c
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 local M = {}
 
 local function cls() io.write("\27[2J\27[H"); io.flush() end
@@ -24,14 +28,14 @@ function M.run(ctx)
     local raw_iter    = ctx.cfg.agents.defaults.maxIter or 20
     local iter_label  = (raw_iter == 0) and (c.yellow.."Ilimitado"..c.reset) or tostring(raw_iter)
     io.write("\n"..c.bold..c.cyan.."  Configurações › Hooks & Automação"..c.reset.."\n")
-    io.write(c.gray.."  "..SEP..c.reset.."\n\n")
-    io.write(c.gray.."  ── Escudo Anti-Burrice "..SEP2..c.reset.."\n")
+    io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
+    io.write(c.gray.."  ── Escudo Anti-Burrice "..SEP2("  ── Escudo Anti-Burrice ")..c.reset.."\n")
     row("Max tentativas de erro:", tostring(max_retries).."  "..c.dim.."(1 – 10)"..c.reset)
     io.write("\n")
-    io.write(c.gray.."  ── Limites do Agente "..SEP2..c.reset.."\n")
+    io.write(c.gray.."  ── Limites do Agente "..SEP2("  ── Limites do Agente ")..c.reset.."\n")
     row("Max iterações de tools:", iter_label)
     io.write("\n")
-    io.write(c.gray.."  ── Opções "..SEP2..c.reset.."\n")
+    io.write(c.gray.."  ── Opções "..SEP2("  ── Opções ")..c.reset.."\n")
     io.write("  "..c.white.."1."..c.reset.."  Alterar max tentativas de erro  "..c.dim.."(padrão: 3)"..c.reset.."\n")
     io.write("  "..c.white.."2."..c.reset.."  Alterar max iterações de tools  "..c.dim.."(0 = ilimitado)"..c.reset.."\n")
     io.write("  "..c.white.."3."..c.reset.."  Gerenciar permissões de ferramentas\n")

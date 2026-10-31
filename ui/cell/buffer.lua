@@ -1,11 +1,13 @@
--- ui/cell/buffer.lua — buffer de células com fundo fixo (puro).
+-- ui/cell/buffer.lua — buffer de células com fundo fixo.
+local core = require("ui.core")
 local estilo = require("ui.cell.estilo")
 local M = {}
 
 function M.new(tw, bg_code)
   return {
-    tw = tw or 80,
-    bg = bg_code or 234,
+    -- Sem largura explícita, a real do terminal (fallback único no core).
+    tw    = tw or core.tw(),
+    bg    = bg_code or 234,
     cells = {},
   }
 end

@@ -27,7 +27,9 @@ local function render_line(s, tw)
     return ESC.."1m"..ESC.."38;5;255m"..render_inline(s:sub(3))..ESC.."0m"
   end
   if s:match("^%-%-%-+$") or s:match("^%*%*%*+$") then
-    return ESC.."38;5;238m"..string.rep("─", tw or 80)..ESC.."0m"
+    -- Sem tw explícito, a largura real do terminal (fallback único no core);
+    -- a linha horizontal ocupa tw colunas cheias.
+    return ESC.."38;5;238m"..string.rep("─", tw or require("ui.core").tw())..ESC.."0m"
   end
   s = s:gsub("^%s*[%-%*•] (.+)$", function(body)
     return "  "..ESC.."38;5;245m•"..ESC.."0m "..render_inline(body)

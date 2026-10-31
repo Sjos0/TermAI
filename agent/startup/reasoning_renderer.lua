@@ -69,7 +69,7 @@ local function show_reasoning_box(reasoning)
       .. (#all_lines - MAX_REASONING_LINES) .. " linhas)" .. c.reset .. "\n")
   end
 
-  io.write(c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
+  io.write(c.dim .. c.gray .. " ╰" .. core.regua(20, 2) .. c.reset .. "\n\n")
   io.flush()
 end
 M.show_reasoning_box     = show_reasoning_box

@@ -49,15 +49,8 @@ local function wrap_code(s, w)
 end
 
 local function tw()
-  local ok, core = pcall(require, "ui.core")
-  if ok and core and core.tw then return core.tw() end
-  local f = io.popen("stty size 2>/dev/null")
-  if f then
-    local o = f:read("*a"); f:close()
-    local _, w = o:match("(%d+)%s+(%d+)")
-    return tonumber(w) or 80
-  end
-  return 80
+  -- Fonte única de largura (#331): o fallback mora em ui/core/terminal.lua.
+  return require("ui.core").tw()
 end
 
 local function bg_code()

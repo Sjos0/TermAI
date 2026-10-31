@@ -1,4 +1,5 @@
 local json = require("json")
+local core = require("ui.core")
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
 
 local c = {
@@ -24,7 +25,7 @@ end
 
 io.write("\n")
 io.write(c.bold .. c.cyan .. "  TermAI — Status do Sistema" .. c.reset .. "\n")
-io.write(c.gray .. "  " .. string.rep("─", 35) .. c.reset .. "\n\n")
+io.write(c.gray .. "  " .. core.regua(35, 2) .. c.reset .. "\n\n")
 
 -- Config
 io.write(c.bold .. "  Configuração:" .. c.reset .. "\n")
@@ -83,5 +84,5 @@ else
   io.write(c.red .. "  ✗ config.json não encontrado ou inválido" .. c.reset .. "\n\n")
 end
 
-io.write(c.gray .. "  " .. string.rep("─", 35) .. c.reset .. "\n")
+io.write(c.gray .. "  " .. core.regua(35, 2) .. c.reset .. "\n")
 io.write("  Use " .. c.bold .. "TermAI tui" .. c.reset .. " para iniciar.\n\n")

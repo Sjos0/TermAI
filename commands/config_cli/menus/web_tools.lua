@@ -35,7 +35,7 @@ function M.run(config_mod, ui)
     io.write(ui.DM..[[  Escolha seu Provedor principal e ative o Fallback em Cadeia.
   Suporta Google Grounding, DuckDuckGo (Gratuito) e Tavily Search.
 ]]..ui.R.."\n")
-    io.write(ui.GR.."  ── Status "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
     ui.row("Pesquisa Web:", enabled and (ui.G.."✅ Ativa"..ui.R) or (ui.RE.." ❌ Desativada"..ui.R))
     ui.row("Provedor Ativo:", provider == "google_grounding" and "Google Grounding (API)"
                          or (provider == "tavily_search" and "Tavily Search (API)" or "DuckDuckGo (Gratuito)"), ui.G)
@@ -50,7 +50,7 @@ function M.run(config_mod, ui)
       ui.row("Chave Tavily:", tav_display ~= "" and tav_display or ui.RE.."(não configurada)"..ui.R)
     end
 
-    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  "..(enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Pesquisa Web\n")
     io.write("  "..ui.B.."2."..ui.R.."  Alterar Provedor de Busca Principal  "..ui.DM.."(Google / DDG / Tavily)"..ui.R.."\n")
     io.write("  "..ui.B.."3."..ui.R.."  "..(fallback_enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Fallback de Provedores\n")

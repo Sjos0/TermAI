@@ -5,8 +5,12 @@ local c = ui.c
 
 local M = {}
 
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 
 local function row(label, value, color)
   color = color or c.white
@@ -18,7 +22,7 @@ function M.print_header()
   io.write("\27[2J\27[H") -- Limpa a tela
   io.flush()
   io.write("\n"..c.bold..c.cyan.."  Configurações › Requisições"..c.reset.."\n")
-  io.write(c.gray.."  "..SEP..c.reset.."\n\n")
+  io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
 end
 
 function M.print_status(req, defaults)
@@ -30,7 +34,7 @@ function M.print_status(req, defaults)
   local wt      = req.wait_timeout or 0
   local req_mode = req.mode or ((wt > 0) and "buffer" or "stream")
 
-  io.write(c.gray.."  ── Status atual "..SEP2..c.reset.."\n")
+  io.write(c.gray.."  ── Status atual "..SEP2("  ── Status atual ")..c.reset.."\n")
   
   row("Modo:",
     req_mode == "buffer"
@@ -58,7 +62,7 @@ function M.print_status(req, defaults)
 end
 
 function M.print_options()
-  io.write("\n"..c.gray.."  ── Opções "..SEP2..c.reset.."\n")
+  io.write("\n"..c.gray.."  ── Opções "..SEP2("  ── Opções ")..c.reset.."\n")
   io.write("  "..c.white.."1."..c.reset.."  Alterar timeout  "..c.dim.."(padrão: 120s)"..c.reset.."\n")
   io.write("  "..c.white.."2."..c.reset.."  Alterar max tentativas  "..c.dim.."(padrão: 10)"..c.reset.."\n")
   io.write("  "..c.white.."3."..c.reset.."  Modo retry  "..c.dim.."(exponential / static)"..c.reset.."\n")

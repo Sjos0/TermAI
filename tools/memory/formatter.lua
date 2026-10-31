@@ -11,6 +11,7 @@ local function format_results(sorted, query, files, tokens)
   end
 
   -- ── Formatação da resposta ────────────────────────────────────────────────
+  -- não é largura de tela (#331): este separador vai para o arquivo .md de memória, não para o terminal
   local sep    = string.rep("─", 44)
   local result = "🧠 **Memórias relevantes para:** \"" .. query .. "\"\n"
               .. "📊 " .. #sorted .. " arquivo(s) | Grafo: "

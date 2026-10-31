@@ -1,6 +1,7 @@
 -- agent/session_cmds/parte_2.lua — exporta: do_session.
 return function(M, N)
   local session, tools, restart_mod = N.session, N.tools, N.restart_mod
+  local core = require("ui.core")
 
 
   -- do_session — Gerencia listagem e troca de sessões.
@@ -32,7 +33,7 @@ return function(M, N)
     end
 
     io.write("\n" .. "\27[1m\27[38;5;80m  Gerenciador de Sessões\27[0m\n")
-    io.write("\27[38;5;245m  " .. string.rep("─", 40) .. "\27[0m\n\n")
+    io.write("\27[38;5;245m  " .. core.regua(40, 2) .. "\27[0m\n\n")
 
     for idx, s in ipairs(list) do
       local num    = string.format("%2d", idx)

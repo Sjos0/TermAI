@@ -34,9 +34,9 @@ return function(M, N)
       end
 
       io.write("\n"..c.bold..c.cyan.."  Configurações › Pesquisa Web"..c.reset.."\n")
-      io.write(c.gray.."  "..SEP..c.reset.."\n\n")
+      io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
 
-      io.write(c.gray.."  ── Status "..SEP2..c.reset.."\n")
+      io.write(c.gray.."  ── Status "..SEP2("  ── Status ")..c.reset.."\n")
       row("Pesquisa Web:", enabled and (c.green.."✅ Ativa"..c.reset) or (c.red.."❌ Desativada"..c.reset))
       row("Provedor Ativo:", provider == "google_grounding" and "Google Grounding"
                            or (provider == "tavily_search" and "Tavily Search" or "DuckDuckGo (Gratuito)"), c.cyan)
@@ -51,7 +51,7 @@ return function(M, N)
         row("Chave Tavily:", tav_display ~= "" and tav_display or c.red.."(não configurada)"..c.reset)
       end
 
-      io.write("\n"..c.gray.."  ── Opções "..SEP2..c.reset.."\n")
+      io.write("\n"..c.gray.."  ── Opções "..SEP2("  ── Opções ")..c.reset.."\n")
       io.write("  "..c.white.."1."..c.reset.."  "..(enabled and "Desativar" or "Ativar").." Pesquisa Web\n")
       io.write("  "..c.white.."2."..c.reset.."  Alterar Provedor de Busca Principal  "..c.dim.."(Google / DDG / Tavily)"..c.reset.."\n")
       io.write("  "..c.white.."3."..c.reset.."  "..(fallback_enabled and "Desativar" or "Ativar").." Fallback de Provedores\n")

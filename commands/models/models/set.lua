@@ -1,4 +1,5 @@
 -- set.lua — Seleciona e ativa um modelo, atualizando a config. Retorna o novo `active`.
+local core = require("ui.core")
 local ui = require("commands.models.ui")
 local c  = ui.c
 local M = {}
@@ -11,7 +12,7 @@ local function set(config_mod, models_mod, active, ref)
       return active
     end
     io.write("\n" .. c.bold .. c.cyan .. "  Selecionar Modelo" .. c.reset .. "\n")
-    io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+    io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
     for i, m in ipairs(models) do
       local mark = (m.ref == active) and (c.green .. "★") or c.gray .. " "
       io.write("  " .. mark .. " " .. c.reset .. c.white .. i .. ". "

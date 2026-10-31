@@ -9,7 +9,7 @@ function M.run(config_mod, ui)
     local global_skills = installer.list_global_skills()
     local agent_skills  = installer.list_agent_skills(agent_name)
     ui.hdr("TermAI Config > Skills")
-    io.write(ui.GR.."  -- Skills Globais "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  -- Skills Globais "..ui.SEP2("  -- Skills Globais ")..ui.R.."\n")
     if #global_skills == 0 then
       io.write(ui.GR.."  (nenhuma skill global encontrada)\n"..ui.R)
     else
@@ -17,7 +17,7 @@ function M.run(config_mod, ui)
         io.write(string.format("  %s%d.%s  %-20s\n", ui.B, i, ui.R, s.name))
       end
     end
-    io.write("\n"..ui.GR.."  -- Skills do Agente '"..agent_name.."' "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  -- Skills do Agente '"..agent_name.."' "..ui.SEP2("  -- Skills do Agente '"..agent_name.."' ")..ui.R.."\n")
     if #agent_skills == 0 then
       io.write(ui.GR.."  (nenhuma instalada)\n"..ui.R)
     else
@@ -25,7 +25,7 @@ function M.run(config_mod, ui)
         io.write(string.format("  %s%d.%s  %s\n", ui.B, i, ui.R, s.name))
       end
     end
-    io.write("\n"..ui.GR.."  -- Opcoes "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  -- Opcoes "..ui.SEP2("  -- Opcoes ")..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  Instalar skills globais no agente\n")
     io.write("  "..ui.B.."2."..ui.R.."  Remover skills do agente\n")
 

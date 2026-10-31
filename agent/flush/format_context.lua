@@ -30,6 +30,7 @@ function M.format_context(msgs)
     end
   end
   return #parts > 0
+    -- não é largura de tela (#331): este separador vai para o prompt do flush (modelo), não para o terminal
     and table.concat(parts, "\n\n" .. string.rep("─", 30) .. "\n\n")
     or  "[Contexto sem mensagens relevantes]"
 end

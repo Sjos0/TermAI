@@ -40,7 +40,7 @@ local function close_reasoning_box()
   local s    = state._s
   local text = s.reasoning
   if not text or text:match("^%s*$") then
-    io.write("\n" .. c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
+    io.write("\n" .. c.dim .. c.gray .. " ╰" .. core.regua(20, 2) .. c.reset .. "\n\n")
     io.flush()
     return
   end
@@ -54,7 +54,7 @@ local function close_reasoning_box()
       io.write(ansi.header_label(true))
       io.write("\27[u")
     end
-    io.write(c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. "\27[K" .. c.reset .. "\n\n")
+    io.write(c.dim .. c.gray .. " ╰" .. core.regua(20, 2) .. "\27[K" .. c.reset .. "\n\n")
     io.flush()
     return
   end
@@ -66,7 +66,7 @@ local function close_reasoning_box()
     io.write("\27[K")
     io.write(ansi.header_label(true))
     io.write("\27[u")
-    io.write("\n" .. c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. c.reset .. "\n\n")
+    io.write("\n" .. c.dim .. c.gray .. " ╰" .. core.regua(20, 2) .. c.reset .. "\n\n")
     io.flush()
     return
   end
@@ -85,7 +85,7 @@ local function close_reasoning_box()
       core.print_reasoning_line(trimmed, w)
     end
   end
-  io.write(c.dim .. c.gray .. " ╰" .. string.rep("─", 20) .. "\27[K" .. c.reset .. "\n\n")
+  io.write(c.dim .. c.gray .. " ╰" .. core.regua(20, 2) .. "\27[K" .. c.reset .. "\n\n")
   io.flush()
 end
 

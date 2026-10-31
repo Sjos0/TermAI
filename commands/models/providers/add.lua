@@ -1,12 +1,13 @@
 -- add.lua — Adiciona um provedor: via catálogo built-in ou manualmente (customizado).
 local ui = require("commands.models.ui")
 local test_connection = require("commands.models.providers.test_connection")
+local core = require("ui.core")
 local c  = ui.c
 local M = {}
 
 local function add(models_mod)
   io.write("\n" .. c.bold .. c.cyan .. "  Adicionar Provedor" .. c.reset .. "\n")
-  io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+  io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
   io.write("  " .. c.white .. "1." .. c.reset .. " Provedor built-in (pré-configurado)\n")
   io.write("  " .. c.white .. "2." .. c.reset .. " Provedor customizado (manual)\n\n")
   local ch = ui.prompt_read("Escolha (0 para voltar)")

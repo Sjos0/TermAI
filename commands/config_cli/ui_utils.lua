@@ -8,8 +8,12 @@ local G  = "\27[38;5;114m"; local RE = "\27[38;5;203m"
 local GR = "\27[38;5;245m"; local CY = "\27[38;5;80m"
 local DM = "\27[2m";        local YL = "\27[38;5;220m"
 
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 
 local function rdl(prompt)
   io.write(CY.."  "..prompt..": "..R); io.flush()
@@ -25,7 +29,7 @@ end
 
 local function hdr(title)
   io.write("\27[2J\27[H")
-  io.write("\n"..B..CY.."  "..title..R.."\n"..GR.."  "..SEP..R.."\n\n")
+  io.write("\n"..B..CY.."  "..title..R.."\n"..GR.."  "..SEP()..R.."\n\n")
 end
 
 local function pause()

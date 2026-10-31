@@ -5,8 +5,12 @@ local ui         = require("commands.models.ui")
 local config_mod = require("config")
 local c = ui.c
 local M = {}
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 
 local function cls() io.write("\27[2J\27[H"); io.flush() end
 
@@ -32,7 +36,7 @@ function M.run(ctx)
   while true do
     cls()
     io.write("\n"..c.bold..c.cyan.."  Configurações"..c.reset.."\n")
-    io.write(c.gray.."  "..SEP..c.reset.."\n\n")
+    io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
     io.write("  "..c.white.."1."..c.reset.."  Memória          "..c.dim.."(Memory Flush)"..c.reset.."\n")
     io.write("  "..c.white.."2."..c.reset.."  Requisições      "..c.dim.."(timeout, tentativas, retry)"..c.reset.."\n")
     io.write("  "..c.white.."3."..c.reset.."  Raciocínio       "..c.dim.."(protocolo de thinking)"..c.reset.."\n")
