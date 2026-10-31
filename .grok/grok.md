@@ -634,3 +634,7 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Prova de sensibilidade:** só \27[0m → bad=4; skip m/49/40/48;5 → bad=3
 **Erro de prova 1.38.2:** afirmou card sem buraco cobrindo só \27[0m; replay mostrava buracos.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.3]
+Card fundo sólido no replay para todo SGR.
+**Author:** Grok (xAI)
