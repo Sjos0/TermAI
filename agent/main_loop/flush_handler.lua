@@ -39,10 +39,10 @@ local function handle(ctx, input, flush_msgs_start)
       -- Emite evento OnMemoryFlush para scripts do usuário em ~/.TermAI/hooks/
       local ok_he, he = pcall(require, "agent.hooks.engine")
       if ok_he then pcall(he.run, "OnMemoryFlush", ctx) end
-      io.write("\n\27[38;5;114m✅ Memory Flush concluído."
+      io.write("\n\27[38;5;114m[OK] Memory Flush completed."
         .. " Processando sua mensagem...\27[0m\n\n")
     else
-      io.write("\n\27[38;5;203m⚠️  Flush incompleto. "
+      io.write("\n\27[38;5;203m[WARN] Flush incompleto. "
         .. "Processando mesmo assim...\27[0m\n\n")
     end
     -- Sempre avança new_start e marca flush, mesmo em falha

@@ -714,3 +714,18 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Capturas (por célula):** `show_api_error` com mensagem longa + recover — tw=40: 9 linhas / 360 células, todas fundo 52, 0 glifo de moldura; tw=80: 6 linhas / 480 células, todas fundo 52, 0 glifo de moldura. (Replay da caminho_real é dependente do cenário: vivo+recover tw=40 = 200 células, tw=80 = 320 células.) Anexadas à PR. UI/widgets/block e goldens do componente intactos.
 **Suíte:** 120 PASS / 7 FAIL, todos pré-existentes no main (ambientais Termux).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/326-flush-erro-api
+**Closes #326**
+**Veredito:** H1/H2 refutadas; H3/H4 parciais — NÃO corrigidas nesta PR.
+**Correção (4 trocas de texto, cor preservada, nenhum outro símbolo tocado):**
+- agent/flush/loop.lua:68 `⚠️  Memory Flush abortado (API): ` → `[WARN] Memory Flush aborted (API): ` (prefixo \27[38;5;203m mantido)
+- agent/flush/loop.lua:113 `⚠️  Memory Flush: MAX_ITER (` → `[WARN] Memory Flush MAX_ITER (` (prefixo mantido)
+- agent/main_loop/flush_handler.lua:42 `✅ Memory Flush concluído.` → `[OK] Memory Flush completed.` (prefixo \n\27[38;5;114m mantido)
+- agent/main_loop/flush_handler.lua:45 `⚠️  Flush incompleto. ` → `[WARN] Flush incompleto. ` (prefixo \n\27[38;5;203m mantido)
+**Specs:** tests/flush_avisos_sem_simbolo_spec.lua 9 FAIL → PASS; tests/flush_provedor_falso_spec.lua 4 FAIL → 1 FAIL residual (ver abaixo).
+**Sensibilidade:** loop.lua:68 revertido para `⚠️  Memory Flush abortado (API): ` → 3 FAIL; restaurado → PASS.
+**Residual (defeito do SPEC, não do patch):** o check “cenário (b): o Read REAL devolve 'Arquivo não existe'” falha porque a sandbox do flush (agent/flush.lua:44 cria `flush_ctx.msgs` NOVA) é uma tabela separada de `ctx.msgs`; o dublê de tool_runner insere a mensagem tool na sandbox (n=5) e o spec lê o ctx externo (n=0). Sonda por identidade de tabela: MOCK_CTX=0xac07e960 ≠ OUTER_CTX=0xac07e740. Proibido alterar os specs nesta tarefa.
+**Tamanho:** agent/flush/loop.lua 119 linhas; agent/main_loop/flush_handler.lua 56 linhas (ambos ≤150).
+**Regressão:** tests/blocos_tentativa_erro_spec.lua ALL OK; tests/retry_bloco_sem_borda_spec.lua ALL OK.
+**Author:** Grok (xAI)
