@@ -648,3 +648,9 @@ Card fundo sólido no replay para todo SGR.
 **Mudança:** reemite bg só após SGR de fundo/reset (0, vazio, 4x, 10x, 48;…, 49) e ESC[K]/J].
 **Prova:** card_replay_variantes bad=0; golden por célula ALL OK.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#307 card TAB expand]
+**Issue:** #307
+**Veredito:** CONFIRMADA — TAB não pinta células; expand antes de bg_row
+**Erro de prova anterior:** #302/#305 não cobriam TAB
+**Author:** Grok (xAI)

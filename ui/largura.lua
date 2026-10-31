@@ -48,6 +48,43 @@ function M.colunas(s)
   return colunas_plain(M.visivel(s))
 end
 
+--- Expande TAB em espaços até a próxima parada de 8 colunas (linha lógica).
+--- Não interpreta SGR; só texto visível + TABs.
+function M.expand_tabs(s)
+  s = tostring(s or "")
+  local out, col = {}, 0
+  local i = 1
+  while i <= #s do
+    local c = s:sub(i, i)
+    if c == "\27" then
+      local seq = s:sub(i):match("^(\27%[[0-9;:?]*[A-Za-z])")
+      if seq then out[#out+1]=seq; i=i+#seq
+      else out[#out+1]=c; i=i+1 end
+    elseif c == "\t" then
+      local n = 8 - (col % 8)
+      out[#out+1] = string.rep(" ", n)
+      col = col + n
+      i = i + 1
+    else
+      local ok, cp = pcall(utf8.codepoint, s, i)
+      if ok and cp then
+        local ch = utf8.char(cp)
+        out[#out+1] = ch
+        -- largura aproximada para avanço de coluna
+        if cp >= 0x1100 and (cp <= 0x115F or (cp >= 0x2E80 and cp <= 0xA4CF) or (cp >= 0xAC00 and cp <= 0xD7A3)
+          or (cp >= 0x1F000 and cp <= 0x1FAFF)) then
+          col = col + 2
+        else
+          col = col + 1
+        end
+        i = i + #ch
+      else out[#out+1]=c; col=col+1; i=i+1 end
+    end
+  end
+  return table.concat(out)
+end
+
+
 function M.cortar(s, max)
   s = tostring(s or "")
   if max <= 0 then return "" end
