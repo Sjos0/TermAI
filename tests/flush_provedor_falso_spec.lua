@@ -35,6 +35,7 @@ end
 local tools = require("tools") -- registra o registry real (Read incluso)
 
 local tokbuf = {}
+local capturado_tool = {} -- resultado real devolvido pelo Read (sandbox do flush)
 local ui_mock = setmetatable({
   stream_start     = function() tokbuf = {} end,
   stream_confirm   = function() end,
@@ -55,13 +56,16 @@ package.preload["agent.loop.tool_runner"] = function()
     run_batch = function(ctx, tool_calls)
       for _, tc in ipairs(tool_calls) do
         local fn   = tc["function"] or tc
-        local args = fn.arguments
+        -- Cru (OpenAI: function.arguments = string JSON) ou normalizado pelo
+        -- tool_parser do flush (agent/api/request_stream/tool_parser.lua): {id,name,args}.
+        local args = fn.arguments or fn.args
         if type(args) == "string" then
           local okj, dec = pcall(require("json").decode, args)
           if okj and type(dec) == "table" then args = dec end
         end
         local resultado = tools.call_structured(fn.name, args,
           { skip_pretool = true, disabled_tools = ctx.disabled_tools })
+        capturado_tool[#capturado_tool + 1] = resultado
         ctx.msgs[#ctx.msgs + 1] = {
           role = "tool", tool_call_id = tc.id, content = resultado,
         }
@@ -113,6 +117,7 @@ local flow   = require("agent.flush")
 local prompt = require("memoryflush.prompt").get_flush_prompt({})
 
 local function rodar_flush(porta)
+  capturado_tool = {}
   local ctx = {
     cfg = { agents = { defaults = {
       request = { timeout = 20, idle_timeout = 8, max_retries = 2,
@@ -145,10 +150,7 @@ local porta, log = subir("readmiss")
 local ok_b, res_b, saida_b, ctx_b = rodar_flush(porta)
 matar_todos()
 print("--- log cenário (b) ---"); print(ler(log) or "(vazio)")
-local tool_b = ""
-for _, m in ipairs(ctx_b.msgs) do
-  if m.role == "tool" then tool_b = tool_b .. (m.content or "") end
-end
+local tool_b = table.concat(capturado_tool, "\n")
 print("--- mensagem tool injetada no contexto do flush ---")
 print(tool_b ~= "" and tool_b or "(nenhuma)")
 check(ok_b == true,             "cenário (b): flush não lançou erro")
