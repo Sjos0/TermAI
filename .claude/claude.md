@@ -833,3 +833,6 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR test/golden-por-celula
 **Processo:** golden por célula; PR #302 registrou alteração por bytes sem mudança visual.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/fundo-sgr-seletivo
+**Author:** Grok (xAI)

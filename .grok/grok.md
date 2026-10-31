@@ -642,3 +642,9 @@ Card fundo sólido no replay para todo SGR.
 ## 2026-10-31 - [golden por célula]
 **Correção de processo:** PR #302 alterou goldens `card_*` por bytes sem mudança visual de célula. `golden_spec` passa a comparar por célula (fundo, texto, glifo). Diff por célula nos 12 card_*: vazio.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [fundo SGR seletivo]
+**Arquivo:** ui/estilo/fundo.lua
+**Mudança:** reemite bg só após SGR de fundo/reset (0, vazio, 4x, 10x, 48;…, 49) e ESC[K]/J].
+**Prova:** card_replay_variantes bad=0; golden por célula ALL OK.
+**Author:** Grok (xAI)
