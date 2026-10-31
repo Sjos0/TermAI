@@ -41,7 +41,7 @@ end
 -- Retorna relatorio do que foi copiado.
 function M.install_to_agent(skill_names, agent_name)
   if not skill_names or #skill_names == 0 then
-    return "❌ Nenhuma skill selecionada."
+    return "[FAIL] Nenhuma skill selecionada."
   end
 
   agent_name = agent_name or "main"
@@ -58,7 +58,7 @@ function M.install_to_agent(skill_names, agent_name)
 
     -- Verificar se a skill global existe
     if not utils.file_exists(src .. "/SKILL.md") then
-      reports[#reports + 1] = "❌ '" .. name .. "': nao encontrada em skills globais"
+      reports[#reports + 1] = "[FAIL] '" .. name .. "': nao encontrada em skills globais"
     else
       -- Copiar recursivamente
       local safe_src = src:gsub("'", "'\\''")
@@ -69,9 +69,9 @@ function M.install_to_agent(skill_names, agent_name)
       if h then h:close() end
 
       if err:match("^%s*$") then
-        reports[#reports + 1] = "✅ '" .. name .. "': instalada com sucesso"
+        reports[#reports + 1] = "[OK] '" .. name .. "': instalada com sucesso"
       else
-        reports[#reports + 1] = "❌ '" .. name .. "': erro ao copiar — " .. err:match("^%s*(.-)%s*$")
+        reports[#reports + 1] = "[FAIL] '" .. name .. "': erro ao copiar — " .. err:match("^%s*(.-)%s*$")
       end
     end
   end
@@ -85,7 +85,7 @@ end
 -- Retorna relatorio do que foi removido.
 function M.uninstall_from_agent(skill_names, agent_name)
   if not skill_names or #skill_names == 0 then
-    return "❌ Nenhuma skill selecionada."
+    return "[FAIL] Nenhuma skill selecionada."
   end
 
   agent_name = agent_name or "main"
@@ -96,11 +96,11 @@ function M.uninstall_from_agent(skill_names, agent_name)
     local path = agent_dir .. "/" .. name
 
     if not utils.file_exists(path) then
-      reports[#reports + 1] = "❌ '" .. name .. "': nao encontrada no agente"
+      reports[#reports + 1] = "[FAIL] '" .. name .. "': nao encontrada no agente"
     else
       local safe = path:gsub("'", "'\\''")
       os.execute("rm -rf '" .. safe .. "'")
-      reports[#reports + 1] = "✅ '" .. name .. "': removida do agente"
+      reports[#reports + 1] = "[OK] '" .. name .. "': removida do agente"
     end
   end
 

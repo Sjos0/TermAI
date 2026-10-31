@@ -8,9 +8,9 @@ function M.register(tools)
     function()
       local restart_mod = require("agent.restart")
       if restart_mod.request() then
-        return "🔄 Reinício agendado. O sistema reiniciará após o salvamento do contexto."
+        return "[RESTART] Reinício agendado. O sistema reiniciará após o salvamento do contexto."
       else
-        return "❌ Erro ao agendar reinício."
+        return "[FAIL] Erro ao agendar reinício."
       end
     end,
     {type = "object", properties = {}}

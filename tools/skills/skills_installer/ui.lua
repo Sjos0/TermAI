@@ -49,20 +49,20 @@ function M.banner()
 end
 
 function M.processing(text)
-  io.write(CYAN .. "⏳ " .. text .. "..." .. RESET .. "\n")
+  io.write(CYAN .. "[WAIT] " .. text .. "..." .. RESET .. "\n")
   io.flush()
 end
 
 function M.result_ok(skill, path)
-  io.write(GREEN .. "  ✅ " .. skill .. RESET .. GRAY .. " → " .. path .. RESET .. "\n")
+  io.write(GREEN .. "  [OK] " .. skill .. RESET .. GRAY .. " → " .. path .. RESET .. "\n")
 end
 
 function M.result_fail(skill, error_msg)
-  io.write(RED .. "  ❌ " .. skill .. RESET .. GRAY .. " → " .. (error_msg or "erro desconhecido") .. RESET .. "\n")
+  io.write(RED .. "  [FAIL] " .. skill .. RESET .. GRAY .. " → " .. (error_msg or "erro desconhecido") .. RESET .. "\n")
 end
 
 function M.result_skip(skill, reason)
-  io.write(GRAY .. "  ⏭ " .. skill .. " — " .. reason .. RESET .. "\n")
+  io.write(GRAY .. "  [SKIP] " .. skill .. " — " .. reason .. RESET .. "\n")
 end
 
 function M.summary(results)
@@ -75,9 +75,9 @@ function M.summary(results)
     else fail = fail + 1 end
   end
   io.write("\n" .. GRAY .. "  ── Resumo ──" .. RESET .. "\n")
-  if ok > 0 then io.write(GREEN .. "  ✅ " .. ok .. " instalada(s)" .. RESET .. "\n") end
-  if fail > 0 then io.write(RED .. "  ❌ " .. fail .. " falhou" .. RESET .. "\n") end
-  if skip > 0 then io.write(GRAY .. "  ⏭ " .. skip .. " ignorada(s)" .. RESET .. "\n") end
+  if ok > 0 then io.write(GREEN .. "  [OK] " .. ok .. " instalada(s)" .. RESET .. "\n") end
+  if fail > 0 then io.write(RED .. "  [FAIL] " .. fail .. " falhou" .. RESET .. "\n") end
+  if skip > 0 then io.write(GRAY .. "  [SKIP] " .. skip .. " ignorada(s)" .. RESET .. "\n") end
   io.write("\n")
 end
 

@@ -34,13 +34,13 @@ function M.luac_validate(path)
     local out = h and h:read("*a") or ""
     if h then h:close() end
     out = out:gsub("%s+$", "")
-    return out == "" and "✅ luac -p: OK" or ("⚠️ luac -p ERRO:\n" .. out)
+    return out == "" and "[OK] luac -p: OK" or ("[WARN] luac -p ERRO:\n" .. out)
   else
     local h = io.popen('lua -e "local f,e=loadfile([[' .. path .. ']]); if not f then io.write(e) end" 2>&1')
     local out = h and h:read("*a") or ""
     if h then h:close() end
     out = out:gsub("%s+$", "")
-    return out == "" and "✅ lua loadfile: OK" or ("⚠️ lua loadfile ERRO:\n" .. out)
+    return out == "" and "[OK] lua loadfile: OK" or ("[WARN] lua loadfile ERRO:\n" .. out)
   end
 end
 
@@ -64,7 +64,7 @@ function M.file_info(content)
       lines = lines + 1
     end
   end
-  return string.format("📊 %s | %d linhas | %d chars", size_str, lines, bytes)
+  return string.format("[STATS] %s | %d linhas | %d chars", size_str, lines, bytes)
 end
 
 return M

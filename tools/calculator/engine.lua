@@ -15,12 +15,12 @@ function M.run(expression)
 
   local fn, err = load("return " .. expression, "calc", "t", env)
   if not fn then 
-    return nil, "❌ Expressão inválida: " .. tostring(err):gsub("%[string .-%]:", "linha") 
+    return nil, "[FAIL] Expressão inválida: " .. tostring(err):gsub("%[string .-%]:", "linha") 
   end
   
   local ok, result = pcall(fn)
   if not ok then 
-    return nil, "❌ Erro no cálculo: " .. tostring(result) 
+    return nil, "[FAIL] Erro no cálculo: " .. tostring(result) 
   end
   
   return result

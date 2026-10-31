@@ -8,14 +8,14 @@ return function(M, N)
     args = type(args) == "table" and args or {}
     local id = tostring(args.runId or "")
     local msg = tostring(args.message or "")
-    if msg:match("^%s*$") then return "❌ informe a mensagem (message)." end
+    if msg:match("^%s*$") then return "[FAIL] informe a mensagem (message)." end
     local r = registry.load(id)
-    if not r then return "❌ run não encontrado: " .. id end
-    if not owned_by(r, ctx) then return "❌ " .. id .. " não é um subagente seu." end
-    if scheduler.is_terminal(r) then return "❌ " .. id .. " já terminou (" .. r.status .. "); não recebe mensagens." end
+    if not r then return "[FAIL] run não encontrado: " .. id end
+    if not owned_by(r, ctx) then return "[FAIL] " .. id .. " não é um subagente seu." end
+    if scheduler.is_terminal(r) then return "[FAIL] " .. id .. " já terminou (" .. r.status .. "); não recebe mensagens." end
     require("tools.subagents.inbox").post(id, kind, msg)
     if kind == "redirect" then
-      return "↷ redirecionamento enviado a " .. id .. " (vale a partir do próximo ponto seguro)."
+      return "[REDIRECT] redirecionamento enviado a " .. id .. " (vale a partir do próximo ponto seguro)."
     end
     return "→ mensagem entregue a " .. id .. " no próximo ponto seguro."
   end
@@ -34,6 +34,6 @@ return function(M, N)
         n = n + 1
       end
     end
-    return string.format("✓ %d subagente(s) encerrado(s).", n)
+    return string.format("[OK] %d subagente(s) encerrado(s).", n)
   end
 end

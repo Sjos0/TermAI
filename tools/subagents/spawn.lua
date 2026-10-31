@@ -24,14 +24,14 @@ end
 function M.spawn(args, parent)
   args = type(args) == "table" and args or {}
   if type(args.task) ~= "string" or args.task:match("^%s*$") then
-    return "❌ sessions_spawn: 'task' (string) é obrigatório."
+    return "[FAIL] sessions_spawn: 'task' (string) é obrigatório."
   end
-  if not parent then return "❌ sessions_spawn: nenhum agente ativo." end
+  if not parent then return "[FAIL] sessions_spawn: nenhum agente ativo." end
   local max_depth = scheduler.limits(parent.cfg or require("config").load()).maxSpawnDepth
   -- Subagente sem profundidade explícita conta como nível 1 (nunca como agente principal).
   local parent_depth = parent.depth or (parent.is_subagent and 1 or 0)
   if not M.can_nest(parent_depth, max_depth) then
-    return string.format("❌ sessions_spawn: profundidade máxima atingida (maxSpawnDepth=%d).", max_depth)
+    return string.format("[FAIL] sessions_spawn: profundidade máxima atingida (maxSpawnDepth=%d).", max_depth)
   end
 
   local cfg      = parent.cfg or config.load()
@@ -40,7 +40,7 @@ function M.spawn(args, parent)
   local kind     = "clone"
   if type(args.agentId) == "string" and args.agentId ~= "" and args.agentId ~= agent_id then
     if not config.get_agent(args.agentId) then
-      return "❌ sessions_spawn: agente '" .. args.agentId .. "' não existe em agents.list."
+      return "[FAIL] sessions_spawn: agente '" .. args.agentId .. "' não existe em agents.list."
     end
     agent_id, kind = args.agentId, "agente"
   end
@@ -65,7 +65,7 @@ function M.spawn(args, parent)
     announce_consumed = false,
   }
   local ok, err = scheduler.admit(rec, cfg)
-  if not ok then return "❌ sessions_spawn: " .. tostring(err) end
+  if not ok then return "[FAIL] sessions_spawn: " .. tostring(err) end
 
   log.info("spawn_accepted", { run_id = rec.runId, kind = kind, agent = agent_id,
     task_chars = #args.task, cleanup = rec.cleanup })

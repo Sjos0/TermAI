@@ -35,16 +35,16 @@ function M.run(arg)
   end
 
   if not url or url == "" then
-    return "❌ URL inválida ou não informada."
+    return "[FAIL] URL inválida ou não informada."
   end
 
   if not url:match("^https?://") then
-    return "❌ Protocolo inválido. A URL deve começar com http:// ou https://."
+    return "[FAIL] Protocolo inválido. A URL deve começar com http:// ou https://."
   end
 
   -- Proteção ativa de rede (SSRF Shield): impede requisições para localhost ou rede local
   if url:match("localhost") or url:match("127%.0%.0") or url:match("192%.168%.") or url:match("10%.%d+%.") then
-    return "❌ [SEGURANÇA] Bloqueio SSRF: requisições para a rede local privada são proibidas."
+    return "[FAIL] [SEGURANÇA] Bloqueio SSRF: requisições para a rede local privada são proibidas."
   end
 
   -- [SEGURANÇA] Defesa em Profundidade contra Command Injection.
@@ -53,7 +53,7 @@ function M.run(arg)
   -- escopo de aspas duplas ou executar comandos em subshell:
   -- aspas duplas ("), cifrão ($), crase (`), barra invertida (\), nova linha (\n) e carriage return (\r).
   if url:find('"') or url:find('%$') or url:find('`') or url:find('\\') or url:find('\n') or url:find('\r') then
-    return "❌ [SEGURANÇA] URL inválida: a URL contém caracteres potencialmente inseguros para o shell."
+    return "[FAIL] [SEGURANÇA] URL inválida: a URL contém caracteres potencialmente inseguros para o shell."
   end
 
   local has_lynx = check_lynx()
@@ -74,12 +74,12 @@ function M.run(arg)
 
     output = strip_html(raw_html)
     if output ~= "" then
-      output = output .. "\n\n💡 [Dica: Execute 'pkg install lynx' no Termux para uma formatação de página infinitamente melhor!]"
+      output = output .. "\n\n[TIP] [Dica: Execute 'pkg install lynx' no Termux para uma formatação de página infinitamente melhor!]"
     end
   end
 
   if output == "" then
-    return "❌ Falha ao baixar o conteúdo da URL. Verifique se o link está acessível."
+    return "[FAIL] Falha ao baixar o conteúdo da URL. Verifique se o link está acessível."
   end
 
   -- Truncamento seguro de caracteres para proteger a cota de tokens (Estilo OpenClaw)
@@ -91,13 +91,13 @@ function M.run(arg)
 
   -- Envelopamento com aviso de segurança (External Untrusted Content warning)
   local out = {
-    "⚠️ [CONTEÚDO DA WEB EXTERNO E NÃO CONFIÁVEL - FONTE: " .. url .. "]",
+    "[WARN] [CONTEÚDO DA WEB EXTERNO E NÃO CONFIÁVEL - FONTE: " .. url .. "]",
     "---",
     output,
     "---"
   }
   if truncated then
-    out[#out + 1] = "⚠️ [Nota: O conteúdo foi truncado em " .. max_chars .. " caracteres para economizar tokens.]"
+    out[#out + 1] = "[WARN] [Nota: O conteúdo foi truncado em " .. max_chars .. " caracteres para economizar tokens.]"
   end
 
   return table.concat(out, "\n")

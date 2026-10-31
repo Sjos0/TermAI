@@ -19,12 +19,12 @@ local M = {}
 -- Se a skill nao existir, retorna mensagem de erro.
 function M.execute_skill(skill_name, agent_name)
   if not skill_name or skill_name == "" then
-    return "❌ Nome da skill nao fornecido. Use: skill|nome_da_skill"
+    return "[FAIL] Nome da skill nao fornecido. Use: skill|nome_da_skill"
   end
 
   -- Sanitizar nome da skill (apenas minusculas, numeros e hifens)
   if not skill_name:match("^[%w%-]+$") then
-    return "❌ Nome de skill invalido: '" .. skill_name .. "'. Use apenas minusculas, numeros e hifens."
+    return "[FAIL] Nome de skill invalido: '" .. skill_name .. "'. Use apenas minusculas, numeros e hifens."
   end
 
   -- Tentar primeiro no diretorio do agente, depois no global
@@ -51,21 +51,21 @@ function M.execute_skill(skill_name, agent_name)
   end
 
   if not skill_file then
-    return "❌ Skill '" .. skill_name .. "' nao encontrada. "
+    return "[FAIL] Skill '" .. skill_name .. "' nao encontrada. "
       .. "Verifique o nome ou instale via TermAI config > Agente > Skills."
   end
 
   -- Ler e parsear
   local f = io.open(skill_file, "r")
   if not f then
-    return "❌ Erro ao abrir: " .. skill_file
+    return "[FAIL] Erro ao abrir: " .. skill_file
   end
   local content = f:read("*a")
   f:close()
 
   local result, err = parser.parse(content)
   if not result then
-    return "❌ Erro no parse de '" .. skill_name .. "': " .. (err or "erro desconhecido")
+    return "[FAIL] Erro no parse de '" .. skill_name .. "': " .. (err or "erro desconhecido")
   end
 
   -- Montar resposta para o modelo

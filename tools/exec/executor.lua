@@ -21,7 +21,7 @@ function M.run(command, timeout, on_line)
   for _, banned in ipairs(BANNED_COMMANDS) do
     if command:match("%f[%w]" .. banned .. "%f[%W]") then
       return {
-        output = "❌ [SEGURANÇA] Bloqueio de Comando: O uso do utilitário de rede '" .. banned 
+        output = "[FAIL] [SEGURANÇA] Bloqueio de Comando: O uso do utilitário de rede '" .. banned 
           .. "' dentro da ferramenta 'Exec' é proibido por segurança. Para buscar ou extrair conteúdo de páginas web, você DEVE usar as ferramentas nativas seguras 'web_search' ou 'web_fetch', que possuem salvaguardas de tokens e escudos de SSRF.",
         exit_code = "1",
         timed_out = false
@@ -36,7 +36,7 @@ function M.run(command, timeout, on_line)
   -- Passo 1: criar script temporário
   local f = io.open(tmp, "w")
   if not f then
-    return {output = "❌ Erro ao criar arquivo temporário", exit_code = "?", timed_out = false}
+    return {output = "[FAIL] Erro ao criar arquivo temporário", exit_code = "?", timed_out = false}
   end
   f:write(command .. "\n__ec=$?; echo \"__EXIT__:$__ec\"")
   f:close()

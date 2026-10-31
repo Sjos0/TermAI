@@ -16,7 +16,7 @@ function M.render(todos)
     linhas[#linhas + 1] = (MARCADOR[item.status] or "[ ]") .. " " .. item.content
   end
 
-  local cabecalho = string.format("📋 Lista de Tarefas (%d/%d concluídas)", concluidas, #todos)
+  local cabecalho = string.format("[LIST] Lista de Tarefas (%d/%d concluídas)", concluidas, #todos)
   table.insert(linhas, 1, cabecalho)
   return table.concat(linhas, "\n")
 end

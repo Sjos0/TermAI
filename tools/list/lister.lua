@@ -18,10 +18,10 @@ function M.run(arg, helpers)
   if h then h:close() end
 
   if res == "" or res:match("No such file") then
-    return "❌ Diretório vazio ou inacessível: " .. target_dir
+    return "[FAIL] Diretório vazio ou inacessível: " .. target_dir
   end
 
-  return "📁 Conteúdo de " .. target_dir .. ":\n  • " .. res:gsub("\n", "\n  • ")
+  return "[DIR] Conteúdo de " .. target_dir .. ":\n  • " .. res:gsub("\n", "\n  • ")
 end
 
 return M
