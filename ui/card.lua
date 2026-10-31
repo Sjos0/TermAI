@@ -29,7 +29,8 @@ function M.body_rows(lines, tw, max)
   local body_w = math.max(1, tw - 8)
   for i = 1, visible do
     local prefix = (i == visible and #lines <= max) and " └─ " or " │ "
-    rows[#rows + 1] = { prefix = prefix, text = M.cut(lines[i], body_w) }
+    local text = largura.expand_tabs(lines[i])
+    rows[#rows + 1] = { prefix = prefix, text = M.cut(text, body_w) }
   end
   if #lines > max then
     local hidden = #lines - max
