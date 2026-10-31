@@ -788,3 +788,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/279-recover-historico
 **Issue:** #279 CONFIRMADA
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/279-persistencia-reinicio
+**Issue:** #279 complemento persistência
+**Author:** Grok (xAI)

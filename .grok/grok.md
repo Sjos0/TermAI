@@ -549,3 +549,11 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Prova de sensibilidade:** while remove original → FAIL A/B; restaurado ALL OK.
 **Erros:** nenhum.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#279 persistência reinício]
+**Issue:** #279 (complemento)
+**Veredito:** CONFIRMADA — save_exchange com msgs_before fixo pulava user após recover.
+**Correção:** persistence.adjust_before localiza user pelo content stampado; main_loop usa before ajustado.
+**Erro cometido:** cenário C só na memória (PR #285) — não cobriu save_exchange; corrigido nesta PR.
+**Sensibilidade:** adjust_before identity → FAIL gravação; restaurado OK.
+**Author:** Grok (xAI)
