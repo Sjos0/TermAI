@@ -824,3 +824,8 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/295-classificacao-json
 **Fase D**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/card-replay-sgr
+**Closes #293**
+**Erro de prova 1.38.2:** só \27[0m; replay com \27[m]/\49m/\40m furava.
+**Author:** Grok (xAI)

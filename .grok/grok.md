@@ -624,3 +624,13 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 ## 2026-10-31 - [release v1.38.2]
 **Fase:** E
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [F card replay SGR]
+**Issue/PR:** #293 / fix/card-replay-sgr
+**Fase:** F
+**Veredito:** CONFIRMADA — fundo_seguro só cobria \27[0m; replay real com \27[m]/49m/\40m furava.
+**Arquivos:** ui/estilo/fundo.lua, tests/card_replay_variantes_spec.lua, tests/golden/card_*
+**Goldens:** todos card_* regenerados (reemissão de bg após cada SGR; visual muda onde havia buraco)
+**Prova de sensibilidade:** só \27[0m → bad=4; skip m/49/40/48;5 → bad=3
+**Erro de prova 1.38.2:** afirmou card sem buraco cobrindo só \27[0m; replay mostrava buracos.
+**Author:** Grok (xAI)
