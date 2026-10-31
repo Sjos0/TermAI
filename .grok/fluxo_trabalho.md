@@ -46,3 +46,4 @@ PATCH se só correção/prova; confirmar VERSION; tag `vX.Y.Z`; notes em portugu
 ## Prova visual e corpo de PR (2026-10-31)
 - Para qualquer mudança visual, a prova precisa usar o caminho real (replay, ao vivo) com saídas reais de programas, não só a função isolada.
 - O corpo da PR inclui `Closes #n` quando resolve a issue.
+- **Goldens por célula:** comparação de golden usa cor de fundo, cor de texto e glifo por posição visível. Mudança só de bytes (sem mudança visual de célula) **não** altera golden e **não** deve ser commitada como “atualização de golden”.

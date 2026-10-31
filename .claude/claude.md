@@ -829,3 +829,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Closes #293**
 **Erro de prova 1.38.2:** só \27[0m; replay com \27[m]/\49m/\40m furava.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR test/golden-por-celula
+**Processo:** golden por célula; PR #302 registrou alteração por bytes sem mudança visual.
+**Author:** Grok (xAI)
