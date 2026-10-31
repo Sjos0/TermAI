@@ -530,3 +530,13 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Files Modified:** .grok/grok.md (este registro); memória de projeto (sem valor secreto).
 **Erros cometidos nesta issue e correções:** na missão 1.38.0 o token foi usado em URL de remote em sessão de shell (não commitado); medida: nunca embutir token em remote persistente nem em memória.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#282 emulador por célula]
+**Issue:** #282
+**Veredito de validade:** CONFIRMADA
+**Files Modified:** tests/emulador_celulas_spec.lua (novo), tests/block_bg_wrap_spec.lua (migração por célula)
+**Decisões:** emulador interpreta CSI/SGR por célula {fundo,texto,glifo}; block_bg_wrap exige fundo 52 em todas as células do retângulo.
+**Prova de sensibilidade:** removido bg da linha de borda → FAIL all_have_bg + missing=120; restaurado git diff vazio.
+**Evidência de aceite:** T1 ABC fundo 52 cols 1-3; T2 missing=0; specs relacionados PASS; PTY_OK.
+**Erros cometidos nesta issue e correções:** dofile acidental de emulador_celulas_spec dentro de block_bg_wrap (causava os.exit precoce) — linha removida.
+**Author:** Grok (xAI)
