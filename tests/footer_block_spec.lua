@@ -37,7 +37,7 @@ end
 do
   local out = capture_footer(15, 10, 100, nil, nil)
   T(not out:find("┌", 1, true), "tw<20 sem moldura")
-  T(out:find("tokens:", 1, true), "tw<20 ainda mostra tokens")
+  T(out:find("Tokens:", 1, true), "tw<20 ainda mostra Tokens")
 end
 
 -- 1m format
