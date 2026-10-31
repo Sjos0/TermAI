@@ -38,8 +38,12 @@ function M.register(tools)
         local ok, search_mod = pcall(require, "providers." .. p)
         if ok and search_mod and search_mod.search then
           local res = search_mod.search(q)
-          -- Se a busca foi bem-sucedida (não retorna erro nem indicativos de CAPTCHA/Bloqueio)
-          if not res:match("^❌") and not res:match("🔍 Nenhum resultado") then
+          -- #338: os provedores emitem a falha em dois formatos — o antigo (^❌,
+          -- "🔍 Nenhum resultado") e o novo do lote 1 do #325 (^[FAIL],
+          -- "[SEARCH] Nenhum resultado"). Aceitar os dois para o fallback voltar a ocorrer.
+          local falhou = res:match("^❌") or res:match("^%[FAIL%]")
+          local vazio = res:match("🔍 Nenhum resultado") or res:match("%[SEARCH%] Nenhum resultado")
+          if not falhou and not vazio then
             return res
           else
             last_err = res
