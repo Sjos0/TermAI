@@ -804,3 +804,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR feat/277-rodape-tokens
 **Issue:** #277
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/280-classificacao-http
+**Issue:** #280
+**Author:** Grok (xAI)

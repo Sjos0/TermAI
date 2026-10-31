@@ -581,3 +581,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Sensibilidade:** split_equal tw50 → relógio ausente
 **Erros:** nenhum
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#280 classificação HTTP]
+**Issue:** #280
+**Veredito:** CONFIRMADA
+**Investigação:** log $TMPDIR/termai_api_errors.log ausente neste ambiente (sem falha real de API).
+**Correção:** error_log.should_retry — 400/401/403/404/422 não; 429/5xx sim; status na mensagem.
+**Sensibilidade:** classificação removida → 400 repete.
+**Erros:** parte_1 passou de 150 linhas → blanks removidos (132).
+**Author:** Grok (xAI)

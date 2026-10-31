@@ -1,26 +1,20 @@
 return function(M, N)
   local fb = require("agent.api.request_stream.streamer.fallback")(M)
   local json, ui, thinking_parser, utils, payload_mod, sync_mod, tool_parser, recovery, tokens_mod, error_log = N.json, N.ui, N.thinking_parser, N.utils, N.payload_mod, N.sync_mod, N.tool_parser, N.recovery, N.tokens_mod, N.error_log
-
-
   function M.pensar_stream(ctx, txt, role)
     local rcfg = utils.get_req_cfg(ctx)
     local pl   = payload_mod.build_payload(ctx, txt, role, true)
     local auth = utils.build_auth(ctx.active)
-
     if not pl then
       if txt ~= nil then table.remove(ctx.msgs) end
       return "[ERRO_OVERFLOW] Prompt excede a janela de contexto (local)", true, false, ""
     end
-
     local flag_path = (os.getenv("TMPDIR") or "/data/data/com.termux/files/usr/tmp") .. "/termai_stream.flag"
     os.remove(flag_path)
-
     local last_error
     for attempt = 1, rcfg.max_retries do
       local tmp_path = utils.make_tmp_path()
       local tmp = io.open(tmp_path, "w"); tmp:write(pl); tmp:close()
-
       local cmd
       if rcfg.request_mode == "buffer" then
         local wt = (rcfg.wait_timeout > 0) and rcfg.wait_timeout or 25
@@ -33,16 +27,13 @@ return function(M, N)
           .. ' -H "Content-Type: application/json" -d @%s 2>/dev/null',
           rcfg.timeout, rcfg.idle_timeout, ctx.active.endpoint, auth, tmp_path)
       end
-
       ui.stream_start()
       thinking_parser.reset()
-
       local h     = io.popen(cmd)
       local body  = ""
       local got_data, done_received, error_reason = false, false, nil
       local tc_acc = {}
       local stream_fresh = false
-
       local ok_stream, stream_err = pcall(function()
         for line in h:lines() do
           body = body .. line .. "\n"
@@ -54,10 +45,8 @@ return function(M, N)
               if chunk.error then error_reason = chunk.error.message or "API error"; return end
               if not got_data then ui.stream_confirm() end
               got_data = true
-
               local tok_ok, fresh = tokens_mod.process_tokens(ctx, chunk)
               if tok_ok then stream_fresh = fresh end
-
               local choice = chunk.choices and chunk.choices[1]
               local delta  = choice and choice.delta
               if delta then
@@ -74,26 +63,19 @@ return function(M, N)
           end
         end
       end)
-
       local close_ok = h:close()
       os.remove(tmp_path)
-
       if not ok_stream and not error_reason then
         error_reason = "erro interno no streaming: " .. tostring(stream_err)
       end
-      -- #205: nao zerar got_data (evita retry duplicando texto)
-
       if got_data then
         thinking_parser.flush(ui.stream_reasoning, ui.stream_token)
         local full, reasoning = ui.stream_end()
-
         for i, tc in ipairs(tc_acc) do
           if not tc.id or tc.id == "" then tc.id = "tc_" .. i .. "_" .. os.time() end
         end
-
         local tc_valid   = tool_parser.filter(tc_acc)
         local tool_calls = tool_parser.parse(tc_valid)
-
         if full == "" and not tool_calls then
           local stream_reasoning = reasoning
           if txt ~= nil then table.remove(ctx.msgs) end
@@ -102,7 +84,6 @@ return function(M, N)
           if ctx.tokens_fresh == nil then ctx.tokens_fresh = stream_fresh end
           return sync_r, false, true, stream_reasoning, sync_tc
         end
-
         local asst = {role = "assistant", content = full ~= "" and full or ""}
         if reasoning and reasoning ~= "" then asst.reasoning = reasoning end
         if #tc_valid > 0 then asst.tool_calls = tool_parser.raw(tc_valid) end
@@ -112,36 +93,37 @@ return function(M, N)
         local stream_finished = done_received or close_ok == true
         return full, false, stream_finished, reasoning, tool_calls
       end
-
       ui.stream_end()
       if not error_reason then
         error_reason = error_log.extract_from_body(body:gsub("%s+$", ""))
       end
-
       last_error = error_reason or "Sem resposta do servidor"
-      -- Persiste o corpo bruto em disco: o terminal rola e perde o erro, e a
-      -- mensagem exibida na TUI (last_error) é só um resumo de uma linha.
+      local retryable, http_status = error_log.should_retry(last_error, body)
+      if http_status then
+        last_error = last_error .. " (HTTP " .. tostring(http_status) .. ")"
+      end
       error_log.record(attempt, rcfg.max_retries, ctx.active and ctx.active.endpoint, last_error, body)
       if utils.is_overflow_error(last_error) then
         if txt ~= nil then table.remove(ctx.msgs) end
         return "[ERRO_OVERFLOW] " .. last_error, true, false, ""
       end
-
+      if not retryable then
+        ui.kill_spinner()
+        if ui.clear_retry_lines then ui.clear_retry_lines() end
+        break
+      end
       if attempt < rcfg.max_retries then
         local wait = utils.wait_time(attempt, rcfg)
         ui.kill_spinner()
-        -- Card in-place (1/5 → 2/5 no mesmo lugar); não empilha lista.
         ui.show_retry(attempt, rcfg.max_retries, last_error, wait)
         require("tools.subagents.events").retry(ctx, attempt, rcfg.max_retries, last_error, wait)
         os.execute(string.format("sleep %d", wait))
         ui.restart_spinner()
       else
         ui.kill_spinner()
-        -- #268: não pintar N/N; falha_final/show_api_error coloca o erro.
         if ui.clear_retry_lines then ui.clear_retry_lines() end
       end
     end
-
     local fb_res, fb_err = fb.tentar_fallbacks(ctx, role, last_error, rcfg)
     if fb_res then return table.unpack(fb_res, 1, fb_res.n) end
     last_error = fb_err

@@ -80,4 +80,24 @@ function M.extract_from_body(body)
   return nil
 end
 
+
+--- Classifica se a falha deve repetir. 400/401/403/404 NÃO; 429/5xx SIM.
+--- Também devolve o status HTTP detectado (ou nil).
+function M.should_retry(reason, body)
+  local text = tostring(reason or "") .. "\n" .. tostring(body or "")
+  local code = text:match("status[=:][ ]*(%d%d%d)")
+    or text:match("%[(%d%d%d)%]")
+    or text:match("HTTP[ ]*(%d%d%d)")
+    or text:match("\"status\":[ ]*(%d%d%d)")
+  code = tonumber(code)
+  if not code then return true, nil end
+  if code == 400 or code == 401 or code == 403 or code == 404 or code == 422 then
+    return false, code
+  end
+  if code == 429 or code >= 500 then
+    return true, code
+  end
+  return true, code
+end
+
 return M
