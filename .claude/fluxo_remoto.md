@@ -10,7 +10,7 @@ Regra do projeto: o trabalho acontece no GitHub (API e CI). O celular so le o re
 4. **Abra a PR como rascunho** ja no primeiro commit funcional. A CI roda em paralelo enquanto voce continua.
 5. **Leia a validacao pela API**, nos check runs do ultimo commit. Nao rode a suite no celular.
 6. **Se o contexto estiver acabando, commit e push primeiro**, antes de qualquer outra coisa.
-7. **So marque concluido com:** CI verde no ultimo commit, `Closes #<n>` no corpo (ou `Refs #<n>` quando a issue tiver lotes), issue fechada com comentario de evidencia quando for o lote final, e branch apagada.
+7. **Voce NAO mescla.** Entrega a PR PRONTA (sai de rascunho) com CI verde, comenta a evidencia na issue, e PARA. Quem verifica, mescla, fecha a issue e apaga a branch e o **orquestrador**. Mesclar sozinho viola o processo.
 8. **Relatorios em palavras, nao em simbolos** (ver #325).
 
 ## Fonte de verdade (obrigatorio)
