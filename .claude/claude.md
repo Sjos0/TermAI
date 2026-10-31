@@ -909,3 +909,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/335-releitura-largura
 **Closes #335**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/341-ttl-os-time
+**Closes #341**
+**Author:** Grok (xAI)

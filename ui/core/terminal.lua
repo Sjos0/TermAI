@@ -6,12 +6,13 @@
 -- terminal — o menor valor que não quebra os layouts de card/bloco.
 -- Nenhum outro módulo escreve largura fixa: todos perguntam a core.tw().
 --
--- Cache com TTL de 1 s (#335): girar o celular durante a resposta do agente
--- atualiza a largura no próximo card sem tecla. stty size ~1 ms (medido).
+-- Cache com TTL de 2 s em tempo de parede (#335/#341): os.time() avança
+-- enquanto o processo espera a rede; os.clock() (CPU) não. Girar o celular
+-- durante a resposta atualiza a largura no próximo card sem tecla.
 return function(core)
   local W, H
   local W_at, H_at = 0, 0
-  local TTL <const> = 1.0
+  local TTL <const> = 2
 
   core.TW_FALLBACK = 80
   core.TH_FALLBACK = 24
@@ -23,7 +24,7 @@ return function(core)
   end
 
   local function now()
-    return os.clock()
+    return os.time()
   end
 
   local function read_stty()
