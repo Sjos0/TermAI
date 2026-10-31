@@ -896,3 +896,12 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 
 **Correção pós-CI (commit 224c1a3):** o refactor apagou `local prev_lines = 0` em `ui/input/parte_2.lua` (usada nas linhas 30/31/38/112/113) → PTY da CI morria com `attempt to compare number with nil` em `ui/input/parte_2.lua:112`. Declaração restaurada (nenhuma outra linha mudou). PTY: 3 FAIL → 0. CI da PR #332 re-rodada: os dois jobs `lua` = **success**.
 **Suíte local (Termux, mesma bateria da CI):** 126/131 PASS; as 5 falhas são ambientais — `/tmp` é somente-leitura (agente_boot_real, cleanup_startup_pid, ta_pid_por_instancia, tui_rotulo) e o micro-benchmark de performance do depth_tracker estoura 0,1s no ARM. Nenhuma toca código do #331; a CI no Ubuntu passou.
+
+## 2026-10-31 - PR feat/325-lote1-simbolos (#325, lote 1 de 4)
+**Refs #325** (lote 1; a issue só fecha no lote final)
+**Decisão:** troca dos símbolos de status por palavras em inglês entre colchetes, apenas em `ui/`, `channels/`, `providers/` (42 ocorrências, 12 arquivos), uma linha de diff por mensagem, sem mudança de lógica. Estruturais (⬤ ❯ ─ │ ┌ ┐ └ ┘ ╭ ╮ ╰ ╯ ═ ║ ▸ •) preservados. Redo sobre a `main` pós-#331: o lote anterior (`809ae2d`) foi descartado por produzir linhas largas demais, antes das larguras responsivas.
+**Mapeamento:** ❌→[FAIL] (23) · 🔍/🔎→[SEARCH] (7) · ⚠/⚠️→[WARN] (4) · ✓→[OK] (2) · 🔒→[LOCKED] (2) · ⏱️→[TIMEOUT] (2) · 🚫→[BLOCKED] (1) · 📎→[LINK] (1).
+**Arquivos (produção):** `ui/misc.lua`, `ui/input.lua`, `ui/input/terminal_read.lua`, `ui/stream/ansi_helpers.lua`, `ui/tools_init/edit_renderer.lua`, `channels/telegram/bridge.lua`, `channels/telegram/approval.lua`, `providers/duckduckgo_search.lua`, `providers/tavily_search.lua`, `providers/google_grounding.lua`, `providers/google_grounding/error_classifier.lua`, `providers/google_grounding/formatter.lua`.
+**Arquivos (specs):** `tests/google_grounding_units_spec/01_n_unit_tests_google_ground.lua:46` (literal `❌ …` → `[FAIL] …`; exigido pela Tarefa 3) e `tests/lote1_avisos_sem_simbolo_spec.lua` (novo — aviso sem ⚠/U+FE0F e dentro de tw 40/50/54; ponto anexado ao lote pelo gerente).
+**Evidência:** grep de símbolos de status + U+FE0F em `ui/`, `channels/`, `providers/` → zero; sintaxe OK nos 14 arquivos tocados; specs locais: `google_grounding_units_spec` 28/28, `largura_misc_symbols_spec` ALL OK, `edit_diff_display_spec` 37/37, `lote1_avisos_sem_simbolo_spec` PASS. Validação final (specs pesadas e suíte) pela CI.
+**Author:** Ameno (orquestrador)
