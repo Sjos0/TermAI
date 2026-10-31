@@ -812,3 +812,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR test/golden-contrato-visual
 **Fase A**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/293-card-fundo-seguro
+**Fase B**
+**Author:** Grok (xAI)

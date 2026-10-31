@@ -1,6 +1,7 @@
 -- ui/card.lua — Componente Card reutilizável: cada tool é um card.
 -- Largura visual via ui/largura.lua (emoji/CJK = 2 colunas).
 local largura = require("ui.largura")
+local fundo = require("ui.estilo.fundo")
 local M = {}
 
 M.MAX_BODY = 5
@@ -44,8 +45,9 @@ end
 function M.bg_row(bg, prefix_color, prefix, text_color, text, tw)
   local visible = M.width(prefix) + M.width(text)
   local pad = math.max(0, tw - 1 - visible)
-  return bg .. prefix_color .. prefix .. text_color .. text
-    .. string.rep(" ", pad) .. "\27[0m"
+  local body = prefix_color .. prefix .. text_color .. text .. string.rep(" ", pad)
+  body = fundo.fundo_seguro(bg, body)
+  return bg .. body .. "\27[0m"
 end
 
 return M

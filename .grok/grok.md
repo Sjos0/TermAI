@@ -602,3 +602,9 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Goldens:** todos gravados do main atual; card_reset e bloco_palavra_longa registram defeitos conhecidos
 **Erros:** nenhum
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [B #293 card fundo seguro]
+**Fase:** B **Issue:** #293 (Refs #296)
+**Goldens alterados:** card_corpo_reset_tw40/80 — células após \27[0m passam a ter bg 236
+**Sensibilidade:** sem fundo_seguro → FAIL card_corpo_reset
+**Author:** Grok (xAI)
