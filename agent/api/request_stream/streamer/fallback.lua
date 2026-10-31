@@ -45,7 +45,7 @@ return function(M)
 
   -- Fechamento quando a requisição inteira falhou (sem stream para truncar).
   function M_.falha_final(ctx, rcfg, last_error)
-    -- Não removemos a mensagem do usuário: falha de rede não apaga o que digitou.
+    -- recover_tool_seq só remove tool_calls órfãos; a mensagem do usuário permanece.
     local ui = require("ui")
     if ui.clear_retry_lines then ui.clear_retry_lines() end
     local recover_line = recovery.recover_tool_seq(ctx.msgs)
