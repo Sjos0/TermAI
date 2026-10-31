@@ -2,6 +2,7 @@
 -- Estilo Claude Code: boot/login, restart e cancelamento prévio.
 -- Também aplica injeção automática de memória relevante no turno do usuário.
 local ui = require("ui")
+local resultado = require("lib.result")
 
 local M = {}
 
@@ -67,10 +68,8 @@ function M.prepare_user_turn(ctx, cur_text, cur_role)
     ui.start_thinking("Injetando")
     spinner_started = true
     local ok, mem = pcall(_mem.search, cur_text)
-    if ok and mem
-       and not mem:match("^❌")
-       and not mem:match("^📭")
-       and not mem:match("^🔍 Nenhuma") then
+    -- #343: o prefixo de resultado é lido por lib/result.lua (símbolo antigo e palavra nova).
+    if ok and mem and not resultado.e_nao_util(mem) then
       cur_text = "[MEMÓRIA RELEVANTE — injetada automaticamente]\n"
                .. mem .. "\n---\n" .. cur_text
     end

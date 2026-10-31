@@ -3,6 +3,7 @@
 -- v2: 2º arg opcional disabled_tools (Issue #32 / Caçador #49 — path XML legado).
 local ui    = require("ui")
 local tools = require("tools")
+local resultado = require("lib.result")
 local M     = {}
 
 local ef = (function()
@@ -17,7 +18,7 @@ function M.executar(ferramentas, disabled_tools)
     if #display > 70 then display = display:sub(1, 70) .. "..." end
     ui.tool_start(display)
     local out = tools.call(tool.nome .. "|" .. tool.arg, disabled_tools)
-    local ok  = not out:match("^❌")
+    local ok  = resultado.sucesso(out)
     ui.tool_end(display, out, ok)
     local result_text = out
     if not ok then
@@ -44,7 +45,7 @@ function M.executar_silent(ferramentas, disabled_tools)
   local resultados = {}
   for _, tool in ipairs(ferramentas) do
     local out = tools.call(tool.nome .. "|" .. tool.arg, disabled_tools)
-    local ok  = not out:match("^❌")
+    local ok  = resultado.sucesso(out)
     resultados[#resultados + 1] = string.format(
       '<tool_result name="%s" status="%s">\n%s\n</tool_result>',
       tool.nome, (ok and "ok" or "erro"), out)

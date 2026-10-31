@@ -1,5 +1,7 @@
 -- tools/error_feedback/post_exec.lua
 -- Analisa resultados pos-execucao e gera sugestoes cirurgicas.
+local resultado = require("lib.result")
+
 local M = {}
 
 -- Padroes de erro classificados do mais especifico para o mais generico.
@@ -20,7 +22,7 @@ local patterns = {
 -- Retorna feedback cirurgico (string) ou nil se a ferramenta nao retornou erro.
 function M.analyze(tool_name, arg, result)
   if not result then return nil end
-  if not result:match("^❌") then return nil end
+  if not resultado.e_falha(result) then return nil end
   local result_low = result:lower()
   for _, entry in ipairs(patterns) do
     if result_low:match(entry.pat:lower()) then
@@ -29,7 +31,7 @@ function M.analyze(tool_name, arg, result)
         .. "  ❌ %s\n"
         .. "  💡 %s",
         tool_name,
-        (result:match("^❌%s*(.-)%s*$") or result),
+        resultado.mensagem(result),
         entry.sug
       )
     end
@@ -41,7 +43,7 @@ function M.analyze(tool_name, arg, result)
     .. "  💡 Revise os argumentos e tente novamente:\n"
     .. "     <tool><name>%s</name><arg>ARGUMENTO</arg></tool>",
     tool_name,
-    (result:match("^❌%s*(.-)%s*$") or result),
+    resultado.mensagem(result),
     tool_name
   )
 end

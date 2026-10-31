@@ -1,4 +1,6 @@
 -- agent/loop/tool_runner/executor/nucleo_2.lua — helpers internos: executar_individual.
+local resultado = require("lib.result")
+
 return function(M)
   local P = require("agent.loop.tool_runner.executor.nucleo_1")(M)
   local tools_mod, json, display, tracker, suffix, ui_start, ui_end, get_wall_time = P.tools_mod, P.json, P.display, P.tracker, P.suffix, P.ui_start, P.ui_end, P.get_wall_time
@@ -74,7 +76,7 @@ return function(M)
           result = "❌ Action cancelled by user."
         end
 
-        local success = not result:match("^❌")
+        local success = resultado.sucesso(result)
         ui_end(ctx, display_str, result, success)
 
         if not ctx.tool_cancelled then
