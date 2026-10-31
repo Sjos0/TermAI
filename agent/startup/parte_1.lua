@@ -1,4 +1,6 @@
 -- agent/startup/parte_1.lua — exporta: run.
+local resultado = require("lib.result")
+
 return function(M, N)
   local ui, session, api, core, c, rr, classif, tcm, REPLAY_N = N.ui, N.session, N.api, N.core, N.c, N.rr, N.classif, N.tcm, N.REPLAY_N
 
@@ -96,12 +98,12 @@ return function(M, N)
             pending_groups[ginfo.gid] = g
           end
           g.names[#g.names + 1] = ginfo.name
-          g.oks[#g.oks + 1]     = not (msg.content or ""):match("^❌")
+          g.oks[#g.oks + 1]     = resultado.sucesso(msg.content or "")
           if #g.names >= g.size then flush_group(ginfo.gid) end
         else
           local cmd = (msg.tool_call_id and tc_id_map[msg.tool_call_id])
                    or last_tool_cmd or "Exec"
-          ui.tool_replay(cmd, msg.content or "", not (msg.content or ""):match("^❌"))
+          ui.tool_replay(cmd, msg.content or "", resultado.sucesso(msg.content or ""))
           if not msg.tool_call_id then last_tool_cmd = nil end
         end
       else

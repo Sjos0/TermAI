@@ -1,4 +1,6 @@
 -- agent/loop/tool_runner/executor/nucleo_3.lua — helpers internos: executar_grupo_read.
+local resultado = require("lib.result")
+
 return function(M)
   local P = require("agent.loop.tool_runner.executor.nucleo_2")(M)
   local ui, tools_mod, display, tracker, suffix, get_wall_time = P.ui, P.tools_mod, P.display, P.tracker, P.suffix, P.get_wall_time
@@ -41,7 +43,7 @@ return function(M)
         result = "❌ Action cancelled by user."
       end
 
-      local ok = not result:match("^❌")
+      local ok = resultado.sucesso(result)
       names[#names + 1], oks[#oks + 1] = display.tc_preview(tc), ok
 
       if not ctx.tool_cancelled then

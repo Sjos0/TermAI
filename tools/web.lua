@@ -3,6 +3,7 @@
 -- v3: Despacha dinamicamente para o Provedor de Busca (Search Provider) ativo.
 -- v4: Suporta fallback dinâmico em cadeia (Chain-of-Responsibility) ordenável pelo usuário.
 local M = {}
+local resultado = require("lib.result")
 
 function M.register(tools)
   tools.register("web_search",
@@ -38,11 +39,13 @@ function M.register(tools)
         local ok, search_mod = pcall(require, "providers." .. p)
         if ok and search_mod and search_mod.search then
           local res = search_mod.search(q)
-          -- #338: os provedores emitem a falha em dois formatos — o antigo (^❌,
-          -- "🔍 Nenhum resultado") e o novo do lote 1 do #325 (^[FAIL],
-          -- "[SEARCH] Nenhum resultado"). Aceitar os dois para o fallback voltar a ocorrer.
-          local falhou = res:match("^❌") or res:match("^%[FAIL%]")
-          local vazio = res:match("🔍 Nenhum resultado") or res:match("%[SEARCH%] Nenhum resultado")
+          -- #338/#343: os provedores emitem a falha e o "sem resultado" em dois formatos
+          -- — símbolo (antigo) e palavra (novo do lote 1 do #325). A detecção vive em
+          -- lib/result.lua e aceita os dois, que é o que faz o fallback voltar a ocorrer.
+          -- O detalhe "resultado" segue exigido, como antes: só busca sem resultado
+          -- aciona o fallback, e não qualquer mensagem de "Nenhum".
+          local falhou = resultado.e_falha(res)
+          local vazio  = resultado.e_busca_vazia(res, "resultado")
           if not falhou and not vazio then
             return res
           else
