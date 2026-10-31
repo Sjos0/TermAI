@@ -2,6 +2,9 @@
 
 Registro de contribuições do Claude (claude.ai) ao projeto TermAI.
 
+
+> **Fluxo de trabalho obrigatorio:** ver [`.claude/fluxo_remoto.md`](fluxo_remoto.md).
+
 ---
 
 ## 2026-10-30 - [#265 rodapé ANSI]
