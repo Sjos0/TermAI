@@ -43,7 +43,7 @@ function M.run()
   local ec = require("providers.google_grounding.error_classifier")
 
   T("sem data.error → mensagem genérica",
-    ec.classify_error({}) == "❌ Erro desconhecido do Google.")
+    ec.classify_error({}) == "[FAIL] Erro desconhecido do Google.")
 
   local r429q = ec.classify_error({
     error = { code = 429, message = "quota exceeded, resource_exhausted, retry in 12.5s" }

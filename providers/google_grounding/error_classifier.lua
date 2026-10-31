@@ -11,7 +11,7 @@ end
 -- @return string Mensagem de erro formatada
 function M.classify_error(data)
   local err = data.error
-  if not err then return "❌ Erro desconhecido do Google." end
+  if not err then return "[FAIL] Erro desconhecido do Google." end
 
   local code  = err.code or 0
   local msg   = err.message or "Erro desconhecido"
@@ -21,31 +21,31 @@ function M.classify_error(data)
   if code == 429 or lower:match("too_many_requests") then
     local retry = parse_retry(msg)
     if lower:match("quota") or lower:match("resource_exhausted") then
-      return "❌ Cota de Search Grounding esgotada." .. retry .. "\n"
+      return "[FAIL] Cota de Search Grounding esgotada." .. retry .. "\n"
           .. "  Limite free tier: 500 req/dia por modelo. Detalhe: " .. msg
     end
-    return "❌ Rate limit atingido." .. retry .. "\n"
+    return "[FAIL] Rate limit atingido." .. retry .. "\n"
         .. "  Detalhe: " .. msg
   end
 
   -- 403 = chave inválida ou leaked
   if code == 403 then
     if lower:match("leaked") then
-      return "❌ Chave de API comprometida (reported as leaked).\n"
+      return "[FAIL] Chave de API comprometida (reported as leaked).\n"
           .. "  Gere uma nova chave em https://aistudio.google.com/apikey\n"
           .. "  e atualize em Config › Web Tools."
     end
-    return "❌ Chave de API inválida ou sem permissão para Grounding.\n"
+    return "[FAIL] Chave de API inválida ou sem permissão para Grounding.\n"
         .. "  Verifique em Config › Web Tools. Detalhe: " .. msg
   end
 
   -- 400 = payload inválido
   if code == 400 then
-    return "❌ Requisição inválida. Verifique a configuração do provider.\n"
+    return "[FAIL] Requisição inválida. Verifique a configuração do provider.\n"
         .. "  Detalhe: " .. msg
   end
 
-  return "❌ Erro Google [" .. tostring(code) .. "]: " .. msg
+  return "[FAIL] Erro Google [" .. tostring(code) .. "]: " .. msg
 end
 
 return M

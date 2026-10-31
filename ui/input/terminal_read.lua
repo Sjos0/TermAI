@@ -1,5 +1,5 @@
 -- terminal_read.lua — Leitura de sequências de escape ANSI e conteúdo de bracketed paste.
--- ⚠️ Usa io.read(1) diretamente em stdin raw. NÃO adicionar lógica extra, timeout
+-- [WARN] Usa io.read(1) diretamente em stdin raw. NÃO adicionar lógica extra, timeout
 -- ou verificações que não existam no original — o terminal está em modo raw.
 local M = {}
 

@@ -5,7 +5,7 @@ local c = core.c
 local M = {}
 
 function M.agent_limit(n)
-  io.write(c.yellow .. " ⚠ limite de " .. n .. " iterações atingido\n" .. c.reset)
+  io.write(c.yellow .. " [WARN] limite de " .. n .. " iterações atingido\n" .. c.reset)
 end
 
 function M.divider()

@@ -31,17 +31,17 @@ function M.search(query)
   local web = get_config()
 
   if not web.enabled then
-    return "❌ Web Tools desativadas. Ative em Config › Web Tools."
+    return "[FAIL] Web Tools desativadas. Ative em Config › Web Tools."
   end
 
   local api_key = web.google_grounding_key
   if not api_key or api_key == "" then
-    return "❌ Chave de Grounding não configurada. Vá em Config › Web Tools."
+    return "[FAIL] Chave de Grounding não configurada. Vá em Config › Web Tools."
   end
 
   local safe, char = security.is_safe(api_key)
   if not safe then
-    return "❌ Erro de segurança: chave de API contém caractere inválido '" .. char .. "'"
+    return "[FAIL] Erro de segurança: chave de API contém caractere inválido '" .. char .. "'"
   end
 
   -- Fallback chain: tentar cada modelo até um funcionar
@@ -50,11 +50,11 @@ function M.search(query)
     local raw = api_client.call_api(model, api_key, query)
 
     if raw == "" then
-      last_error = "❌ Sem resposta do Google. Verifique sua conexão."
+      last_error = "[FAIL] Sem resposta do Google. Verifique sua conexão."
     else
       local ok, data = pcall(json.decode, raw)
       if not ok then
-        last_error = "❌ Resposta inválida do Google."
+        last_error = "[FAIL] Resposta inválida do Google."
       elseif data.error then
         last_error = error_classifier.classify_error(data)
         -- Se erro de cota (429), tentar próximo modelo
@@ -70,7 +70,7 @@ function M.search(query)
         local response_text, sources, queries = response_extractor.extract_response(data)
 
         if response_text == "" then
-          last_error = "🔍 Nenhum resultado para: " .. query
+          last_error = "[SEARCH] Nenhum resultado para: " .. query
           break  -- output vazio, sem mais o que tentar
         else
           return formatter.format_result(query, response_text, sources, queries)

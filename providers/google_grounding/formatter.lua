@@ -8,18 +8,18 @@ local M = {}
 -- @param queries table Lista de queries executadas
 -- @return string Texto formatado para o usuário
 function M.format_result(query, response_text, sources, queries)
-  local out = { "🔍 **Resultado:** \"" .. query .. "\"\n" }
+  local out = { "[SEARCH] **Resultado:** \"" .. query .. "\"\n" }
 
   -- Adicionar queries executadas (se houver)
   if #queries > 0 then
-    out[#out + 1] = "🔎 *Queries:* " .. table.concat(queries, ", ") .. "\n"
+    out[#out + 1] = "[SEARCH] *Queries:* " .. table.concat(queries, ", ") .. "\n"
   end
 
   out[#out + 1] = response_text
 
   -- Adicionar fontes
   if #sources > 0 then
-    out[#out + 1] = "\n📎 **Fontes:**"
+    out[#out + 1] = "\n[LINK] **Fontes:**"
     local seen = {}
     local idx = 0
     for _, src in ipairs(sources) do

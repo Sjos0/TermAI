@@ -46,12 +46,12 @@ end
 function M.ask_tool(tool_name, command, failed_sub, warnings)
   local display  = tostring(command or ""):sub(1, 300)
   local question = string.format(
-    "🔒 Permissão — %s\nComando: %s\n\nResponda: sim / sempre / não / bloquear",
+    "[LOCKED] Permissão — %s\nComando: %s\n\nResponda: sim / sempre / não / bloquear",
     tool_name, display)
 
   local reply = ask(question)
   if not reply then
-    api.send_message(cur.token, cur.chat_id, "⏱️ Tempo esgotado — negado por segurança.")
+    api.send_message(cur.token, cur.chat_id, "[TIMEOUT] Tempo esgotado — negado por segurança.")
     return "cancel", ""
   end
   if reply == "sim" or reply == "s" or reply == "1" then return "once", "" end
@@ -63,11 +63,11 @@ end
 -- Contrato: M.ask_bash(cmd, failed_sub) -> boolean
 function M.ask_bash(cmd, failed_sub)
   local display  = tostring(cmd or ""):sub(1, 300)
-  local question = string.format("🔒 Comando Bash: %s\n\nResponda: sim / sempre / não", display)
+  local question = string.format("[LOCKED] Comando Bash: %s\n\nResponda: sim / sempre / não", display)
 
   local reply = ask(question)
   if not reply then
-    api.send_message(cur.token, cur.chat_id, "⏱️ Tempo esgotado — negado por segurança.")
+    api.send_message(cur.token, cur.chat_id, "[TIMEOUT] Tempo esgotado — negado por segurança.")
     return false
   end
   if reply == "sim" or reply == "s" or reply == "1" then
@@ -86,7 +86,7 @@ function M.ask_bash(cmd, failed_sub)
     local ok_perms, perms = pcall(require, "agent.hooks.permissions")
     if ok_perms then perms.set("Exec", "blocked") end
     bash_denials[cmd] = 0
-    api.send_message(cur.token, cur.chat_id, "🚫 Ferramenta 'Exec' bloqueada após 3 recusas.")
+    api.send_message(cur.token, cur.chat_id, "[BLOCKED] Ferramenta 'Exec' bloqueada após 3 recusas.")
   end
   return false
 end
