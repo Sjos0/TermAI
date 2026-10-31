@@ -2,22 +2,22 @@
 return function(tools, helpers, json, to_disabled_set)
   function tools.call(cmd_string, disabled_tools)
     local t_name, t_arg = cmd_string:match("^([^|]+)|(.*)$")
-    if not t_name then return "❌ Erro: Sintaxe inválida." end
+    if not t_name then return "[FAIL] Erro: Sintaxe inválida." end
     t_name = t_name:match("^%s*(.-)%s*$")
     t_arg  = t_arg and t_arg:match("^%s*(.-)%s*$") or ""
     local dset = to_disabled_set(disabled_tools)
     if dset[t_name] then
-      return "❌ Ferramenta '" .. t_name .. "' está desativada para este agente."
+      return "[FAIL] Ferramenta '" .. t_name .. "' está desativada para este agente."
     end
     local tool = tools.registry[t_name]
-    if not tool then return "❌ Erro: Ferramenta '" .. t_name .. "' não existe." end
+    if not tool then return "[FAIL] Erro: Ferramenta '" .. t_name .. "' não existe." end
     local hooks_engine = require("agent.hooks.engine")
     local allowed, reason = hooks_engine.run("PreToolUse", t_name, t_arg)
     if not allowed then
-      return "❌ [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
+      return "[FAIL] [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
     end
     local ok, res = pcall(tool.execute, t_arg)
-    if not ok then return "❌ Erro interno: " .. tostring(res) end
+    if not ok then return "[FAIL] Erro interno: " .. tostring(res) end
     hooks_engine.run("PostToolUse", t_name, t_arg, res)
     return res
   end
@@ -49,16 +49,16 @@ return function(tools, helpers, json, to_disabled_set)
     opts = opts or {}
     local dset = to_disabled_set(opts.disabled_tools)
     if dset[name] then
-      return "❌ Ferramenta '" .. name .. "' está desativada para este agente."
+      return "[FAIL] Ferramenta '" .. name .. "' está desativada para este agente."
     end
     local tool = tools.registry[name]
-    if not tool then return "❌ Ferramenta '" .. name .. "' não existe." end
+    if not tool then return "[FAIL] Ferramenta '" .. name .. "' não existe." end
 
     if tool.schema and tool.schema.required then
       local a = type(args) == "table" and args or {}
       for _, req in ipairs(tool.schema.required) do
         if not a[req] or a[req] == "" then
-          return "❌ Argumento obrigatório ausente: '" .. req
+          return "[FAIL] Argumento obrigatório ausente: '" .. req
                  .. "' para ferramenta '" .. name .. "'"
         end
       end
@@ -70,12 +70,12 @@ return function(tools, helpers, json, to_disabled_set)
     if not opts.skip_pretool then
       local allowed, reason = hooks_engine.run("PreToolUse", name, arg_str)
       if not allowed then
-        return "❌ [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
+        return "[FAIL] [PERMISSÃO NEGADA] " .. (reason or "Ferramenta bloqueada.")
       end
     end
 
     local ok, res = pcall(tool.execute, args)
-    if not ok then return "❌ Erro interno: " .. tostring(res) end
+    if not ok then return "[FAIL] Erro interno: " .. tostring(res) end
     hooks_engine.run("PostToolUse", name, arg_str, res)
     return res
   end

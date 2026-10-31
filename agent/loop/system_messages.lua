@@ -68,7 +68,7 @@ function M.prepare_user_turn(ctx, cur_text, cur_role)
     ui.start_thinking("Injetando")
     spinner_started = true
     local ok, mem = pcall(_mem.search, cur_text)
-    -- #343: o prefixo de resultado é lido por lib/result.lua (símbolo antigo e palavra nova).
+    -- #343/#352: o prefixo de resultado é lido por lib/result.lua (só o formato novo).
     if ok and mem and not resultado.e_nao_util(mem) then
       cur_text = "[MEMÓRIA RELEVANTE — injetada automaticamente]\n"
                .. mem .. "\n---\n" .. cur_text
