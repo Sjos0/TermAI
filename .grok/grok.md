@@ -658,3 +658,8 @@ Card fundo sólido no replay para todo SGR.
 ## 2026-10-31 - [release v1.38.4]
 Inclui #305 fundo seletivo + #307 TAB expand.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#306 cell sanitize fase1]
+**Fase:** E2
+**Módulos:** ui/cell/{sanitize,estilo,buffer}.lua
+**Author:** Grok (xAI)
