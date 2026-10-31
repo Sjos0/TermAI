@@ -910,6 +910,14 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Closes #335**
 **Author:** Grok (xAI)
 
+## 2026-10-31 - PR fix/338-web-search-fallback
+**Closes #338**
+**Contexto:** regressão do lote 1 do #325 (PR #336). `tools/web.lua` reconhecia como falha apenas o formato antigo (`^❌` e `🔍 Nenhum resultado`), mas os provedores passaram a emitir `[FAIL] ...` e `[SEARCH] Nenhum resultado ...`. Com `fallback_enabled = true`, a falha do primeiro provedor era devolvida ao usuário como se fosse resultado e o segundo provedor nunca era chamado.
+**Files Modified:** `tools/web.lua` (a checagem de falha passa a aceitar `^❌` e `^%[FAIL%]`; a checagem de "nenhum resultado" passa a aceitar `🔍 Nenhum resultado` e `[SEARCH] Nenhum resultado`; nenhuma outra mudança); `tests/web_search_fallback_spec.lua` (NOVO — 12 casos de integração: registra a ferramenta pelo caminho real `M.register`, mocka `config` e `providers` em `package.loaded` e observa qual provedor foi efetivamente chamado).
+**Evidência:** spec antes do patch (commit `55ebdb3`, sobre a main): 6 passaram, 6 falharam. Depois do patch (commit `1af46ba`, branch com o main integrado): 12 passaram, 0 falharam. Prova de sensibilidade: removendo `or res:match("^%[FAIL%]")` → 8 passaram, 4 falharam, EXIT=1. CI `lua` verde em `1af46ba` e no merge `80631f4`. Comentário de evidência na issue #338 e na PR #340; branch apagada.
+**Observação:** os consumidores de `agent/` (9 pontos) e `tools/error_feedback/post_exec.lua` (3 pontos) ficaram intocados, como a issue pediu — pertencem aos passos D2/D3 do plano (helper `e_falha`).
+**Author:** Ameno (orquestrador)
+
 ## 2026-10-31 - PR fix/341-ttl-os-time
 **Closes #341**
 **Author:** Grok (xAI)
