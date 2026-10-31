@@ -668,3 +668,7 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Fase:** E3/E4
 **Card e executor usam sanitize; retry/error também.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release 1.39.0 draft]
+Aguarda confirmação do Samuel no aparelho (cinza 236, sem buracos).
+**Author:** Grok (xAI)
