@@ -132,7 +132,8 @@ function M.run(ctx)
     end
 
       local save_input = "[" .. ts .. "] " .. input
-      persistence.save_exchange(ctx, msgs_before, reasoning, save_input, ctx.tokens_fresh, pasted_texts, stream_complete)
+      local before = persistence.adjust_before(ctx, msgs_before, stamped_input)
+      persistence.save_exchange(ctx, before, reasoning, save_input, ctx.tokens_fresh, pasted_texts, stream_complete)
     ui.footer(ctx.tokens, ctx.active.context_window, elapsed, end_time)
 
     -- Verifica restart imediato pós-resposta (ex: agente usou a tool restart nativa)

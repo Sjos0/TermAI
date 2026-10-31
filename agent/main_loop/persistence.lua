@@ -1,11 +1,26 @@
 -- persistence.lua — Persistência de mensagens no JSONL e guarda de flush ativo.
--- v2: propaga tool_calls/tool_call_id de cada mensagem ao salvar — completa
--- o par com messages.lua v2 para restaurar o contexto nativo após restart.
--- v3: persiste ctx.tokens em registro meta dedicado (Bug C fix).
--- v4: save_exchange aceita param 'fresh' pra flag tokens_fresh (TFA-001-R3/R4).
--- v5: aceita param 'pasted_texts' pra metadados de textos colados.
+-- v2–v5: tool_calls, tokens meta, fresh, pasted_texts.
+-- v6 #279: adjust_before localiza user deslocado por recover.
 local session = require("session")
 local M = {}
+
+--- Se recover removeu órfãos com índice <= msgs_before, o user desloca.
+--- Localiza pela referência de conteúdo stampado do turno.
+function M.adjust_before(ctx, msgs_before, stamped)
+  local n = #ctx.msgs
+  local i0 = msgs_before + 1
+  if i0 <= n and ctx.msgs[i0] and ctx.msgs[i0].role == "user" then
+    return msgs_before
+  end
+  if not stamped then return msgs_before end
+  for i = 1, n do
+    local m = ctx.msgs[i]
+    if m.role == "user" and m.content == stamped then
+      return i - 1
+    end
+  end
+  return msgs_before
+end
 
 local function save_exchange(ctx, msgs_before, reasoning, original_input, fresh, pasted_texts, stream_complete)
   local total = #ctx.msgs
@@ -23,8 +38,7 @@ local function save_exchange(ctx, msgs_before, reasoning, original_input, fresh,
       session.save_message(m.role, content, tok, skip, r, m.tool_calls, m.tool_call_id, p_texts, incomplete)
     end
   end
-  -- v4: persiste ctx.tokens com flag fresh em registro meta dedicado.
-  if fresh == nil then fresh = true end  -- default: confiável (compat retroativa)
+  if fresh == nil then fresh = true end
   session.save_session_tokens(ctx.tokens, fresh)
 end
 
