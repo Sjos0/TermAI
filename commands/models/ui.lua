@@ -1,3 +1,4 @@
+local core = require("ui.core")
 local M = {}
 
 M.c = {
@@ -12,7 +13,7 @@ local c = M.c
 
 function M.header(title)
   io.write("\n" .. c.bold .. c.cyan .. "  " .. title .. c.reset .. "\n")
-  io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+  io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
 end
 
 function M.prompt_read(label)

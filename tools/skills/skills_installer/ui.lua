@@ -1,3 +1,5 @@
+local core = require("ui.core")
+
 local M = {}
 
 local HOME = os.getenv("HOME") or "/data/data/com.termux/files/home"
@@ -25,7 +27,8 @@ function M.banner()
   end
   f:close()
 
-  local term_w = 80
+  -- Largura real do terminal (#331): o fallback (80) mora só em ui/core/terminal.lua.
+  local term_w = core.tw()
   local box_w = max_w + 4
   local pad = math.max(0, math.floor((term_w - box_w) / 2))
   local margin = string.rep(" ", pad)

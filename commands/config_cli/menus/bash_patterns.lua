@@ -19,7 +19,7 @@ function M.run(config_mod, ui)
       io.write("\n")
     end
 
-    io.write(ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
     io.write("  "..ui.B.."A."..ui.R.."  Adicionar padrão\n")
     if #patterns > 0 then
       io.write("  "..ui.B.."R."..ui.R.."  Remover (número do padrão)\n")

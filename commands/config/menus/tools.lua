@@ -5,8 +5,12 @@ local ui         = require("commands.models.ui")
 local config_mod = require("config")
 local tools_mod  = require("tools")
 local c = ui.c
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 local M = {}
 
 local function cls() io.write("\27[2J\27[H"); io.flush() end
@@ -74,11 +78,11 @@ function M.run(ctx)
     local names = sorted_tool_names()
 
     io.write("\n"..c.bold..c.cyan.."  Configurações › Tools (agente: "..agent_id..")"..c.reset.."\n")
-    io.write(c.gray.."  "..SEP..c.reset.."\n\n")
+    io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
     io.write(c.dim.."  Desativar remove a tool do schema do modelo.\n")
     io.write("  Permissões (ask/block) são outra coisa — só valem para tools ativas.\n"..c.reset.."\n")
 
-    io.write(c.gray.."  ── Tools "..SEP2..c.reset.."\n")
+    io.write(c.gray.."  ── Tools "..SEP2("  ── Tools ")..c.reset.."\n")
     for i, name in ipairs(names) do
       local data = tools_mod.registry[name]
       local desc = (data and data.desc) or ""
@@ -90,7 +94,7 @@ function M.run(ctx)
         c.white, i, c.reset, name, status, c.dim, desc, c.reset))
     end
 
-    io.write("\n"..c.gray.."  ── Ações "..SEP2..c.reset.."\n")
+    io.write("\n"..c.gray.."  ── Ações "..SEP2("  ── Ações ")..c.reset.."\n")
     io.write("  "..c.white.."N."..c.reset.."  Toggle da tool número N\n")
     io.write("  "..c.white.."A."..c.reset.."  Desativar todas\n")
     io.write("  "..c.white.."R."..c.reset.."  Reativar todas\n")

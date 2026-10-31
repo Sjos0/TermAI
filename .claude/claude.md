@@ -881,3 +881,12 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **2º defeito do spec:** o dublê lia `tc["function"].arguments` (cru), mas o tool_parser do flush entrega `{id,name,args}` já decodificado (agent/api/request_stream/tool_parser.lua:27-31) — o formato que a produção usa (nucleo_2.lua:10,21,37); faltava o fallback `fn.arguments or fn.args`, o que fazia o Read real receber `nil`.
 **Resultado:** flush_provedor_falso_spec 1 FAIL → PASS (20 OK); flush_avisos_sem_simbolo_spec segue PASS; sensibilidade → FAIL com "resultado qualquer".
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR refactor/331-larguras-responsivas
+**Closes #331**
+**Veredito:** CONFIRMADA — largura fixa eliminada; 44 arquivos alterados, 34 pontos usando core.regua.
+**Mudança:** `core.regua(teto, usado)` (ui/core/terminal.lua:56) = `string.rep("─", math.max(0, math.min(teto, core.tw() - 2 - usado)))`; fallback ÚNICO `core.TW_FALLBACK=80` (ui/core/terminal.lua:12, com comentário); os separadores fixos passaram a derivar de core.tw(). Dois separadores que NÃO vão para o terminal ficaram como estavam, só com comentário: agent/flush/format_context.lua:33 (vai para o prompt do flush = modelo) e tools/memory/formatter.lua:14 (vai para o arquivo .md de memória).
+**Evidência:** tests/larguras_responsivas_331_spec.lua (novo) ALL OK — (a) nenhuma linha passa de tw em 40/50/54/80; (b) resize 54→40→54 sem sobra; (c) card mais alto que a tela (th=27) não quebra o cursor. tests/tui_render_spec.lua: 23013 checagens, 0 falhas. Nenhum `tw or 80` em produção fora de ui/core/terminal.lua (os `or 8000` restantes são limites de token/char, não largura de tela).
+**Sensibilidade:** commands/config/menus/request/view.lua:12 com `core.regua(45, usado or 2)` trocado por `string.rep("─", 45)` ⇒ FAIL "b1: após encolher p/ 40, nada além de 40 (col=47)" (exit 1); restaurado ⇒ ALL OK (exit 0).
+**Item 3 (guarda de saída):** SEM guarda global — o corte continua nos renderers (largura.cortar via ui/card.lua, ui/misc.lua, ui/widgets/layout.lua, ui/widgets/block/render.lua), como já era; justificativa: o spec (a) mede toda linha em 40/50/54/80 e transforma estouro em falha visível, enquanto um segundo ponto único global mascararia estouros (falha silenciosa) e custaria uma passada extra por linha.
+**Author:** Grok (xAI)

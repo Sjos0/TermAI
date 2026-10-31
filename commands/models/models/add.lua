@@ -1,4 +1,5 @@
 -- add.lua — Adiciona um modelo a um provedor existente, com validação pós-adição.
+local core       = require("ui.core")
 local ui         = require("commands.models.ui")
 local validate    = require("models.validate")
 local add_remote  = require("commands.models.models.add_remote")
@@ -11,7 +12,7 @@ local function add(models_mod)
     return
   end
   io.write("\n" .. c.bold .. c.cyan .. "  Adicionar Modelo" .. c.reset .. "\n")
-  io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+  io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
   io.write(c.gray .. "  Provedores disponíveis:\n" .. c.reset)
   for i, p in ipairs(providers) do
     io.write("  " .. c.white .. i .. ". " .. c.reset .. p.id

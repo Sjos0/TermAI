@@ -20,10 +20,10 @@ return function(M, N)
     core.invalidate_size()
 
     local segments   = {}
-    local prev_lines = 0
-    -- Largura 0 (terminal sem tamanho) faria a divisão virar infinito no redesenho.
-    local tw = core.tw()
-    if not tw or tw < 20 then tw = 80 end
+    -- Largura real do terminal na hora da digitação. O fallback (e o mínimo
+    -- de sanidade) moram só em ui/core/terminal.lua — nada de 80 solto aqui.
+    -- A cada redraw, lemos de novo: girar o celular muda a quebra de linha.
+    local tw = math.max(core.tw(), core.TW_MIN)
 
     local function redraw()
       local display = seg.get_display(segments)

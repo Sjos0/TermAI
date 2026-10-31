@@ -1,6 +1,7 @@
 -- remove.lua — Remove um modelo cadastrado, com confirmação. Retorna o novo `active`.
-local ui = require("commands.models.ui")
-local c  = ui.c
+local ui   = require("commands.models.ui")
+local core = require("ui.core")
+local c    = ui.c
 local M = {}
 
 local function remove(models_mod, active)
@@ -11,7 +12,7 @@ local function remove(models_mod, active)
   end
 
   io.write("\n" .. c.bold .. c.cyan .. "  Remover Modelo" .. c.reset .. "\n")
-  io.write(c.gray .. "  " .. string.rep("─", 45) .. c.reset .. "\n\n")
+  io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
   for i, m in ipairs(models) do
     io.write("  " .. c.white .. i .. ". " .. c.reset .. m.ref .. "\n")
   end

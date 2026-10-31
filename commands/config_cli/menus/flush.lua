@@ -10,10 +10,10 @@ function M.run(config_mod, ui)
     local limit   = comp.flush_tokens or 40000
 
     ui.hdr("TermAI Config › Memory Flush")
-    io.write(ui.GR.."  ── Status "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
     ui.row("Flush:", enabled and (ui.G.."✅ Ativo"..ui.R) or (ui.RE.." ❌ Desativado"..ui.R))
     ui.row("Intervalo:", ui.fmt_k(limit).." tokens")
-    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  "..(enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Flush\n")
     io.write("  "..ui.B.."2."..ui.R.."  Alterar intervalo  "..ui.DM.."(mínimo: 5.000 tokens)"..ui.R.."\n")
 

@@ -82,6 +82,43 @@ function M.run()
     r500:find("Erro Google %[500%]") ~= nil and r500:find("internal") ~= nil)
 
   -- ─────────────────────────────────────────────────────────────
+  -- larguras responsivas (#331): a saída do grounding nunca estoura tw
+  -- ─────────────────────────────────────────────────────────────
+  sec("larguras responsivas (#331)")
+
+  do
+    local core    = require("ui.core")
+    local card    = require("ui.card")
+    local largura = require("ui.largura")
+    local fmt_gg  = require("providers.google_grounding.formatter")
+    local BG, FG, DIM = "\27[48;5;234m", "\27[38;5;255m", "\27[38;5;245m"
+
+    -- Saída real do grounding: texto longo, acentuação e URL comprida.
+    local gg = fmt_gg.format_result(
+      "pergunta longa sobre um assunto pesquisado na web com acentuação ção",
+      "Resposta com link https://exemplo.invalid/muito/longo/caminho/da/fonte/relevante/2026",
+      { { url = "https://exemplo.invalid/muito/longo/caminho/da/fonte/relevante/2026",
+          title = "Fonte relevante" } },
+      { "consulta um", "consulta dois" })
+
+    local linhas_gg = {}
+    for ln in (gg .. "\n"):gmatch("([^\n]*)\n") do linhas_gg[#linhas_gg + 1] = ln end
+
+    for _, tw in ipairs({ 40, 50, 54, 80 }) do
+      -- Caminho REAL do card: ele pinta exatamente tw colunas, nunca mais.
+      local rows = card.body_rows(linhas_gg, tw)
+      local pior = 0
+      for _, r in ipairs(rows) do
+        local line = card.bg_row(BG, FG, r.prefix, r.dim and DIM or FG, r.text, tw)
+        local w = largura.colunas(line)
+        if w > pior then pior = w end
+      end
+      T(string.format("[#331 gg tw=%d] nenhuma linha do card excede tw (pior=%d)", tw, pior),
+        pior <= tw)
+    end
+  end
+
+  -- ─────────────────────────────────────────────────────────────
   -- response_extractor
   -- ─────────────────────────────────────────────────────────────
 end

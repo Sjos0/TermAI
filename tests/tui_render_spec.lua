@@ -55,7 +55,7 @@ local function check_rules(out, W, label)
   check(body_lines <= card.MAX_BODY + 3, label .. " R5: corpo com " .. body_lines .. " linhas, passa do limite recolhido")
 end
 
-local WIDTHS = { 28, 40, 60, 80 }
+local WIDTHS = { 40, 50, 54, 80 }
 local ARGS = {
   false,                                                      -- sem argumento
   "a.lua",                                                    -- curto

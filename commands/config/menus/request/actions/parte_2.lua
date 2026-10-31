@@ -52,7 +52,9 @@ return function(M, N)
   function M.change_language(ctx)
     io.write("\27[2J\27[H") -- Clear screen
     io.flush()
-    local SEP = string.rep("─", 45)
+    -- Régua responsiva (#331): calculada agora, nunca congelada no load.
+    local SEP = require("ui.core").regua(45, 2)
+
     io.write("\n"..c.bold..c.cyan.."  Configurações › Idioma do Agente"..c.reset.."\n")
     io.write(c.gray.."  "..SEP..c.reset.."\n\n")
     io.write("  "..c.white.."1."..c.reset.."  Portuguese (Português - Padrão)\n")

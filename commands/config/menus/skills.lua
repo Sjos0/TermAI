@@ -1,8 +1,12 @@
 -- skills.lua — Menu Skills
 local ui = require("commands.models.ui")
 local c  = ui.c
-local SEP  = string.rep("─", 45)
-local SEP2 = string.rep("─", 30)
+local core = require("ui.core")
+-- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
+-- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
+-- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
+local function SEP(usado)    return core.regua(45, usado or 2) end
+local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
 local M = {}
 
 local function cls() io.write("\27[2J\27[H"); io.flush() end
@@ -15,8 +19,8 @@ function M.run(ctx)
     local global_skills = installer.list_global_skills()
     local agent_skills  = installer.list_agent_skills(agent_name)
     io.write("\n"..c.bold..c.cyan.."  Configuracoes > Skills"..c.reset.."\n")
-    io.write(c.gray.."  "..SEP..c.reset.."\n\n")
-    io.write(c.gray.."  ── Skills Globais "..SEP2..c.reset.."\n")
+    io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
+    io.write(c.gray.."  ── Skills Globais "..SEP2("  ── Skills Globais ")..c.reset.."\n")
     if #global_skills == 0 then
       io.write(c.gray.."  (nenhuma skill global encontrada)\n"..c.reset)
     else
@@ -24,7 +28,7 @@ function M.run(ctx)
         io.write(string.format("  %s%d.%s  %-20s\n", c.white, i, c.reset, s.name))
       end
     end
-    io.write("\n"..c.gray.."  ── Skills do Agente '"..agent_name.."' "..SEP2..c.reset.."\n")
+    io.write("\n"..c.gray.."  ── Skills do Agente '"..agent_name.."' "..SEP2("  ── Skills do Agente '"..agent_name.."' ")..c.reset.."\n")
     if #agent_skills == 0 then
       io.write(c.gray.."  (nenhuma instalada)\n"..c.reset)
     else
@@ -32,7 +36,7 @@ function M.run(ctx)
         io.write(string.format("  %s%d.%s  %s\n", c.white, i, c.reset, s.name))
       end
     end
-    io.write("\n"..c.gray.."  ── Opcoes "..SEP2..c.reset.."\n")
+    io.write("\n"..c.gray.."  ── Opcoes "..SEP2("  ── Opcoes ")..c.reset.."\n")
     io.write("  "..c.white.."1."..c.reset.."  Instalar skills globais no agente\n")
     io.write("  "..c.white.."2."..c.reset.."  Remover skills do agente\n")
     io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")

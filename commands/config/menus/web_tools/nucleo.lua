@@ -3,8 +3,11 @@ return function(M)
   local ui         = require("commands.models.ui")
   local config_mod = require("config")
   local c = ui.c
-  local SEP  = string.rep("─", 45)
-  local SEP2 = string.rep("─", 30)
+  local core = require("ui.core")
+  -- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso.
+  local function SEP(usado)    return core.regua(45, usado or 2) end
+  local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
+
 
   local N = {}
   N.ui = ui

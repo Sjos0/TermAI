@@ -30,7 +30,7 @@ local function hr_lines(raw)
   return out
 end
 
-for _, tw in ipairs({ 40, 50, 80 }) do
+for _, tw in ipairs({ 40, 50, 54, 80 }) do
   for _, md_hr in ipairs({ "---", "***" }) do
     TW = tw
     local raw = renderer.render("linha antes\n" .. md_hr .. "\nlinha depois")

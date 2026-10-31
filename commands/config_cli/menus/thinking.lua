@@ -16,11 +16,11 @@ function M.run(config_mod, ui)
   Para modelos COM reasoning: reforça a profundidade do raciocínio.
   Reinicie a TUI após alterar para o prompt ser atualizado.
 ]]..ui.R.."\n")
-    io.write(ui.GR.."  ── Status "..ui.SEP2..ui.R.."\n")
+    io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
     ui.row("Protocolo:", enabled and (ui.G.."✅ Ativo"..ui.R) or (ui.RE.."❌ Desativado"..ui.R))
     ui.row("Nível:", effort)
     ui.row("Modo de Exibição:", tmode == "compact" and "compact" or "expanded")
-    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
+    io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  "..(enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Protocolo\n")
     io.write("  "..ui.B.."2."..ui.R.."  Alterar nível  "..ui.DM.."(low / medium / high)"..ui.R.."\n")
     io.write("  "..ui.B.."3."..ui.R.."  Alterar Modo de Exibição  "..ui.DM.."(expanded / compact)"..ui.R.."\n")

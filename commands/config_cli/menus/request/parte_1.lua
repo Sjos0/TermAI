@@ -17,7 +17,7 @@ return function(M, N)
       local req_mode = req.mode or ((wt > 0) and "buffer" or "stream")
 
       ui.hdr("TermAI Config › Requisições")
-      io.write(ui.GR.."  ── Status atual "..ui.SEP2..ui.R.."\n")
+      io.write(ui.GR.."  ── Status atual "..ui.SEP2("  ── Status atual ")..ui.R.."\n")
       ui.row("Modo:", req_mode == "buffer"
                 and (ui.G.."buffer"..ui.R..ui.DM.."  (wrapper - resiliente a rede)"..ui.R)
                 or  (ui.G.."stream"..ui.R..ui.DM.."  (curl direto - tokens em tempo real)"..ui.R))
@@ -34,7 +34,7 @@ return function(M, N)
       end
       ui.row("Reasoning Effort (OpenRouter):", req.reasoning_effort or "medium", ui.CY)
       ui.row("Thinking Effort (OpenCode Zen):", (cfg.agents.defaults.thinkingEffort or "high"), ui.CY)
-      io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2..ui.R.."\n")
+      io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
       io.write("  "..ui.B.."1."..ui.R.."  Alterar Max Time (Total)   "..ui.DM.."(padrão: 180s | máx: 300s)"..ui.R.."\n")
       io.write("  "..ui.B.."2."..ui.R.."  Alterar Idle Time (Ocioso) "..ui.DM.."(padrão: 30s | máx: 180s)"..ui.R.."\n")
       io.write("  "..ui.B.."3."..ui.R.."  Alterar max tentativas     "..ui.DM.."(padrão: 10)"..ui.R.."\n")
