@@ -863,3 +863,10 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Closes #324**
 **Decisão:** (a) tw por parâmetro em render_line — preserva "Lua puro"; 1 chamador real (lib/renderer.lua:50).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/327-bloco-erro-sem-borda
+**Closes #327**
+**Decisão:** Opção A confirmada pelo Samuel — área inteira (respiro incluso) com fundo 48;5;52 (c.bg_error), texto 38;5;231 (c.error_fg), sem moldura (`block.BORDERS.NONE`).
+**Arquivo:** ui/spinner/retry.lua:18-37 (paint_block, 83 linhas). Respiro via content_lines vazios. Não mexe em ui/widgets/block.
+**Evidência:** tests/retry_bloco_sem_borda_spec.lua (12 FAIL→ALL OK) + tests/retry_bloco_caminho_real_spec.lua (44 OK, falha_final real).
+**Author:** Grok (xAI)

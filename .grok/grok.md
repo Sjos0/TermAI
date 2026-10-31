@@ -703,3 +703,14 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Sensibilidade:** 40 reintroduzido → 4 FAIL; `git checkout --` → PASS.
 **Caminho real:** tests/manual/hr_prova_pty.py (PTY ao vivo + replay) 40/50/80 OK.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#327 bloco de erro sem borda]
+**Issue:** #327
+**Causa:** ui/spinner/retry.lua:21-27 (paint_block) usava `borders = BORDERS.ALL`, `border_type = TYPE.PLAIN`, `frame_bg = c.frame_error` (48;5;203) → glifos ┌ ┐ └ ┘ ─ │ + faixa externa de cor diferente.
+**Correção:** `paint_block` passa a usar `borders = block.BORDERS.NONE`, `bg = c.bg_error` (48;5;52), `fg = c.error_fg` (38;5;231). Respiro (linha vazia acima/abaixo) entra como content_lines vazios → todas as células com fundo 52. Reutiliza ui/widgets/block (sem copiar lógica).
+**Spec:** tests/retry_bloco_sem_borda_spec.lua — por célula, tw 40/50/80: zero moldura, todas as células fundo 52, largura exata, texto longo quebra por palavra sem perda. Antes: 12 FAIL; depois: ALL OK.
+**Caminho real:** tests/retry_bloco_caminho_real_spec.lua — ao vivo via agent/api/request_stream/streamer/fallback.falha_final → ui.show_api_error; replay do ANSI no emulador por célula. 44 OK.
+**Sensibilidade:** reinterpretar BORDERS.ALL → 6 FAIL (moldura 102/86/116/106/172/166); `bg=""` → todas as células sem fundo 52; `git checkout --` → ALL OK.
+**Capturas (por célula):** `show_api_error` com mensagem longa + recover — tw=40: 9 linhas / 360 células, todas fundo 52, 0 glifo de moldura; tw=80: 6 linhas / 480 células, todas fundo 52, 0 glifo de moldura. (Replay da caminho_real é dependente do cenário: vivo+recover tw=40 = 200 células, tw=80 = 320 células.) Anexadas à PR. UI/widgets/block e goldens do componente intactos.
+**Suíte:** 120 PASS / 7 FAIL, todos pré-existentes no main (ambientais Termux).
+**Author:** Grok (xAI)
