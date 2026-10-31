@@ -668,3 +668,11 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Fase:** E3/E4
 **Card e executor usam sanitize; retry/error também.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [card pinta exatamente tw]
+**Issue:** aberta nesta entrega
+**Causa:** bg_row pad = tw-1
+**Correção:** pad = tw - visible
+**Wrap:** DECAWM pending wrap; LF reseta (DEC/xterm); caller já emite \n
+**Goldens:** card_* — célula final agora com fundo
+**Author:** Grok (xAI)

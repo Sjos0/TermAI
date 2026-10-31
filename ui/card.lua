@@ -46,7 +46,7 @@ end
 
 function M.bg_row(bg, prefix_color, prefix, text_color, text, tw)
   local visible = M.width(prefix) + M.width(text)
-  local pad = math.max(0, tw - 1 - visible)
+  local pad = math.max(0, tw - visible)  -- exatamente tw colunas (não tw-1)
   local body = prefix_color .. prefix .. text_color .. text .. string.rep(" ", pad)
   body = fundo.fundo_seguro(bg, body)
   return bg .. body .. "\27[0m"
