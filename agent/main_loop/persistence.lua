@@ -13,7 +13,7 @@ function M.adjust_before(ctx, msgs_before, stamped)
     return msgs_before
   end
   if not stamped then return msgs_before end
-  for i = 1, n do
+  for i = n, 1, -1 do
     local m = ctx.msgs[i]
     if m.role == "user" and m.content == stamped then
       return i - 1

@@ -796,3 +796,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/278-cores-bloco-erro
 **Issue:** #278
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/279-adjust-ultima-ocorrencia
+**Refs #279**
+**Author:** Grok (xAI)
