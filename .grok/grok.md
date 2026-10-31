@@ -594,3 +594,11 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 ## 2026-10-31 - [release v1.38.1]
 **PATCH** correções #277–#282 (e #279 complemento).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [A contrato visual golden]
+**Fase:** A
+**Veredito:** CONFIRMADA
+**Arquivos:** tests/golden/* (28), tests/golden_spec.lua, tests/independencia_spec.lua
+**Goldens:** todos gravados do main atual; card_reset e bloco_palavra_longa registram defeitos conhecidos
+**Erros:** nenhum
+**Author:** Grok (xAI)
