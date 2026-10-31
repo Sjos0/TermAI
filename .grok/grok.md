@@ -557,3 +557,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Erro cometido:** cenário C só na memória (PR #285) — não cobriu save_exchange; corrigido nesta PR.
 **Sensibilidade:** adjust_before identity → FAIL gravação; restaurado OK.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#278 cores bloco erro]
+**Issue:** #278
+**Veredito:** CONFIRMADA
+**Files:** render.lua (frame_bg/fg, interior_bg), block.lua, core.c, retry.lua, tests/bloco_erro_cores_spec.lua
+**Decisões:** contorno 203/52, interior 52, texto 231; constantes em core.c
+**Sensibilidade:** sem interior_bg → FAIL bad=38/78; restaurado OK
+**Erros:** emulador do spec contava bytes UTF-8; corrigido para utf8.char
+**Author:** Grok (xAI)

@@ -22,6 +22,8 @@ function M.new(opts)
     border_color = opts.border_color or "",
     bg = opts.bg or "",
     fg = opts.fg or "",
+    frame_bg = opts.frame_bg or "",
+    frame_fg = opts.frame_fg or "",
     padding = opts.padding or { left = 0, right = 0, top = 0, bottom = 0 },
     title = opts.title,
     content_lines = opts.content_lines or {},
@@ -39,6 +41,8 @@ function M.new(opts)
       border_color = self.border_color,
       bg = self.bg,
       fg = self.fg,
+      frame_bg = self.frame_bg,
+      frame_fg = self.frame_fg,
       title = self.title,
       content_lines = self.content_lines,
     })
