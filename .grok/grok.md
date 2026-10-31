@@ -614,3 +614,9 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Goldens:** só bloco_palavra_longa_tw40/80
 **Sensibilidade:** #piece → FAIL conservação
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [D #295 classificação JSON]
+**Fase:** D
+**Goldens:** nenhum
+**Sensibilidade:** sem padrão code → 400 repete
+**Author:** Grok (xAI)
