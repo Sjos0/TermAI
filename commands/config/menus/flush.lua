@@ -46,7 +46,7 @@ function M.run(ctx)
     row("Sessão:", session.current(), c.gray)
     io.write("\n")
     io.write(c.gray .. "  ── Status " .. SEP2("  ── Status ").. c.reset .. "\n")
-    row("Flush:", enabled and (c.green.."✅ Ativo") or (c.red.."❌ Desativado"), "")
+    row("Flush:", enabled and (c.green.."[OK] Ativo") or (c.red.."[FAIL] Desativado"), "")
     row("Intervalo:", fmt_tokens(limit) .. " tokens")
     row("Último flush:", fmt_tokens(estado.ultimo) .. " tokens", c.gray)
     row("Tokens agora:", fmt_tokens(ctx.tokens) .. " tokens")
@@ -68,7 +68,7 @@ function M.run(ctx)
       local new = not enabled
       ctx.compaction.flush_enabled = new
       config_mod.set("agents.defaults.compaction.flush_enabled", new)
-      io.write(new and (c.green.."\n  ✅ Ativado.\n"..c.reset) or (c.red.."\n  ❌ Desativado.\n"..c.reset))
+      io.write(new and (c.green.."\n  [OK] Ativado.\n"..c.reset) or (c.red.."\n  [FAIL] Desativado.\n"..c.reset))
       ui.pause()
     elseif ch == "2" then
       local s = ui.prompt_read("Novo intervalo em tokens (mín: 5000)")
@@ -76,14 +76,14 @@ function M.run(ctx)
       if v and v >= 5000 then
         ctx.compaction.flush_tokens = v
         config_mod.set("agents.defaults.compaction.flush_tokens", v)
-        io.write(c.green.."\n  ✅ Intervalo: "..fmt_tokens(v).."\n"..c.reset)
-      else io.write(c.red.."\n  ❌ Inválido.\n"..c.reset) end
+        io.write(c.green.."\n  [OK] Intervalo: "..fmt_tokens(v).."\n"..c.reset)
+      else io.write(c.red.."\n  [FAIL] Inválido.\n"..c.reset) end
       ui.pause()
     elseif ch == "3" then
       local confirm = ui.prompt_read("Resetar contador? (s/N)")
       if confirm and confirm:lower() == "s" then
         mf.marcar_flush(0)
-        io.write(c.green.."\n  ✅ Resetado.\n"..c.reset)
+        io.write(c.green.."\n  [OK] Resetado.\n"..c.reset)
       else io.write(c.gray.."\n  Cancelado.\n"..c.reset) end
       ui.pause()
     end

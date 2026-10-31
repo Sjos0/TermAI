@@ -41,7 +41,7 @@ return function(M, N)
     local efforts = {["1"]="high",["2"]="medium",["3"]="low",["4"]="xhigh",["5"]="minimal",["6"]="none"}
     if efforts[lch] then
       saver.save_req(ctx, "reasoning_effort", efforts[lch])
-      io.write(c.green.."\n  ✅ Effort: "..efforts[lch].."\n"..c.reset)
+      io.write(c.green.."\n  [OK] Effort: "..efforts[lch].."\n"..c.reset)
     else 
       io.write(c.gray.."\n  Cancelado.\n"..c.reset) 
     end
@@ -65,7 +65,7 @@ return function(M, N)
     local langs = {["1"]="Portuguese", ["2"]="English", ["3"]="Spanish"}
     if langs[lch] then
       saver.save_req(ctx, "language", langs[lch])
-      io.write(c.green.."\n  ✅ Idioma do Agente configurado para: "..langs[lch].."\n"..c.reset)
+      io.write(c.green.."\n  [OK] Idioma do Agente configurado para: "..langs[lch].."\n"..c.reset)
     else 
       io.write(c.gray.."\n  Cancelado.\n"..c.reset) 
     end
@@ -85,7 +85,7 @@ return function(M, N)
     local tefforts = {["1"]="no_think",["2"]="low",["3"]="high"}
     if tefforts[tch] then
       saver.save_defaults(ctx, "thinkingEffort", tefforts[tch])
-      io.write(c.green.."\n  ✅ Thinking Effort: "..tefforts[tch].."\n"..c.reset)
+      io.write(c.green.."\n  [OK] Thinking Effort: "..tefforts[tch].."\n"..c.reset)
     else
       io.write(c.gray.."\n  Cancelado.\n"..c.reset)
     end

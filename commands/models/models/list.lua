@@ -18,7 +18,7 @@ local function list(models_mod, active)
     local models = models_mod.list(prov.id)
     for _, m in ipairs(models) do
       local is_active = (m.ref == active)
-      local marker    = is_active and (c.green .. "★ ") or "  "
+      local marker    = is_active and (c.green .. "[STAR] ") or "       "
       local name_col  = is_active and c.bold or c.dim
       local flags     = ""
       if m.reasoning then flags = flags .. " " .. c.orange .. "[reasoning]" end
@@ -30,7 +30,7 @@ local function list(models_mod, active)
     end
     io.write("\n")
   end
-  io.write(c.gray .. "  ★ = modelo ativo\n\n" .. c.reset)
+  io.write(c.gray .. "  [STAR] = modelo ativo\n\n" .. c.reset)
 end
 
 M.list = list

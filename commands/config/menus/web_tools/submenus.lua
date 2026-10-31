@@ -16,17 +16,17 @@ return function(N)
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.provider = "google_grounding"
       config_mod.set("web_tools.provider", "google_grounding")
-      io.write(c.green.."\n  ✅ Provedor definido: Google Grounding\n"..c.reset)
+      io.write(c.green.."\n  [OK] Provedor definido: Google Grounding\n"..c.reset)
     elseif choice == "2" then
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.provider = "duckduckgo_search"
       config_mod.set("web_tools.provider", "duckduckgo_search")
-      io.write(c.green.."\n  ✅ Provedor definido: DuckDuckGo Search (Gratuito)\n"..c.reset)
+      io.write(c.green.."\n  [OK] Provedor definido: DuckDuckGo Search (Gratuito)\n"..c.reset)
     elseif choice == "3" then
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.provider = "tavily_search"
       config_mod.set("web_tools.provider", "tavily_search")
-      io.write(c.green.."\n  ✅ Provedor definido: Tavily Search\n"..c.reset)
+      io.write(c.green.."\n  [OK] Provedor definido: Tavily Search\n"..c.reset)
     end
     ui.pause()
   end
@@ -44,17 +44,17 @@ return function(N)
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.fallback_chain = {"duckduckgo_search", "tavily_search", "google_grounding"}
       config_mod.set("web_tools.fallback_chain", {"duckduckgo_search", "tavily_search", "google_grounding"})
-      io.write(c.green.."\n  ✅ Ordem definida: DDG → Tavily → Google\n"..c.reset)
+      io.write(c.green.."\n  [OK] Ordem definida: DDG → Tavily → Google\n"..c.reset)
     elseif choice == "2" then
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.fallback_chain = {"tavily_search", "google_grounding", "duckduckgo_search"}
       config_mod.set("web_tools.fallback_chain", {"tavily_search", "google_grounding", "duckduckgo_search"})
-      io.write(c.green.."\n  ✅ Ordem definida: Tavily → Google → DDG\n"..c.reset)
+      io.write(c.green.."\n  [OK] Ordem definida: Tavily → Google → DDG\n"..c.reset)
     elseif choice == "3" then
       ctx.cfg.web_tools = ctx.cfg.web_tools or {}
       ctx.cfg.web_tools.fallback_chain = {"google_grounding", "tavily_search", "duckduckgo_search"}
       config_mod.set("web_tools.fallback_chain", {"google_grounding", "tavily_search", "duckduckgo_search"})
-      io.write(c.green.."\n  ✅ Ordem definida: Google → Tavily → DDG\n"..c.reset)
+      io.write(c.green.."\n  [OK] Ordem definida: Google → Tavily → DDG\n"..c.reset)
     end
     ui.pause()
   end
@@ -73,7 +73,7 @@ return function(N)
         ctx.cfg.web_tools = ctx.cfg.web_tools or {}
         ctx.cfg.web_tools.google_grounding_key = s
         config_mod.set("web_tools.google_grounding_key", s)
-        io.write(c.green.."\n  ✅ Chave Google atualizada.\n"..c.reset)
+        io.write(c.green.."\n  [OK] Chave Google atualizada.\n"..c.reset)
       end
     elseif choice == "2" then
       local s = ui.prompt_read("Chave Tavily (tavily.com)")
@@ -81,7 +81,7 @@ return function(N)
         ctx.cfg.web_tools = ctx.cfg.web_tools or {}
         ctx.cfg.web_tools.tavily_key = s
         config_mod.set("web_tools.tavily_key", s)
-        io.write(c.green.."\n  ✅ Chave Tavily atualizada.\n"..c.reset)
+        io.write(c.green.."\n  [OK] Chave Tavily atualizada.\n"..c.reset)
       end
     end
     ui.pause()

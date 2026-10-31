@@ -35,7 +35,7 @@ local function remove(models_mod, active)
   if ok then
     local new_active = active
     if active == models[idx].ref then new_active = "" end
-    io.write(c.green .. "  ✅ Modelo removido.\n" .. c.reset)
+    io.write(c.green .. "  [OK] Modelo removido.\n" .. c.reset)
     return new_active
   else
     io.write(c.red .. "  Erro: " .. tostring(err) .. "\n" .. c.reset)

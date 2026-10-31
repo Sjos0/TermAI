@@ -3,7 +3,7 @@ local ui = require("commands.config_cli.ui_utils")
 local M = {}
 function M.run(ctx)
   ui.hdr("Conectores (MCP)")
-  io.write("\n  "..ui.YL.."⚙️  Em desenvolvimento..."..ui.R.."\n\n")
+  io.write("\n  "..ui.YL.."[CONFIG]  Em desenvolvimento..."..ui.R.."\n\n")
   io.write("  Instalar MCPs de fora para dentro do TermAI.\n")
   io.write("  Status: Streamable HTTP validado (21/21)\n")
   io.write("  Pendente: OAuth + Cliente MCP nativo\n\n")

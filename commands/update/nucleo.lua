@@ -46,11 +46,11 @@ local function read_version()
 end
 
 local function step_ok(msg)
-  io.write("  " .. c.green .. "✓" .. c.reset .. "  " .. msg .. "\n")
+  io.write("  " .. c.green .. "[OK]" .. c.reset .. "  " .. msg .. "\n")
 end
 
 local function step_fail(msg)
-  io.write("  " .. c.red .. "✗" .. c.reset .. "  " .. msg .. "\n")
+  io.write("  " .. c.red .. "[FAIL]" .. c.reset .. "  " .. msg .. "\n")
 end
 
 local function step_warn(msg)

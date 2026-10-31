@@ -80,7 +80,7 @@ local function add(models_mod)
       return
     end
     local n = prov.models and #prov.models or 0
-    io.write(c.green .. "  ✅ Provedor '" .. prov.name
+    io.write(c.green .. "  [OK] Provedor '" .. prov.name
       .. "' adicionado com " .. n .. " modelo(s).\n" .. c.reset)
 
     test_connection.test_and_confirm(models_mod, prov.id)
@@ -105,7 +105,7 @@ local function add(models_mod)
       io.write(c.red .. "  Erro: " .. tostring(err_add) .. "\n" .. c.reset)
       return
     end
-    io.write(c.green .. "  ✅ Provedor '" .. (pname or pid)
+    io.write(c.green .. "  [OK] Provedor '" .. (pname or pid)
       .. "' adicionado. Use 'Adicionar modelo' para inserir modelos.\n" .. c.reset)
   end
 end

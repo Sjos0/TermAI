@@ -11,7 +11,7 @@ function M.run(config_mod, ui)
 
     ui.hdr("TermAI Config › Memory Flush")
     io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
-    ui.row("Flush:", enabled and (ui.G.."✅ Ativo"..ui.R) or (ui.RE.." ❌ Desativado"..ui.R))
+    ui.row("Flush:", enabled and (ui.G.."[OK] Ativo"..ui.R) or (ui.RE.." [FAIL] Desativado"..ui.R))
     ui.row("Intervalo:", ui.fmt_k(limit).." tokens")
     io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
     io.write("  "..ui.B.."1."..ui.R.."  "..(enabled and (ui.RE.."Desativar"..ui.R) or (ui.G.."Ativar"..ui.R)).." Flush\n")
@@ -25,7 +25,7 @@ function M.run(config_mod, ui)
     if ch == "1" then
       local new = not enabled
       config_mod.set("agents.defaults.compaction.flush_enabled", new)
-      io.write(new and (ui.G.."\n  ✅ Flush ativado.\n"..ui.R) or (ui.RE.."\n  ❌ Flush desativado.\n"..ui.R))
+      io.write(new and (ui.G.."\n  [OK] Flush ativado.\n"..ui.R) or (ui.RE.."\n  [FAIL] Flush desativado.\n"..ui.R))
       ui.pause()
 
     elseif ch == "2" then
@@ -33,8 +33,8 @@ function M.run(config_mod, ui)
       local v = tonumber(s and s:gsub("[^%d]",""))
       if v and v >= 5000 then
         config_mod.set("agents.defaults.compaction.flush_tokens", v)
-        io.write(ui.G.."\n  ✅ Intervalo: "..ui.fmt_k(v).." tokens\n"..ui.R)
-      else io.write(ui.RE.."\n  ❌ Inválido (mínimo: 5000).\n"..ui.R) end
+        io.write(ui.G.."\n  [OK] Intervalo: "..ui.fmt_k(v).." tokens\n"..ui.R)
+      else io.write(ui.RE.."\n  [FAIL] Inválido (mínimo: 5000).\n"..ui.R) end
       ui.pause()
     end
   end

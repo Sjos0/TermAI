@@ -36,10 +36,10 @@ function M.run(config_mod, ui)
   Suporta Google Grounding, DuckDuckGo (Gratuito) e Tavily Search.
 ]]..ui.R.."\n")
     io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
-    ui.row("Pesquisa Web:", enabled and (ui.G.."✅ Ativa"..ui.R) or (ui.RE.." ❌ Desativada"..ui.R))
+    ui.row("Pesquisa Web:", enabled and (ui.G.."[OK] Ativa"..ui.R) or (ui.RE.." [FAIL] Desativada"..ui.R))
     ui.row("Provedor Ativo:", provider == "google_grounding" and "Google Grounding (API)"
                          or (provider == "tavily_search" and "Tavily Search (API)" or "DuckDuckGo (Gratuito)"), ui.G)
-    ui.row("Fallback Ativo:", fallback_enabled and (ui.G.."✅ Ativado"..ui.R) or (ui.RE.." ❌ Desativado"..ui.R))
+    ui.row("Fallback Ativo:", fallback_enabled and (ui.G.."[OK] Ativado"..ui.R) or (ui.RE.." [FAIL] Desativado"..ui.R))
     if fallback_enabled then
       ui.row("Cadeia de Fallback:", table.concat(chain_names, " → "), ui.G)
     end
@@ -66,8 +66,8 @@ function M.run(config_mod, ui)
     if ch == "1" then
       local new = not enabled
       config_mod.set("web_tools.enabled", new)
-      io.write(new and (ui.G.."\n  ✅ Pesquisa Web ativada.\n"..ui.R)
-                    or (ui.RE.."\n  ❌ Pesquisa Web desativada.\n"..ui.R))
+      io.write(new and (ui.G.."\n  [OK] Pesquisa Web ativada.\n"..ui.R)
+                    or (ui.RE.."\n  [FAIL] Pesquisa Web desativada.\n"..ui.R))
       ui.pause()
 
     elseif ch == "2" then
@@ -81,21 +81,21 @@ function M.run(config_mod, ui)
       local choice = ui.rdl("Escolha")
       if choice == "1" then
         config_mod.set("web_tools.provider", "google_grounding")
-        io.write(ui.G.."\n  ✅ Provedor definido: Google Grounding\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Provedor definido: Google Grounding\n"..ui.R)
       elseif choice == "2" then
         config_mod.set("web_tools.provider", "duckduckgo_search")
-        io.write(ui.G.."\n  ✅ Provedor definido: DuckDuckGo Search\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Provedor definido: DuckDuckGo Search\n"..ui.R)
       elseif choice == "3" then
         config_mod.set("web_tools.provider", "tavily_search")
-        io.write(ui.G.."\n  ✅ Provedor definido: Tavily Search\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Provedor definido: Tavily Search\n"..ui.R)
       end
       ui.pause()
 
     elseif ch == "3" then
       local new = not fallback_enabled
       config_mod.set("web_tools.fallback_enabled", new)
-      io.write(new and (ui.G.."\n  ✅ Fallback de provedores ativado.\n"..ui.R)
-                    or (ui.RE.."\n  ❌ Fallback de provedores desativado.\n"..ui.R))
+      io.write(new and (ui.G.."\n  [OK] Fallback de provedores ativado.\n"..ui.R)
+                    or (ui.RE.."\n  [FAIL] Fallback de provedores desativado.\n"..ui.R))
       ui.pause()
 
     elseif ch == "4" and fallback_enabled then
@@ -109,13 +109,13 @@ function M.run(config_mod, ui)
       local choice = ui.rdl("Escolha")
       if choice == "1" then
         config_mod.set("web_tools.fallback_chain", {"duckduckgo_search", "tavily_search", "google_grounding"})
-        io.write(ui.G.."\n  ✅ Ordem definida: DDG → Tavily → Google\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Ordem definida: DDG → Tavily → Google\n"..ui.R)
       elseif choice == "2" then
         config_mod.set("web_tools.fallback_chain", {"tavily_search", "google_grounding", "duckduckgo_search"})
-        io.write(ui.G.."\n  ✅ Ordem definida: Tavily → Google → DDG\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Ordem definida: Tavily → Google → DDG\n"..ui.R)
       elseif choice == "3" then
         config_mod.set("web_tools.fallback_chain", {"google_grounding", "tavily_search", "duckduckgo_search"})
-        io.write(ui.G.."\n  ✅ Ordem definida: Google → Tavily → DDG\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Ordem definida: Google → Tavily → DDG\n"..ui.R)
       end
       ui.pause()
 
@@ -131,13 +131,13 @@ function M.run(config_mod, ui)
         local s = ui.rdl("Chave Google (AI Studio)")
         if s and s ~= "" then
           config_mod.set("web_tools.google_grounding_key", s)
-          io.write(ui.G.."\n  ✅ Chave Google atualizada.\n"..ui.R)
+          io.write(ui.G.."\n  [OK] Chave Google atualizada.\n"..ui.R)
         end
       elseif choice == "2" then
         local s = ui.rdl("Chave Tavily (tavily.com)")
         if s and s ~= "" then
           config_mod.set("web_tools.tavily_key", s)
-          io.write(ui.G.."\n  ✅ Chave Tavily atualizada.\n"..ui.R)
+          io.write(ui.G.."\n  [OK] Chave Tavily atualizada.\n"..ui.R)
         end
       end
       ui.pause()

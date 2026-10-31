@@ -65,8 +65,8 @@ function M.run(config_mod, ui)
       local desc = (data and data.desc) or ""
       if #desc > 36 then desc = desc:sub(1, 33) .. "..." end
       local status = dset[name]
-        and (ui.RE.."❌ desativada"..ui.R)
-        or  (ui.G.."✅ ativa"..ui.R)
+        and (ui.RE.."[FAIL] desativada"..ui.R)
+        or  (ui.G.."[OK] ativa"..ui.R)
       io.write(string.format("  %s%2d.%s  %-18s %s  %s%s%s\n",
         ui.B, i, ui.R, name, status, ui.DM, desc, ui.R))
     end
@@ -86,11 +86,11 @@ function M.run(config_mod, ui)
       local all = {}
       for _, n in ipairs(names) do all[#all + 1] = n end
       save_disabled(config_mod, agent_id, all)
-      io.write(ui.RE.."\n  ✅ Todas as tools desativadas para o agente '"..agent_id.."'.\n"..ui.R)
+      io.write(ui.RE.."\n  [OK] Todas as tools desativadas para o agente '"..agent_id.."'.\n"..ui.R)
       ui.pause()
     elseif upper == "R" then
       save_disabled(config_mod, agent_id, {})
-      io.write(ui.G.."\n  ✅ Todas as tools reativadas para o agente '"..agent_id.."'.\n"..ui.R)
+      io.write(ui.G.."\n  [OK] Todas as tools reativadas para o agente '"..agent_id.."'.\n"..ui.R)
       ui.pause()
     else
       local idx = tonumber(ch)
@@ -101,12 +101,12 @@ function M.run(config_mod, ui)
           for _, n in ipairs(disabled) do
             if n ~= name then new_list[#new_list + 1] = n end
           end
-          io.write(ui.G.."\n  ✅ '"..name.."' reativada.\n"..ui.R)
+          io.write(ui.G.."\n  [OK] '"..name.."' reativada.\n"..ui.R)
         else
           for _, n in ipairs(disabled) do new_list[#new_list + 1] = n end
           new_list[#new_list + 1] = name
           table.sort(new_list)
-          io.write(ui.RE.."\n  ✅ '"..name.."' desativada (fora do schema).\n"..ui.R)
+          io.write(ui.RE.."\n  [OK] '"..name.."' desativada (fora do schema).\n"..ui.R)
         end
         save_disabled(config_mod, agent_id, new_list)
         ui.pause()

@@ -21,7 +21,7 @@ function M.pick(provider_mod, provider_id)
   io.write("\n" .. c.gray .. "  Modelos disponíveis em " .. provider_id .. ":\n" .. c.reset)
   for i, m in ipairs(list) do
     local curated = provider_mod.find_curated and provider_mod.find_curated(m.id)
-    local tag = curated and (c.green .. " ✓" .. c.reset) or ""
+    local tag = curated and (c.green .. " [OK]" .. c.reset) or ""
     io.write("  " .. c.white .. i .. ". " .. c.reset .. m.id .. tag .. "\n")
   end
   local outro_n = #list + 1

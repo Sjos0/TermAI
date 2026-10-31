@@ -14,7 +14,7 @@ local function set(config_mod, models_mod, active, ref)
     io.write("\n" .. c.bold .. c.cyan .. "  Selecionar Modelo" .. c.reset .. "\n")
     io.write(c.gray .. "  " .. core.regua(45, 2) .. c.reset .. "\n\n")
     for i, m in ipairs(models) do
-      local mark = (m.ref == active) and (c.green .. "★") or c.gray .. " "
+      local mark = (m.ref == active) and (c.green .. "[STAR]") or c.gray .. "      "
       io.write("  " .. mark .. " " .. c.reset .. c.white .. i .. ". "
         .. c.reset .. m.ref .. c.gray .. " (" .. ui.fmt_ctx(m.context_window) .. ")\n" .. c.reset)
     end
@@ -36,7 +36,7 @@ local function set(config_mod, models_mod, active, ref)
   end
   ui.update_config_model(config_mod, ref)
   local resolved = models_mod.resolve(ref)
-  io.write(c.green .. "  ✅ Modelo ativo: " .. c.bold
+  io.write(c.green .. "  [OK] Modelo ativo: " .. c.bold
     .. (resolved and resolved.name or ref) .. c.reset .. "\n")
   return ref
 end
