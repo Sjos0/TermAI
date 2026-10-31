@@ -792,3 +792,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/279-persistencia-reinicio
 **Issue:** #279 complemento persistência
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/278-cores-bloco-erro
+**Issue:** #278
+**Author:** Grok (xAI)
