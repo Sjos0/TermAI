@@ -714,3 +714,20 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Capturas (por célula):** `show_api_error` com mensagem longa + recover — tw=40: 9 linhas / 360 células, todas fundo 52, 0 glifo de moldura; tw=80: 6 linhas / 480 células, todas fundo 52, 0 glifo de moldura. (Replay da caminho_real é dependente do cenário: vivo+recover tw=40 = 200 células, tw=80 = 320 células.) Anexadas à PR. UI/widgets/block e goldens do componente intactos.
 **Suíte:** 120 PASS / 7 FAIL, todos pré-existentes no main (ambientais Termux).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/326-flush-erro-api
+**Closes #326**
+**Veredito:** H1/H2 refutadas; H3/H4 parciais — NÃO corrigidas nesta PR.
+**Correção (4 trocas de texto, cor preservada, nenhum outro símbolo tocado):**
+- agent/flush/loop.lua:68 `⚠️  Memory Flush abortado (API): ` → `[WARN] Memory Flush aborted (API): ` (prefixo \27[38;5;203m mantido)
+- agent/flush/loop.lua:113 `⚠️  Memory Flush: MAX_ITER (` → `[WARN] Memory Flush MAX_ITER (` (prefixo mantido)
+- agent/main_loop/flush_handler.lua:42 `✅ Memory Flush concluído.` → `[OK] Memory Flush completed.` (prefixo \n\27[38;5;114m mantido)
+- agent/main_loop/flush_handler.lua:45 `⚠️  Flush incompleto. ` → `[WARN] Flush incompleto. ` (prefixo \n\27[38;5;203m mantido)
+**Specs:** tests/flush_avisos_sem_simbolo_spec.lua 9 FAIL → PASS; tests/flush_provedor_falso_spec.lua 4 FAIL → 1 FAIL residual (ver abaixo).
+**Sensibilidade:** loop.lua:68 revertido para `⚠️  Memory Flush abortado (API): ` → 3 FAIL; restaurado → PASS.
+**Residual RESOLVIDO (correção só no spec):** o check (b) inspecionava `ctx_b.msgs` — o ctx EXTERNO, sempre vazio — em vez da sandbox `flush_ctx.msgs` criada em agent/flush.lua:44. Correção: o dublê de `agent.loop.tool_runner` grava cada resultado em `capturado_tool` (reset a cada `rodar_flush`) e o check (b) lê `table.concat(capturado_tool, "\n")`.
+**2º defeito do mesmo spec (só visível após o 1º):** o dublê lia `tc["function"].arguments` (formato cru OpenAI), mas o `tool_parser` do flush entrega `{id,name,args}` com `args` já decodificada (agent/api/request_stream/tool_parser.lua:27-31) — exatamente o que a produção consome (tool_runner/executor/nucleo_2.lua:10,21,37). Sem o fallback `fn.arguments or fn.args`, o Read real recebia `nil` e devolvia "❌ Argumento obrigatório ausente: 'path'" (lib/tools/chamada.lua:61). Produção intocada.
+**Resultado:** tests/flush_provedor_falso_spec.lua 1 FAIL → PASS (20 OK, 195 linhas); tests/flush_avisos_sem_simbolo_spec.lua segue PASS. Sensibilidade: dublê devolvendo "resultado qualquer" → FAIL no check (b); restaurado → PASS.
+**Tamanho:** agent/flush/loop.lua 119 linhas; agent/main_loop/flush_handler.lua 56 linhas (ambos ≤150).
+**Regressão:** tests/blocos_tentativa_erro_spec.lua ALL OK; tests/retry_bloco_sem_borda_spec.lua ALL OK.
+**Author:** Grok (xAI)

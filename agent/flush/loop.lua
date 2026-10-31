@@ -65,7 +65,7 @@ function M.run_loop(flush_ctx, flush_prompt)
     -- Bug crítico: após max_retries a API devolve "[ERRO] Falha apos N tentativas".
     -- Sem este guard, o while reinicia outra leva de retries (5/5 → 1/5 de novo).
     if is_api_terminal_error(resp) then
-      io.write("\27[38;5;203m⚠️  Memory Flush abortado (API): "
+      io.write("\27[38;5;203m[WARN] Memory Flush aborted (API): "
         .. tostring(resp) .. "\27[0m\n")
       io.flush()
       return false
@@ -110,7 +110,7 @@ function M.run_loop(flush_ctx, flush_prompt)
   end
 
   -- MAX_ITER estourado sem completar = desiste graciosamente
-  io.write("\27[38;5;203m⚠️  Memory Flush: MAX_ITER ("
+  io.write("\27[38;5;203m[WARN] Memory Flush MAX_ITER ("
     .. tostring(limit) .. ") esgotado sem [FLUSH_DONE].\27[0m\n")
   io.flush()
   return false
