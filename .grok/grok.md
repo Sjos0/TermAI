@@ -676,3 +676,9 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Wrap:** DECAWM pending wrap; LF reseta (DEC/xterm); caller já emite \n
 **Goldens:** card_* — célula final agora com fundo
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [⬤ largura 1]
+**Issue:** aberta nesta entrega
+**Causa:** is_wide 0x2B00–0x2BFF incluía U+2B24
+**Correção:** só 2B1B, 2B1C, 2B50, 2B55
+**Author:** Grok (xAI)

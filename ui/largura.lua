@@ -17,7 +17,8 @@ local function is_wide(cp)
   if cp >= 0x1F000 and cp <= 0x1FAFF then return true end
   if cp >= 0x2600 and cp <= 0x27BF then return true end
   if cp >= 0x2300 and cp <= 0x23FF then return true end
-  if cp >= 0x2B00 and cp <= 0x2BFF then return true end
+  -- só emoji presentation em 2Bxx (não ⬤ U+2B24, que o terminal desenha em 1 col)
+  if cp == 0x2B1B or cp == 0x2B1C or cp == 0x2B50 or cp == 0x2B55 then return true end
   return false
 end
 
