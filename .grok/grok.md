@@ -620,3 +620,7 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Goldens:** nenhum
 **Sensibilidade:** sem padrão code → 400 repete
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.2]
+**Fase:** E
+**Author:** Grok (xAI)
