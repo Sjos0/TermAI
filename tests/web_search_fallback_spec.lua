@@ -11,8 +11,6 @@
 -- como o runtime faz), troca config e providers em package.loaded e observa
 -- qual provedor foi efetivamente chamado.
 --
--- NOTA (#425/D6): os casos do formato antigo ("❌"/"🔍") existem só enquanto o
--- projeto mantém compatibilidade de leitura com os dois formatos. Quando o
 -- NOTA (passo D6 do plano): os casos do formato antigo ("❌"/"🔍") existem só
 -- enquanto o projeto mantém compatibilidade de leitura com os dois formatos.
 -- Quando o formato antigo for removido dos produtores, apagar os casos marcados
