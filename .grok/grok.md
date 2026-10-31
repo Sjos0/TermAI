@@ -694,3 +694,12 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 ## 2026-10-31 - [release v1.38.6]
 ✓✗★➡⚠ = 1 coluna; EP oficial emoji-data.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#324 linha horizontal ocupa tw]
+**Issue:** #324
+**Causa:** renderer/markdown.lua:30 usava `string.rep("─", 40)` fixo (40 colunas).
+**Correção:** `render_line(s, tw)` recebe tw; `lib/renderer.lua:50` passa `width` (= `code.tw()`, lido por render). Preserva "Dependências externas: nenhuma (Lua puro)" em markdown.lua. 1 chamador real (não 2; table_renderer só usa render_inline).
+**Spec:** tests/markdown_hr_tw_spec.lua mede 40/50/80 via renderer.render; falhava (40) antes, passa depois.
+**Sensibilidade:** 40 reintroduzido → 4 FAIL; `git checkout --` → PASS.
+**Caminho real:** tests/manual/hr_prova_pty.py (PTY ao vivo + replay) 40/50/80 OK.
+**Author:** Grok (xAI)

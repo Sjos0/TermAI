@@ -858,3 +858,8 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 
 ## 2026-10-31 - PR fix/largura-misc-symbols-1col
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/324-linha-horizontal-tw
+**Closes #324**
+**Decisão:** (a) tw por parâmetro em render_line — preserva "Lua puro"; 1 chamador real (lib/renderer.lua:50).
+**Author:** Grok (xAI)
