@@ -870,3 +870,14 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Arquivo:** ui/spinner/retry.lua:18-37 (paint_block, 83 linhas). Respiro via content_lines vazios. Não mexe em ui/widgets/block.
 **Evidência:** tests/retry_bloco_sem_borda_spec.lua (12 FAIL→ALL OK) + tests/retry_bloco_caminho_real_spec.lua (44 OK, falha_final real).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/326-flush-erro-api
+**Closes #326**
+**Veredito:** H1/H2 refutadas; H3/H4 parciais — não corrigidas nesta PR.
+**Decisão:** avisos do Memory Flush passam a usar palavras ([WARN]/[OK]) em vez de emoji; prefixos de cor ANSI intactos; nenhum outro símbolo alterado (a troca global é a #325).
+**Arquivos:** agent/flush/loop.lua:68,113; agent/main_loop/flush_handler.lua:42,45 (119 e 56 linhas).
+**Evidência:** tests/flush_avisos_sem_simbolo_spec.lua (9 FAIL→PASS); tests/flush_provedor_falso_spec.lua (4 FAIL→1 FAIL residual). Sensibilidade: reversão da linha 68 → 3 FAIL; restauração → PASS.
+**Residual RESOLVIDO (correção só no spec, produção intocada):** o check (b) lia `ctx_b.msgs` (ctx externo, vazio) em vez da sandbox `flush_ctx.msgs` (agent/flush.lua:44). O dublê de tool_runner agora captura o resultado em `capturado_tool` (reset por cenário) e o check lê `table.concat(capturado_tool, "\n")`.
+**2º defeito do spec:** o dublê lia `tc["function"].arguments` (cru), mas o tool_parser do flush entrega `{id,name,args}` já decodificado (agent/api/request_stream/tool_parser.lua:27-31) — o formato que a produção usa (nucleo_2.lua:10,21,37); faltava o fallback `fn.arguments or fn.args`, o que fazia o Read real receber `nil`.
+**Resultado:** flush_provedor_falso_spec 1 FAIL → PASS (20 OK); flush_avisos_sem_simbolo_spec segue PASS; sensibilidade → FAIL com "resultado qualquer".
+**Author:** Grok (xAI)
