@@ -39,9 +39,9 @@ function M.register(tools)
         local ok, search_mod = pcall(require, "providers." .. p)
         if ok and search_mod and search_mod.search then
           local res = search_mod.search(q)
-          -- #338/#343: os provedores emitem a falha e o "sem resultado" em dois formatos
-          -- — símbolo (antigo) e palavra (novo do lote 1 do #325). A detecção vive em
-          -- lib/result.lua e aceita os dois, que é o que faz o fallback voltar a ocorrer.
+          -- #338/#343/#352: a falha e o "sem resultado" dos provedores são lidos pelo
+          -- prefixo de resultado, e essa detecção vive num lugar só: lib/result.lua —
+          -- que reconhece apenas o formato novo (o símbolo antigo saiu no D6 do #325).
           -- O detalhe "resultado" segue exigido, como antes: só busca sem resultado
           -- aciona o fallback, e não qualquer mensagem de "Nenhum".
           local falhou = resultado.e_falha(res)

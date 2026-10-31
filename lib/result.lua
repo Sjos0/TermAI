@@ -1,51 +1,51 @@
 -- lib/result.lua — Ponto único de detecção do resultado de ferramenta.
--- Issue #343 (passo 2 da opção D — expandir-contrair — da #325).
+-- Issue #343 (passo 2 da opção D — expandir-contrair — da #325) e #352 (D6, a contração).
 --
 -- O prefixo de resultado é PROTOCOLO entre as tools e o harness: quem consome lê o
--- prefixo para decidir se a ferramenta falhou. Enquanto os produtores migram de
--- símbolo para palavra (lotes 2 a 4 do #325), cada consumidor precisa aceitar os
--- DOIS formatos — e a leitura do prefixo precisa viver num lugar só:
+-- prefixo para decidir se a ferramenta falhou. A migração de símbolo para palavra
+-- terminou nos quatro lotes do #325, então aqui só o formato NOVO é reconhecido —
+-- o formato antigo (símbolo) saiu no D6:
 --
---   falha ............... símbolo "❌"          | palavra "[FAIL]"
---   vazio ............... símbolo "📭"          | palavra "[EMPTY]"
---   busca sem resultado . símbolo "🔍 Nenhum"   | palavra "[SEARCH] Nenhum"
+--   falha ............... "[FAIL]"
+--   vazio ............... "[EMPTY]"
+--   busca sem resultado . "[SEARCH] Nenhum"
 --
 -- Alcançável pelos dois mundos com o mesmo require("lib.result"):
 --   runtime — main.lua:5 põe BASE/?.lua no package.path;
 --   specs   — rodando da raiz do repositório, ./?.lua do default do Lua.
--- (tests/lib_result_spec.lua prova isso.)
+-- (tests/lib_result_spec.lua prova isso, e trava a saída do símbolo.)
 --
--- Nada aqui produz texto: os PRODUTORES não mudam nesta fase (o símbolo só sai no D6).
+-- Nada aqui produz texto: os PRODUTORES não mudam nesta fase.
 local M = {}
 
-local FALHA_SIMBOLO,  FALHA_PALAVRA  = "❌", "[FAIL]"
-local VAZIO_SIMBOLO,  VAZIO_PALAVRA  = "📭", "[EMPTY]"
-local BUSCA_SIMBOLO,  BUSCA_PALAVRA  = "🔍 Nenhum", "[SEARCH] Nenhum"
+local FALHA_PALAVRA = "[FAIL]"
+local VAZIO_PALAVRA = "[EMPTY]"
+local BUSCA_PALAVRA = "[SEARCH] Nenhum"
 
--- Comparação por bytes: "❌" e "📭" são multibyte, e o prefixo é sempre no início.
+-- Comparação por bytes no início da string: os prefixos são ASCII puros e o que
+-- interessa é sempre o começo (sem padrão mágico, sem `match`).
 local function tem_prefixo(s, prefixo)
   return type(s) == "string" and s:sub(1, #prefixo) == prefixo
 end
 
---- A ferramenta falhou? (símbolo antigo ou palavra nova)
+--- A ferramenta falhou? (só a palavra [FAIL])
 function M.e_falha(s)
-  return tem_prefixo(s, FALHA_SIMBOLO) or tem_prefixo(s, FALHA_PALAVRA)
+  return tem_prefixo(s, FALHA_PALAVRA)
 end
 
---- A ferramenta devolveu vazio? (símbolo antigo ou palavra nova)
+--- A ferramenta devolveu vazio? (só a palavra [EMPTY])
 function M.e_vazio(s)
-  return tem_prefixo(s, VAZIO_SIMBOLO) or tem_prefixo(s, VAZIO_PALAVRA)
+  return tem_prefixo(s, VAZIO_PALAVRA)
 end
 
---- A busca terminou sem resultado? (símbolo antigo ou palavra nova)
+--- A busca terminou sem resultado? (só a palavra [SEARCH] Nenhum)
 -- Procurar em qualquer posição, como tools/web.lua já fazia.
 -- @param detalhe string|nil Palavra seguinte exigida (ex.: "resultado"). Sem ela,
 --        vale a assinatura larga da família ("Nenhum").
 function M.e_busca_vazia(s, detalhe)
   if type(s) ~= "string" then return false end
   local cauda = detalhe and (" " .. detalhe) or ""
-  return s:find(BUSCA_SIMBOLO .. cauda, 1, true) ~= nil
-      or s:find(BUSCA_PALAVRA .. cauda, 1, true) ~= nil
+  return s:find(BUSCA_PALAVRA .. cauda, 1, true) ~= nil
 end
 
 --- Não serve para consumir nem injetar: falhou, veio vazio ou a busca não achou nada.
@@ -53,7 +53,7 @@ function M.e_nao_util(s)
   return M.e_falha(s) or M.e_vazio(s) or M.e_busca_vazia(s)
 end
 
---- Não falhou. Substituto de `not s:match("^❌")`.
+--- Não falhou. Substituto de `not s:match("^[FAIL]")`.
 -- Fail-closed: entrada não-string nunca é sucesso (não inventa sucesso onde não há
 -- resultado algum).
 function M.sucesso(s)
@@ -61,13 +61,11 @@ function M.sucesso(s)
   return not M.e_falha(s)
 end
 
---- Corpo da mensagem sem o prefixo de falha (antigo ou novo).
+--- Corpo da mensagem sem o prefixo de falha.
 -- Sem prefixo reconhecido, devolve a própria string, intacta.
 function M.mensagem(s)
   if type(s) ~= "string" then return s end
-  local corpo = s:match("^❌%s*(.-)%s*$")
-  if corpo ~= nil then return corpo end
-  corpo = s:match("^%[FAIL%]%s*(.-)%s*$")
+  local corpo = s:match("^%[FAIL%]%s*(.-)%s*$")
   if corpo ~= nil then return corpo end
   return s
 end

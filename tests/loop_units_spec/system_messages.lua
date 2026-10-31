@@ -100,13 +100,13 @@ function M.run()
       return false
     end)())
 
-  local reject_prefixes = { "❌ erro", "📭 vazio", "🔍 Nenhuma memória" }
+  local reject_prefixes = { "[FAIL] erro", "[EMPTY] vazio", "[SEARCH] Nenhuma memória" }
   for _, prefix in ipairs(reject_prefixes) do
     D.mem_state.result = prefix .. " resto"
     sm = reload_system_messages()
     sm.prepare_user_turn({ msgs = { { role = "system" } } }, "boot", "user")
     out = sm.prepare_user_turn({ msgs = { { role = "system" } } }, "pergunta longa o bastante", "user")
-    T("mem rejeita prefixo '" .. prefix:sub(1, 2) .. "...'",
+    T("mem rejeita prefixo '" .. (prefix:match("^(%[%u+%])") or prefix) .. "...'",
       out:find("MEMÓRIA RELEVANTE") == nil)
   end
 
