@@ -17,7 +17,7 @@ function M.run(config_mod, ui)
   Reinicie a TUI após alterar para o prompt ser atualizado.
 ]]..ui.R.."\n")
     io.write(ui.GR.."  ── Status "..ui.SEP2("  ── Status ")..ui.R.."\n")
-    ui.row("Protocolo:", enabled and (ui.G.."✅ Ativo"..ui.R) or (ui.RE.."❌ Desativado"..ui.R))
+    ui.row("Protocolo:", enabled and (ui.G.."[OK] Ativo"..ui.R) or (ui.RE.."[FAIL] Desativado"..ui.R))
     ui.row("Nível:", effort)
     ui.row("Modo de Exibição:", tmode == "compact" and "compact" or "expanded")
     io.write("\n"..ui.GR.."  ── Opções "..ui.SEP2("  ── Opções ")..ui.R.."\n")
@@ -33,8 +33,8 @@ function M.run(config_mod, ui)
     if ch == "1" then
       local new = not enabled
       config_mod.set("agents.defaults.thinking_protocol.enabled", new)
-      io.write(new and (ui.G.."\n  ✅ Ativado. Reinicie a TUI.\n"..ui.R)
-                    or (ui.RE.."\n  ❌ Desativado. Reinicie a TUI.\n"..ui.R))
+      io.write(new and (ui.G.."\n  [OK] Ativado. Reinicie a TUI.\n"..ui.R)
+                    or (ui.RE.."\n  [FAIL] Desativado. Reinicie a TUI.\n"..ui.R))
       ui.pause()
 
     elseif ch == "2" then
@@ -45,14 +45,14 @@ function M.run(config_mod, ui)
       local lvls = {["1"]="low", ["2"]="medium", ["3"]="high"}
       if lvls[lch] then
         config_mod.set("agents.defaults.thinking_protocol.effort", lvls[lch])
-        io.write(ui.G.."\n  ✅ Nível: "..lvls[lch]..". Reinicie a TUI.\n"..ui.R)
-      else io.write(ui.RE.."\n  ❌ Inválido.\n"..ui.R) end
+        io.write(ui.G.."\n  [OK] Nível: "..lvls[lch]..". Reinicie a TUI.\n"..ui.R)
+      else io.write(ui.RE.."\n  [FAIL] Inválido.\n"..ui.R) end
       ui.pause()
 
     elseif ch == "3" then
       local new_mode = tmode == "compact" and "expanded" or "compact"
       config_mod.set("agents.defaults.thinking_mode", new_mode)
-      io.write(ui.G.."\n  ✅ Modo de Exibição alterado para: " .. new_mode .. "\n" .. ui.R)
+      io.write(ui.G.."\n  [OK] Modo de Exibição alterado para: " .. new_mode .. "\n" .. ui.R)
       ui.pause()
     end
   end

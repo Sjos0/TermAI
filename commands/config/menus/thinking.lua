@@ -42,9 +42,9 @@ function M.run(ctx)
   Reinicie a TUI após alterar para aplicar ao system prompt.
 ]]..c.reset.."\n")
     io.write(c.gray.."  ── Status "..SEP2("  ── Status ")..c.reset.."\n")
-    row("Protocolo:", enabled and (c.green.."✅ Ativo") or (c.red.."❌ Desativado"), "")
+    row("Protocolo:", enabled and (c.green.."[OK] Ativo") or (c.red.."[FAIL] Desativado"), "")
     row("Nível:", effort)
-    row("Modo de Exibição:", tmode == "compact" and "compacto ⚡" or "expandido 📖")
+    row("Modo de Exibição:", tmode == "compact" and "compacto [FAST]" or "expandido [DOCS]")
     io.write("\n"..c.gray.."  ── Opções "..SEP2("  ── Opções ")..c.reset.."\n")
     io.write("  "..c.white.."1."..c.reset.."  "..(enabled and (c.red.."Desativar") or (c.green.."Ativar"))..c.reset.." Protocolo\n")
     io.write("  "..c.white.."2."..c.reset.."  Alterar nível  "..c.dim.."(low / medium / high)"..c.reset.."\n")
@@ -55,8 +55,8 @@ function M.run(ctx)
     if ch == "1" then
       local new = not enabled
       save_tp(ctx, "enabled", new)
-      io.write(new and (c.green.."\n  ✅ Ativado. Reinicie a TUI.\n"..c.reset)
-                    or (c.red.."\n  ❌ Desativado. Reinicie a TUI.\n"..c.reset))
+      io.write(new and (c.green.."\n  [OK] Ativado. Reinicie a TUI.\n"..c.reset)
+                    or (c.red.."\n  [FAIL] Desativado. Reinicie a TUI.\n"..c.reset))
       ui.pause()
     elseif ch == "2" then
       io.write("  "..c.white.."1."..c.reset.."  low     "..c.dim.."(rápido, 2-4 linhas)"..c.reset.."\n")
@@ -66,8 +66,8 @@ function M.run(ctx)
       local levels = {["1"]="low", ["2"]="medium", ["3"]="high"}
       if levels[lch] then
         save_tp(ctx, "effort", levels[lch])
-        io.write(c.green.."\n  ✅ Nível: "..levels[lch]..". Reinicie a TUI.\n"..c.reset)
-      else io.write(c.red.."\n  ❌ Inválido.\n"..c.reset) end
+        io.write(c.green.."\n  [OK] Nível: "..levels[lch]..". Reinicie a TUI.\n"..c.reset)
+      else io.write(c.red.."\n  [FAIL] Inválido.\n"..c.reset) end
       ui.pause()
     elseif ch == "3" then
       local new_mode = tmode == "compact" and "expanded" or "compact"
@@ -76,7 +76,7 @@ function M.run(ctx)
       end
       ctx.cfg.agents.defaults.thinking_mode = new_mode
       config_mod.set("agents.defaults.thinking_mode", new_mode)
-      io.write(c.green.."\n  ✅ Modo de Exibição alterado para: " .. new_mode .. "\n" .. c.reset)
+      io.write(c.green.."\n  [OK] Modo de Exibição alterado para: " .. new_mode .. "\n" .. c.reset)
       ui.pause()
     end
   end

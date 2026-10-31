@@ -53,8 +53,8 @@ return function(M, N)
         local v = tonumber(s)
         if v and v >= 1 and v <= 300 then
           config_mod.set("agents.defaults.request.timeout", v)
-          io.write(ui.G.."\n  ✅ Max Time: "..v.."s\n"..ui.R)
-        else io.write(ui.RE.."\n  ❌ Inválido. O limite é 300s.\n"..ui.R) end
+          io.write(ui.G.."\n  [OK] Max Time: "..v.."s\n"..ui.R)
+        else io.write(ui.RE.."\n  [FAIL] Inválido. O limite é 300s.\n"..ui.R) end
         ui.pause()
 
       elseif ch == "2" then
@@ -62,8 +62,8 @@ return function(M, N)
         local v = tonumber(s)
         if v and v >= 1 and v <= 180 then
           config_mod.set("agents.defaults.request.idle_timeout", v)
-          io.write(ui.G.."\n  ✅ Idle Time: "..v.."s\n"..ui.R)
-        else io.write(ui.RE.."\n  ❌ Inválido. O limite é 180s.\n"..ui.R) end
+          io.write(ui.G.."\n  [OK] Idle Time: "..v.."s\n"..ui.R)
+        else io.write(ui.RE.."\n  [FAIL] Inválido. O limite é 180s.\n"..ui.R) end
         ui.pause()
 
       elseif ch == "3" then
@@ -71,8 +71,8 @@ return function(M, N)
         local v = tonumber(s)
         if v and v >= 1 and v <= 20 then
           config_mod.set("agents.defaults.request.max_retries", v)
-          io.write(ui.G.."\n  ✅ Max tentativas: "..v.."\n"..ui.R)
-        else io.write(ui.RE.."\n  ❌ Inválido (1-20).\n"..ui.R) end
+          io.write(ui.G.."\n  [OK] Max tentativas: "..v.."\n"..ui.R)
+        else io.write(ui.RE.."\n  [FAIL] Inválido (1-20).\n"..ui.R) end
         ui.pause()
 
       elseif ch == "4" then

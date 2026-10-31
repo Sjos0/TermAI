@@ -30,7 +30,7 @@ local function remove(models_mod)
 
   local ok, err = models_mod.remove_provider(providers[idx].id)
   if ok then
-    io.write(c.green .. "  ✅ Provedor removido.\n" .. c.reset)
+    io.write(c.green .. "  [OK] Provedor removido.\n" .. c.reset)
   else
     io.write(c.red .. "  Erro: " .. tostring(err) .. "\n" .. c.reset)
   end

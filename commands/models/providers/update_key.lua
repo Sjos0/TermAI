@@ -39,7 +39,7 @@ local function update_key(models_mod)
 
   local ok, err = models_mod.update_api_key(provider.id, new_key)
   if ok then
-    io.write(c.green .. "  ✅ API Key/Token atualizada.\n" .. c.reset)
+    io.write(c.green .. "  [OK] API Key/Token atualizada.\n" .. c.reset)
     test_connection.test_and_confirm(models_mod, provider.id)
   else
     io.write(c.red .. "  Erro: " .. tostring(err) .. "\n" .. c.reset)

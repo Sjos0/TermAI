@@ -66,16 +66,16 @@ local function add(models_mod)
     return
   end
   local full_ref = provider_id .. "/" .. model_id
-  io.write(c.green .. "  ✅ Modelo adicionado: " .. full_ref .. c.reset .. "\n")
+  io.write(c.green .. "  [OK] Modelo adicionado: " .. full_ref .. c.reset .. "\n")
   -- ── Validação pós-adição (igual à validação de provedores) ────────────
   local resolved = models_mod.resolve(full_ref)
   if resolved then
     io.write(c.gray .. "  Testando conexão com " .. full_ref .. "...\n" .. c.reset)
     local ok_t, msg_t = validate.test_connection(resolved)
     if ok_t then
-      io.write(c.green .. "  ✓ Modelo validado com sucesso.\n" .. c.reset)
+      io.write(c.green .. "  [OK] Modelo validado com sucesso.\n" .. c.reset)
     else
-      io.write(c.red .. "  ✗ Falha na validação: " .. tostring(msg_t) .. "\n" .. c.reset)
+      io.write(c.red .. "  [FAIL] Falha na validação: " .. tostring(msg_t) .. "\n" .. c.reset)
       io.write("\n")
       io.write("  " .. c.white .. "1." .. c.reset .. " Manter mesmo assim\n")
       io.write("  " .. c.white .. "2." .. c.reset .. " Remover modelo\n\n")

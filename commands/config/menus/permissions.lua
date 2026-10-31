@@ -20,7 +20,7 @@ local function liberar_todas(perms_mod, names)
     return
   end
   local liberadas, preservadas = bulk.allow_all(perms_mod, names)
-  io.write(c.green.."\n  ✅ "..liberadas.." ferramenta(s) liberada(s) como [Sempre].\n"..c.reset)
+  io.write(c.green.."\n  [OK] "..liberadas.." ferramenta(s) liberada(s) como [Sempre].\n"..c.reset)
   if #preservadas > 0 then
     io.write(c.yellow.."  Preservadas (bloqueadas): "..table.concat(preservadas, ", ").."\n"..c.reset)
   end
@@ -67,7 +67,7 @@ function M.run(ctx)
       local smap = {["1"]="always", ["2"]="ask", ["3"]="blocked"}
       if smap[sch] then
         perms_mod.set(tname, smap[sch])
-        io.write(c.green.."\n  ✅ "..tname.." → "..smap[sch].."\n"..c.reset)
+        io.write(c.green.."\n  [OK] "..tname.." → "..smap[sch].."\n"..c.reset)
       else
         io.write(c.gray.."\n  Cancelado.\n"..c.reset)
       end

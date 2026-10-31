@@ -17,18 +17,18 @@ local function test_and_confirm(models_mod, provider_id)
 
   local resolved = models_mod.resolve(provider_id .. "/" .. (builtin_model or ""))
   if not resolved then
-    io.write(c.yellow .. "\n  ⚠️  Não foi possível testar (nenhum modelo encontrado).\n" .. c.reset)
+    io.write(c.yellow .. "\n  [WARN]  Não foi possível testar (nenhum modelo encontrado).\n" .. c.reset)
     return true
   end
   io.write(c.gray .. "  Testando conexão com "
     .. provider_id .. "/" .. (builtin_model or "") .. "...\n" .. c.reset)
   local ok, msg = validate.test_connection(resolved)
   if ok then
-    io.write(c.green .. "  ✓ Conexão OK\n" .. c.reset)
+    io.write(c.green .. "  [OK] Conexão OK\n" .. c.reset)
     return true
   end
 
-  io.write(c.red .. "  ✗ Falha na conexão: " .. tostring(msg) .. "\n\n" .. c.reset)
+  io.write(c.red .. "  [FAIL] Falha na conexão: " .. tostring(msg) .. "\n\n" .. c.reset)
 
   while true do
     io.write("  " .. c.white .. "1." .. c.reset .. " Corrigir API Key e testar novamente\n")
@@ -57,10 +57,10 @@ local function test_and_confirm(models_mod, provider_id)
       if resolved2 then
         local ok2, msg2 = validate.test_connection(resolved2)
         if ok2 then
-          io.write(c.green .. "  ✓ Conexão OK\n" .. c.reset)
+          io.write(c.green .. "  [OK] Conexão OK\n" .. c.reset)
           return true
         end
-        io.write(c.red .. "  ✗ Falha: " .. tostring(msg2) .. "\n" .. c.reset)
+        io.write(c.red .. "  [FAIL] Falha: " .. tostring(msg2) .. "\n" .. c.reset)
       end
 
     elseif ch == "2" then

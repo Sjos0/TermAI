@@ -10,9 +10,9 @@ return function(M, N)
       local t = (v == 0) and 999999 or v
       saver.save_req(ctx, "timeout", t)
       api.CURL_TIMEOUT = t
-      io.write(c.green.."\n  ✅ Timeout: "..(v==0 and "sem limite" or (v.."s")).."\n"..c.reset)
+      io.write(c.green.."\n  [OK] Timeout: "..(v==0 and "sem limite" or (v.."s")).."\n"..c.reset)
     else 
-      io.write(c.red.."\n  ❌ Inválido.\n"..c.reset) 
+      io.write(c.red.."\n  [FAIL] Inválido.\n"..c.reset) 
     end
     ui.pause()
   end
@@ -24,9 +24,9 @@ return function(M, N)
     if v and v >= 1 and v <= 20 then
       saver.save_req(ctx, "max_retries", v)
       api.MAX_RETRIES = v
-      io.write(c.green.."\n  ✅ Max tentativas: "..v.."\n"..c.reset)
+      io.write(c.green.."\n  [OK] Max tentativas: "..v.."\n"..c.reset)
     else 
-      io.write(c.red.."\n  ❌ Inválido (1-20).\n"..c.reset) 
+      io.write(c.red.."\n  [FAIL] Inválido (1-20).\n"..c.reset) 
     end
     ui.pause()
   end
@@ -45,7 +45,7 @@ return function(M, N)
         saver.save_req(ctx, "retry_max", mv)
         api.RETRY_MAX = mv
       end
-      io.write(c.green.."\n  ✅ Modo: exponential\n"..c.reset)
+      io.write(c.green.."\n  [OK] Modo: exponential\n"..c.reset)
     elseif mch == "2" then
       saver.save_req(ctx, "retry_mode", "static")
       api.RETRY_MODE = "static"
@@ -55,7 +55,7 @@ return function(M, N)
         saver.save_req(ctx, "retry_static", s2)
         api.RETRY_STATIC = s2
       end
-      io.write(c.green.."\n  ✅ Modo: static  (".. (tonumber(sv) or 5) .."s)\n"..c.reset)
+      io.write(c.green.."\n  [OK] Modo: static  (".. (tonumber(sv) or 5) .."s)\n"..c.reset)
     end
     ui.pause()
   end
@@ -72,7 +72,7 @@ return function(M, N)
     api.MAX_RETRIES  = 10
     api.RETRY_MODE   = "exponential"
     api.RETRY_MAX    = 30
-    io.write(c.green.."\n  ✅ Padrões restaurados.\n"..c.reset)
+    io.write(c.green.."\n  [OK] Padrões restaurados.\n"..c.reset)
     ui.pause()
   end
 
@@ -82,9 +82,9 @@ return function(M, N)
     local v = tonumber(s)
     if v and v >= 5 and v <= 120 then
       saver.save_req(ctx, "wait_timeout", v)
-      io.write(c.green.."\n  ✅ Wait timeout: "..v.."s\n"..c.reset)
+      io.write(c.green.."\n  [OK] Wait timeout: "..v.."s\n"..c.reset)
     else 
-      io.write(c.red.."\n  ❌ Invalido (5-120s).\n"..c.reset) 
+      io.write(c.red.."\n  [FAIL] Invalido (5-120s).\n"..c.reset) 
     end
     ui.pause()
   end

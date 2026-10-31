@@ -40,15 +40,15 @@ function M.run(ctx)
       local s = ui.prompt_read("Padrão (ex: luac -p, git, date +)")
       if s and s ~= "" then
         bp.add_pattern(s)
-        io.write(c.green.."\n  ✅ Adicionado: \""..s.."\"\n"..c.reset)
+        io.write(c.green.."\n  [OK] Adicionado: \""..s.."\"\n"..c.reset)
       else io.write(c.gray.."\n  Cancelado.\n"..c.reset) end
       ui.pause()
     else
       local idx = tonumber(ch)
       if idx and patterns[idx] then
         bp.remove_pattern(patterns[idx])
-        io.write(c.green.."\n  ✅ Removido: \""..patterns[idx].."\"\n"..c.reset)
-      else io.write(c.red.."\n  ❌ Opção inválida.\n"..c.reset) end
+        io.write(c.green.."\n  [OK] Removido: \""..patterns[idx].."\"\n"..c.reset)
+      else io.write(c.red.."\n  [FAIL] Opção inválida.\n"..c.reset) end
       ui.pause()
     end
   end

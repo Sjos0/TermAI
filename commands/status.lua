@@ -19,7 +19,7 @@ local function check(label, path, is_dir)
     exists = io.open(path, "r")
     if exists then exists:close() end
   end
-  local icon = exists and (c.green .. "✓") or (c.red .. "✗")
+  local icon = exists and (c.green .. "[OK]") or (c.red .. "[FAIL]")
   io.write("  " .. icon .. " " .. c.reset .. label .. "\n")
 end
 
@@ -81,7 +81,7 @@ if f then
     io.write("\n")
   end
 else
-  io.write(c.red .. "  ✗ config.json não encontrado ou inválido" .. c.reset .. "\n\n")
+  io.write(c.red .. "  [FAIL] config.json não encontrado ou inválido" .. c.reset .. "\n\n")
 end
 
 io.write(c.gray .. "  " .. core.regua(35, 2) .. c.reset .. "\n")

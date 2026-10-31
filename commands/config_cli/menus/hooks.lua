@@ -33,8 +33,8 @@ function M.run(config_mod, ui)
       local v = tonumber(s)
       if v and v >= 1 and v <= 10 then
         config_mod.set("agents.defaults.hooks.max_tool_retries", v)
-        io.write(ui.G.."\n  ✅ Max tentativas de erro: "..v.."\n"..ui.R)
-      else io.write(ui.RE.."\n  ❌ Inválido (1 – 10).\n"..ui.R) end
+        io.write(ui.G.."\n  [OK] Max tentativas de erro: "..v.."\n"..ui.R)
+      else io.write(ui.RE.."\n  [FAIL] Inválido (1 – 10).\n"..ui.R) end
       ui.pause()
 
     elseif ch == "2" then
@@ -44,11 +44,11 @@ function M.run(config_mod, ui)
       if v and v >= 0 then
         config_mod.set("agents.defaults.maxIter", v)
         local lbl = (v == 0) and "Ilimitado" or tostring(v)
-        io.write(ui.G.."\n  ✅ Max iterações: "..lbl.."\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Max iterações: "..lbl.."\n"..ui.R)
         if v == 0 then
-          io.write(ui.YL.."  ⚠️  Sem limite: monitore o consumo de tokens.\n"..ui.R)
+          io.write(ui.YL.."  [WARN]  Sem limite: monitore o consumo de tokens.\n"..ui.R)
         end
-      else io.write(ui.RE.."\n  ❌ Inválido.\n"..ui.R) end
+      else io.write(ui.RE.."\n  [FAIL] Inválido.\n"..ui.R) end
       ui.pause()
 
     elseif ch == "3" then

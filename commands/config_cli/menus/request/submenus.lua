@@ -10,13 +10,13 @@ function M.modo_retry(config_mod, ui, rmax)
     local mx = ui.rdl("Tempo máximo em segundos (padrão: 30)")
     local mv = tonumber(mx)
     if mv and mv >= 1 then config_mod.set("agents.defaults.request.retry_max", mv) end
-    io.write(ui.G.."\n  ✅ Modo: exponential (máx: "..(mv or rmax).."s)\n"..ui.R)
+    io.write(ui.G.."\n  [OK] Modo: exponential (máx: "..(mv or rmax).."s)\n"..ui.R)
   elseif mch == "2" then
     config_mod.set("agents.defaults.request.retry_mode", "static")
     local sv = ui.rdl("Intervalo fixo em segundos (ex: 5)")
     local s2 = tonumber(sv)
     if s2 and s2 >= 1 then config_mod.set("agents.defaults.request.retry_static", s2) end
-    io.write(ui.G.."\n  ✅ Modo: static (".. (s2 or 5) .."s por tentativa)\n"..ui.R)
+    io.write(ui.G.."\n  [OK] Modo: static (".. (s2 or 5) .."s por tentativa)\n"..ui.R)
   end
   ui.pause()
 end
@@ -30,7 +30,7 @@ function M.restaurar(config_mod, ui)
   config_mod.set("agents.defaults.request.retry_static",        5)
   config_mod.set("agents.defaults.request.mode",          "stream")
   config_mod.set("agents.defaults.request.reasoning_effort", "medium")
-  io.write(ui.G.."\n  ✅ Padrões restaurados.\n"..ui.R)
+  io.write(ui.G.."\n  [OK] Padrões restaurados.\n"..ui.R)
   ui.pause()
 end
 
@@ -81,7 +81,7 @@ function M.reasoning_effort(config_mod, ui)
   local efforts = {["1"]="high",["2"]="medium",["3"]="low",["4"]="xhigh",["5"]="minimal",["6"]="none"}
   if efforts[lch] then
     config_mod.set("agents.defaults.request.reasoning_effort", efforts[lch])
-    io.write(ui.G.."\n  ✅ Effort: "..efforts[lch].."\n"..ui.R)
+    io.write(ui.G.."\n  [OK] Effort: "..efforts[lch].."\n"..ui.R)
   else io.write(ui.GR.."\n  Cancelado.\n"..ui.R) end
   ui.pause()
 end
@@ -98,7 +98,7 @@ function M.thinking_effort(config_mod, ui)
   local tefforts = {["1"]="no_think",["2"]="low",["3"]="high"}
   if tefforts[tch] then
     config_mod.set("agents.defaults.thinkingEffort", tefforts[tch])
-    io.write(ui.G.."\n  ✅ Thinking Effort: "..tefforts[tch].."\n"..ui.R)
+    io.write(ui.G.."\n  [OK] Thinking Effort: "..tefforts[tch].."\n"..ui.R)
   else io.write(ui.GR.."\n  Cancelado.\n"..ui.R) end
   ui.pause()
 end

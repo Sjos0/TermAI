@@ -34,14 +34,14 @@ function M.run(config_mod, ui)
       local s = ui.rdl("Padrão (ex: luac -p, git, date +)")
       if s and s ~= "" then
         bp_mod.add_pattern(s)
-        io.write(ui.G.."\n  ✅ Adicionado: \""..s.."\"\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Adicionado: \""..s.."\"\n"..ui.R)
       else io.write(ui.GR.."\n  Cancelado.\n"..ui.R) end
       ui.pause()
     elseif ch:lower() == "c" and #patterns > 0 then
       local confirm = ui.rdl("Deseja LIMPAR TODOS os padrões? (s/n)")
       if confirm:lower() == "s" then
         bp_mod.reset()
-        io.write(ui.G.."\n  ✅ Todos os padrões foram limpos!\n"..ui.R)
+        io.write(ui.G.."\n  [OK] Todos os padrões foram limpos!\n"..ui.R)
       else
         io.write(ui.GR.."\n  Cancelado.\n"..ui.R)
       end
@@ -50,8 +50,8 @@ function M.run(config_mod, ui)
       local idx = tonumber(ch)
       if idx and patterns[idx] then
         bp_mod.remove_pattern(patterns[idx])
-        io.write(ui.G.."\n  ✅ Removido: \""..patterns[idx].."\"\n"..ui.R)
-      else io.write(ui.RE.."\n  ❌ Opção inválida.\n"..ui.R) end
+        io.write(ui.G.."\n  [OK] Removido: \""..patterns[idx].."\"\n"..ui.R)
+      else io.write(ui.RE.."\n  [FAIL] Opção inválida.\n"..ui.R) end
       ui.pause()
     end
   end

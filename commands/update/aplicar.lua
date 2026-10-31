@@ -97,7 +97,7 @@ function M.executar(flags)
     for line in log_out:gmatch("[^\n]+") do io.write("    " .. line .. "\n") end
     io.write("\n")
   end
-  io.write("  " .. c.green .. "✓" .. c.reset .. "  TermAI atualizado com sucesso.\n")
+  io.write("  " .. c.green .. "[OK]" .. c.reset .. "  TermAI atualizado com sucesso.\n")
   io.write("     Rode " .. c.bold .. "TermAI tui" .. c.reset .. " para usar a nova versão.\n")
   io.write("     Para voltar: " .. c.bold .. "TermAI update --rollback" .. c.reset .. "\n\n")
 end

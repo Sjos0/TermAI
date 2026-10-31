@@ -42,7 +42,7 @@ FIELDS["5"] = function(resolved)
   local v = ui.prompt_read("Possui Reasoning nativo? (s/n)")
   if v == "s" or v == "S" then return { reasoning = true } end
   if v == "n" or v == "N" then return { reasoning = false } end
-  io.write(c.red .. "  ❌ Digite exatamente 's' ou 'n'.\n" .. c.reset)
+  io.write(c.red .. "  [FAIL] Digite exatamente 's' ou 'n'.\n" .. c.reset)
   return nil
 end
 
@@ -127,10 +127,10 @@ function M.edit(models_mod, ref)
       if updates then
         local ok, e = models_mod.update_model(provider_id, model_id, updates)
         if ok then
-          io.write(c.green .. "\n  ✅ Salvo.\n" .. c.reset)
+          io.write(c.green .. "\n  [OK] Salvo.\n" .. c.reset)
           if updates.id then model_id = updates.id end
         else
-          io.write(c.red .. "\n  ❌ " .. tostring(e) .. "\n" .. c.reset)
+          io.write(c.red .. "\n  [FAIL] " .. tostring(e) .. "\n" .. c.reset)
         end
         ui.pause()
       end

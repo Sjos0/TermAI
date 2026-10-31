@@ -37,10 +37,10 @@ return function(M, N)
       io.write(c.gray.."  "..SEP()..c.reset.."\n\n")
 
       io.write(c.gray.."  ── Status "..SEP2("  ── Status ")..c.reset.."\n")
-      row("Pesquisa Web:", enabled and (c.green.."✅ Ativa"..c.reset) or (c.red.."❌ Desativada"..c.reset))
+      row("Pesquisa Web:", enabled and (c.green.."[OK] Ativa"..c.reset) or (c.red.."[FAIL] Desativada"..c.reset))
       row("Provedor Ativo:", provider == "google_grounding" and "Google Grounding"
                            or (provider == "tavily_search" and "Tavily Search" or "DuckDuckGo (Gratuito)"), c.cyan)
-      row("Fallback Ativo:", fallback_enabled and (c.green.."✅ Ativado"..c.reset) or (c.red.."❌ Desativado"..c.reset))
+      row("Fallback Ativo:", fallback_enabled and (c.green.."[OK] Ativado"..c.reset) or (c.red.."[FAIL] Desativado"..c.reset))
       if fallback_enabled then
         row("Cadeia de Fallback:", table.concat(chain_names, " → "), c.cyan)
       end
@@ -69,7 +69,7 @@ return function(M, N)
         ctx.cfg.web_tools = ctx.cfg.web_tools or {}
         ctx.cfg.web_tools.enabled = new
         config_mod.set("web_tools.enabled", new)
-        io.write((new and c.green or c.red).."\n  ✅ Pesquisa Web: "..(new and "Ativada" or "Desativada").."\n"..c.reset)
+        io.write((new and c.green or c.red).."\n  [OK] Pesquisa Web: "..(new and "Ativada" or "Desativada").."\n"..c.reset)
         ui.pause()
       elseif ch == "2" then
         sub.escolher_provedor(ctx)
@@ -78,7 +78,7 @@ return function(M, N)
         ctx.cfg.web_tools = ctx.cfg.web_tools or {}
         ctx.cfg.web_tools.fallback_enabled = new
         config_mod.set("web_tools.fallback_enabled", new)
-        io.write((new and c.green or c.red).."\n  ✅ Fallback: "..(new and "Ativado" or "Desativado").."\n"..c.reset)
+        io.write((new and c.green or c.red).."\n  [OK] Fallback: "..(new and "Ativado" or "Desativado").."\n"..c.reset)
         ui.pause()
       elseif ch == "4" and fallback_enabled then
         sub.escolher_ordem(ctx)

@@ -50,8 +50,8 @@ function M.run(ctx)
         if not ctx.cfg.agents.defaults.hooks then ctx.cfg.agents.defaults.hooks = {} end
         ctx.cfg.agents.defaults.hooks.max_tool_retries = v
         config_mod.set("agents.defaults.hooks.max_tool_retries", v)
-        io.write(c.green.."\n  ✅ Max tentativas de erro: "..v.."\n"..c.reset)
-      else io.write(c.red.."\n  ❌ Inválido (1 – 10).\n"..c.reset) end
+        io.write(c.green.."\n  [OK] Max tentativas de erro: "..v.."\n"..c.reset)
+      else io.write(c.red.."\n  [FAIL] Inválido (1 – 10).\n"..c.reset) end
       ui.pause()
     elseif ch == "2" then
       io.write(c.dim.."  0 = ilimitado  |  número positivo = limite fixo\n\n"..c.reset)
@@ -62,11 +62,11 @@ function M.run(ctx)
         ctx.MAX_ITER = v
         config_mod.set("agents.defaults.maxIter", v)
         local lbl = (v == 0) and "Ilimitado" or tostring(v)
-        io.write(c.green.."\n  ✅ Max iterações: "..lbl.."\n"..c.reset)
+        io.write(c.green.."\n  [OK] Max iterações: "..lbl.."\n"..c.reset)
         if v == 0 then
-          io.write(c.yellow.."  ⚠️  Sem limite: monitore o consumo de tokens.\n"..c.reset)
+          io.write(c.yellow.."  [WARN]  Sem limite: monitore o consumo de tokens.\n"..c.reset)
         end
-      else io.write(c.red.."\n  ❌ Inválido.\n"..c.reset) end
+      else io.write(c.red.."\n  [FAIL] Inválido.\n"..c.reset) end
       ui.pause()
     elseif ch == "3" then
       perms_menu.run(ctx)
