@@ -540,3 +540,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **Evidência de aceite:** T1 ABC fundo 52 cols 1-3; T2 missing=0; specs relacionados PASS; PTY_OK.
 **Erros cometidos nesta issue e correções:** dofile acidental de emulador_celulas_spec dentro de block_bg_wrap (causava os.exit precoce) — linha removida.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#279 recover histórico]
+**Issue:** #279
+**Veredito de validade:** CONFIRMADA (while remove apagava user e respostas válidas)
+**Files Modified:** agent/api/request_stream/recovery.lua, fallback.lua (comentário), tests/recover_historico_spec.lua
+**Decisões:** remove só órfãos (assistant tool_calls sem tool reply); preserva user/assistant posteriores.
+**Prova de sensibilidade:** while remove original → FAIL A/B; restaurado ALL OK.
+**Erros:** nenhum.
+**Author:** Grok (xAI)

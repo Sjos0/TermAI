@@ -784,3 +784,7 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR test/282-emulador-celulas
 **Issue:** #282 CONFIRMADA — emulador por célula + migração block_bg_wrap
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/279-recover-historico
+**Issue:** #279 CONFIRMADA
+**Author:** Grok (xAI)
