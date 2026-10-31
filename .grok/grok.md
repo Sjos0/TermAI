@@ -753,3 +753,10 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Causa:** os.clock não avança em espera de rede
 **Correção:** os.time() + TTL 2 s
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.7]
+**Tipo:** PATCH (correcoes + refactor de larguras).
+**Correcoes:** #324 linha horizontal `---` ocupa `core.tw()` (era 40 fixo); #326 avisos do Memory Flush em palavras (`[WARN]`/`[OK]`); #327 bloco de erro sem moldura, area solida 52; #338 `web_search` volta a fazer fallback com o formato novo de erro; #341 TTL da largura em `os.time` (o `os.clock` da CPU nao expirava durante a espera de rede); #335 releitura da largura com TTL; #331 larguras responsivas (`core.regua`, fallback unico, nada fixo).
+**Refactor:** #325 lote 1 — simbolos de status viram palavras em `ui/`, `channels/`, `providers/`.
+**Processo:** fluxo remoto (`.claude/fluxo_remoto.md`), regra de contagem na #325, verificacao pelo orquestrador.
+**Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
