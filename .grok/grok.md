@@ -690,3 +690,7 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 ## 2026-10-31 - [misc symbols largura]
 **Faixa 2600–27BF:** só Emoji_Presentation=Yes (emoji-data.txt).
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [release v1.38.6]
+✓✗★➡⚠ = 1 coluna; EP oficial emoji-data.
+**Author:** Grok (xAI)
