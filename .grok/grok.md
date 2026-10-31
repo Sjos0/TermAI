@@ -638,3 +638,7 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 ## 2026-10-31 - [release v1.38.3]
 Card fundo sólido no replay para todo SGR.
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [golden por célula]
+**Correção de processo:** PR #302 alterou goldens `card_*` por bytes sem mudança visual de célula. `golden_spec` passa a comparar por célula (fundo, texto, glifo). Diff por célula nos 12 card_*: vazio.
+**Author:** Grok (xAI)
