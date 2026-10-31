@@ -20,9 +20,8 @@ return function(M, N)
     core.invalidate_size()
 
     local segments   = {}
+    local prev_lines = 0 -- estado do redesenho: quantas linhas subir antes de repintar
     -- Largura real do terminal na hora da digitação. O fallback (e o mínimo
-    -- de sanidade) moram só em ui/core/terminal.lua — nada de 80 solto aqui.
-    -- A cada redraw, lemos de novo: girar o celular muda a quebra de linha.
     local tw = math.max(core.tw(), core.TW_MIN)
 
     local function redraw()
