@@ -15,7 +15,21 @@ local function is_wide(cp)
   if cp >= 0xFF01 and cp <= 0xFF60 then return true end
   if cp >= 0xFFE0 and cp <= 0xFFE6 then return true end
   if cp >= 0x1F000 and cp <= 0x1FAFF then return true end
-  if cp >= 0x2600 and cp <= 0x27BF then return true end
+  -- Emoji_Presentation=Yes em 2600–27BF (unicode.org emoji-data.txt)
+  if cp == 0x2614 or cp == 0x2615
+    or (cp >= 0x2648 and cp <= 0x2653)
+    or cp == 0x267F or cp == 0x2693 or cp == 0x26A1
+    or cp == 0x26AA or cp == 0x26AB
+    or cp == 0x26BD or cp == 0x26BE
+    or cp == 0x26C4 or cp == 0x26C5
+    or cp == 0x26CE or cp == 0x26D4 or cp == 0x26EA
+    or cp == 0x26F2 or cp == 0x26F3 or cp == 0x26F5
+    or cp == 0x26FA or cp == 0x26FD
+    or cp == 0x2705 or cp == 0x270A or cp == 0x270B
+    or cp == 0x2728 or cp == 0x274C or cp == 0x274E
+    or (cp >= 0x2753 and cp <= 0x2755) or cp == 0x2757
+    or (cp >= 0x2795 and cp <= 0x2797)
+    or cp == 0x27B0 or cp == 0x27BF then return true end
   if cp >= 0x2300 and cp <= 0x23FF then return true end
   -- só emoji presentation em 2Bxx (não ⬤ U+2B24, que o terminal desenha em 1 col)
   if cp == 0x2B1B or cp == 0x2B1C or cp == 0x2B50 or cp == 0x2B55 then return true end
