@@ -748,3 +748,8 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Custo stty size:** mediana ~0,92 ms
 **Estratégia:** TTL 1 s em core.tw/th
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#341 TTL os.time]
+**Causa:** os.clock não avança em espera de rede
+**Correção:** os.time() + TTL 2 s
+**Author:** Grok (xAI)
