@@ -852,3 +852,6 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 ## 2026-10-31 - PR fix/card-largura-tw
 **Closes issue card última coluna**
 **Author:** Grok (xAI)
+
+## 2026-10-31 - PR fix/largura-dot-1col
+**Author:** Grok (xAI)
