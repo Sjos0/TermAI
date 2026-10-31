@@ -146,8 +146,10 @@ TEST("formato novo: feedback classifica o erro",
   type(smart_novo) == "string" and smart_novo:find("Comando nao encontrado", 1, true) ~= nil)
 TEST("formato novo: feedback mostra o corpo sem o prefixo",
   type(smart_novo) == "string" and smart_novo:find("command not found", 1, true) ~= nil)
-TEST("formato novo: feedback não deixa o prefixo cru",
-  type(smart_novo) == "string" and smart_novo:find("[FAIL]", 1, true) == nil)
+TEST("formato novo: feedback não deixa o prefixo cru (corpo já sem o prefixo do input)",
+  type(smart_novo) == "string"
+    and smart_novo:find("\n  [FAIL] command not found\n", 1, true) ~= nil
+    and smart_novo:find("[FAIL] [FAIL]", 1, true) == nil)
 
 local smart_velho = post.analyze("Exec", "ls x", "❌ command not found")
 TEST("formato antigo (símbolo) continua gerando feedback", smart_velho ~= nil)
@@ -189,15 +191,16 @@ for _, rel in ipairs(CONSUMIDORES) do
 end
 
 -- 8. PRODUTORES: cada um emite o formato do seu lote
--- (o lote 2 do #325 migrou os produtores de agent/ para [FAIL]; lib/ e tools/ ainda
---  emitem o símbolo — a remoção do formato antigo do contrato é o D6.)
-SEC("8. Produtores: emitem o formato do seu lote (agent/ migrado, lib/ e tools/ ainda simbolo)")
+-- (o lote 2 do #325 migrou os produtores de agent/ e o lote 3 migrou os de tools/ para
+--  a palavra [FAIL]/[EMPTY]/[SEARCH]; só lib/tools/chamada.lua segue no símbolo —
+--  a remoção do formato antigo do contrato é o D6.)
+SEC("8. Produtores: emitem o formato do seu lote (agent/ e tools/ migrados; lib/ ainda simbolo)")
 local PRODUTORES = {
   { "lib/tools/chamada.lua",                        'return "❌ Erro: Sintaxe inválida."' },
   { "agent/loop/tool_runner/executor/nucleo_2.lua", '"[FAIL] Action cancelled by user."' },
   { "agent/loop/tool_runner/executor/nucleo_3.lua", '"[FAIL] Action cancelled by user."' },
-  { "tools/memory.lua",                             '"📭 Nenhum arquivo de memória' },
-  { "tools/grep/formatter.lua",                     '"🔍 Nenhum resultado encontrado' },
+  { "tools/memory.lua",                             '"[EMPTY] Nenhum arquivo de memória' },
+  { "tools/grep/formatter.lua",                     '"[SEARCH] Nenhum resultado encontrado' },
 }
 for _, p in ipairs(PRODUTORES) do
   local src = ler(p[1])

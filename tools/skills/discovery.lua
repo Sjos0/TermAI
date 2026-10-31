@@ -46,7 +46,7 @@ function M.scan(skills_dir)
           }
         else
           -- Warning: skill com erro de parse — pular sem quebrar
-          io.write("\27[38;5;220m⚠️  Skill '" .. dirname
+          io.write("\27[38;5;220m[WARN]  Skill '" .. dirname
             .. "' ignorada: " .. (err or "erro desconhecido") .. "\27[0m\n")
           io.flush()
         end

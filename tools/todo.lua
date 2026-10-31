@@ -10,14 +10,14 @@ local M = {}
 
 local function validar_todos(todos)
   if type(todos) ~= "table" or #todos == 0 then
-    return nil, "❌ todo_write: 'todos' deve ser um array não vazio."
+    return nil, "[FAIL] todo_write: 'todos' deve ser um array não vazio."
   end
   for i, item in ipairs(todos) do
     if type(item) ~= "table" or not item.content or not item.status then
-      return nil, "❌ todo_write: item " .. i .. " precisa de 'content' e 'status'."
+      return nil, "[FAIL] todo_write: item " .. i .. " precisa de 'content' e 'status'."
     end
     if item.status ~= "pending" and item.status ~= "in_progress" and item.status ~= "completed" then
-      return nil, "❌ todo_write: status inválido em item " .. i .. " ('" .. tostring(item.status) .. "')."
+      return nil, "[FAIL] todo_write: status inválido em item " .. i .. " ('" .. tostring(item.status) .. "')."
     end
   end
   return true
@@ -44,15 +44,15 @@ function M.write(args)
     pcall(function() require("tools.memory").invalidate_cache() end)
     local del_ok = store.delete(session_id)
 
-    local status = "✅ Todas as tarefas concluídas. Lista arquivada na memória."
-    if not arch_ok then status = "⚠️ Concluído, mas falha ao arquivar na memória." end
-    if not del_ok  then status = status .. " ⚠️ falha ao remover arquivo da sessão." end
+    local status = "[OK] Todas as tarefas concluídas. Lista arquivada na memória."
+    if not arch_ok then status = "[WARN] Concluído, mas falha ao arquivar na memória." end
+    if not del_ok  then status = status .. " [WARN] falha ao remover arquivo da sessão." end
     return status .. "\n" .. formatter.render(todos)
   end
 
   local saved, save_err = store.save(session_id, todos)
   if not saved then
-    return "❌ todo_write: falha ao salvar (" .. tostring(save_err) .. ")."
+    return "[FAIL] todo_write: falha ao salvar (" .. tostring(save_err) .. ")."
   end
   return formatter.render(todos)
 end

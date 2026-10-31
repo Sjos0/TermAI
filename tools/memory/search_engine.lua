@@ -14,7 +14,7 @@ local SCORE = {
 local function search(query, graph, files)
   local tokens = tokenizer.tokenize(query)
   if #tokens == 0 then
-    return "❌ memory_search: query inválida após normalização."
+    return "[FAIL] memory_search: query inválida após normalização."
   end
 
   -- hits: path → {score, snippets[], date, file}

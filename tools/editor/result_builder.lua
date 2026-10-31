@@ -26,7 +26,7 @@ function M.build(path, msg, edits, before_content, file_info_fn, luac_val_fn)
 
   -- Veto de segurança: se o motor reportou sucesso mas nada foi alterado, força erro
   if is_zero_change then
-    out = "❌ Erro: Nenhuma alteração foi realizada no arquivo. O bloco 'old_text' de busca ou o intervalo de linhas enviado não correspondem a nenhuma alteração de conteúdo."
+    out = "[FAIL] Erro: Nenhuma alteração foi realizada no arquivo. O bloco 'old_text' de busca ou o intervalo de linhas enviado não correspondem a nenhuma alteração de conteúdo."
   end
 
   if diff or is_zero_change then

@@ -19,7 +19,7 @@ function M.register(tools)
       local cmd     = type(arg) == "table" and (arg.command or arg.arg or "") or arg
       -- v4.1: Aplica timeout de 30 segundos por padrão para evitar congelamentos do Lua thread em I/O lentos
       local timeout = type(arg) == "table" and tonumber(arg.timeout) or 30
-      if cmd == "" then return "❌ Argumento vazio: informe o comando." end
+      if cmd == "" then return "[FAIL] Argumento vazio: informe o comando." end
       if timeout then timeout = math.min(math.max(math.floor(timeout), 1), 300) end
 
       -- Passo 2: delegar execução
@@ -28,17 +28,17 @@ function M.register(tools)
       -- Passo 3: formatar mensagem final (responsabilidade de interface)
       if result.timed_out then
         local partial = result.output ~= "" and ("\nSaída parcial:\n" .. result.output) or ""
-        return "❌ Timeout: comando interrompido após " .. timeout .. "s" .. partial
+        return "[FAIL] Timeout: comando interrompido após " .. timeout .. "s" .. partial
       end
 
       if result.output == "" then
         return result.exit_code == "0"
-          and "✅ Comando executado (sem saída de texto)"
-          or  "❌ Comando falhou | Exit: " .. result.exit_code .. " | sem saída de texto"
+          and "[OK] Comando executado (sem saída de texto)"
+          or  "[FAIL] Comando falhou | Exit: " .. result.exit_code .. " | sem saída de texto"
       end
 
       if result.exit_code ~= "0" then
-        return result.output .. "\n⚠️ Exit code: " .. result.exit_code
+        return result.output .. "\n[WARN] Exit code: " .. result.exit_code
       end
 
       return result.output

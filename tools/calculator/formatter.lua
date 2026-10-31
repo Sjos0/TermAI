@@ -2,16 +2,16 @@ local M = {}
 
 function M.format(result, expression)
   if result == nil then 
-    return "❌ Resultado indefinido. Verifique a expressão." 
+    return "[FAIL] Resultado indefinido. Verifique a expressão." 
   end
   if type(result) ~= "number" then 
-    return "❌ Resultado inesperado: " .. tostring(result) 
+    return "[FAIL] Resultado inesperado: " .. tostring(result) 
   end
   if result ~= result then 
-    return "❌ Resultado inválido (NaN)." 
+    return "[FAIL] Resultado inválido (NaN)." 
   end
   if result == math.huge or result == -math.huge then 
-    return "❌ Resultado infinito — possível divisão por zero." 
+    return "[FAIL] Resultado infinito — possível divisão por zero." 
   end
 
   local formatted
@@ -21,7 +21,7 @@ function M.format(result, expression)
     formatted = string.format("%.10g", result)
   end
 
-  return "✅ " .. expression .. " = " .. formatted
+  return "[OK] " .. expression .. " = " .. formatted
 end
 
 return M

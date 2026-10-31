@@ -14,9 +14,9 @@ function M.read(file_path, content, info, ls, le)
     end
   end
   if #out == 0 then
-    return "❌ Intervalo L" .. ls .. "-L" .. le .. " vazio ou fora do arquivo."
+    return "[FAIL] Intervalo L" .. ls .. "-L" .. le .. " vazio ou fora do arquivo."
   end
-  return "📄 " .. file_path .. "  L" .. ls .. "-L" .. le .. "\n"
+  return "[FILE] " .. file_path .. "  L" .. ls .. "-L" .. le .. "\n"
       .. info .. "\n"
       .. table.concat(out, "\n")
 end

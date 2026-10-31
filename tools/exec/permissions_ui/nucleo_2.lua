@@ -24,7 +24,7 @@ return function(M)
 
     out("\n")
     out(r .. "┌──────────────────────────────────────────────────┐" .. rs .. "\n")
-    out(r .. "│" .. w .. "  🔒 SOLICITAÇÃO DE PERMISSÃO                      " .. r .. "│" .. rs .. "\n")
+    out(r .. "│" .. w .. "  [LOCKED] SOLICITAÇÃO DE PERMISSÃO               " .. r .. "│" .. rs .. "\n")
     out(r .. "└──────────────────────────────────────────────────┘" .. rs .. "\n")
     out(w .. "  Ferramenta: " .. y .. tool_name .. rs .. "\n")
     out(w .. "  Comando:    " .. rs .. display_cmd .. "\n")
@@ -34,12 +34,12 @@ return function(M)
     end
 
     if unknown_cmd then
-      out(gr .. "  ⚠️  Este trecho não corresponde a um comando conhecido no PATH — "
+      out(gr .. "  [WARN]  Este trecho não corresponde a um comando conhecido no PATH — "
            .. "pode ser texto do agente, não uma ação real." .. rs .. "\n")
     end
 
     if warnings and #warnings > 0 then
-      out("\n" .. r .. "  ⚠️  AVISOS DE SEGURANÇA DETECTADOS:" .. rs .. "\n")
+      out("\n" .. r .. "  [WARN]  AVISOS DE SEGURANÇA DETECTADOS:" .. rs .. "\n")
       for _, warn in ipairs(warnings) do
         out(r .. "  • " .. warn.message .. rs .. "\n")
       end
@@ -74,15 +74,15 @@ return function(M)
       choice = choice:lower()
 
       if choice == "1" or choice == "" then
-        return "once", suggested_pattern, g, "✅", "Permitido uma vez"
+        return "once", suggested_pattern, g, "[OK]", "Permitido uma vez"
       elseif choice == "2" then
-        return "always", suggested_pattern, g, "✅", "Permitido sempre"
+        return "always", suggested_pattern, g, "[OK]", "Permitido sempre"
       elseif choice == "3" then
-        return "deny", suggested_pattern, r, "🚫", "Negado"
+        return "deny", suggested_pattern, r, "[BLOCKED]", "Negado"
       elseif choice == "4" then
-        return "block", suggested_pattern, r, "🚫", "Bloqueado permanentemente"
+        return "block", suggested_pattern, r, "[BLOCKED]", "Bloqueado permanentemente"
       elseif choice == "c" or choice == "cancelar" then
-        return "cancel", suggested_pattern, r, "🚫", "Cancelado"
+        return "cancel", suggested_pattern, r, "[BLOCKED]", "Cancelado"
       else
         out(r .. "  Entrada inválida. Digite 1, 2, 3, 4 ou c." .. rs .. "\n")
       end

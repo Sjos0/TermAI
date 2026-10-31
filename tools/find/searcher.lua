@@ -17,7 +17,7 @@ function M.run(arg, helpers)
 
   local safe_name = shell_safe(name)
   if safe_name == "" or safe_name:match("^%s*$") then
-    return "❌ Nome de busca inválido."
+    return "[FAIL] Nome de busca inválido."
   end
 
   -- Define o diretório de busca (padrão: workspace)
@@ -56,11 +56,11 @@ function M.run(arg, helpers)
       if best_path:sub(1, #visual_dir) == visual_dir then
         best_path = best_path:gsub(visual_dir .. "/", "")
       end
-      return string.format("❌ Nenhum arquivo encontrado para '%s' dentro de: %s\n"
-        .. "  💡 Você quis dizer: '%s' (caminho: %s)?", safe_name, dir, best, best_path)
+      return string.format("[FAIL] Nenhum arquivo encontrado para '%s' dentro de: %s\n"
+        .. "  [TIP] Você quis dizer: '%s' (caminho: %s)?", safe_name, dir, best, best_path)
     end
 
-    return "❌ Nenhum arquivo encontrado para '" .. safe_name .. "' dentro de: " .. dir
+    return "[FAIL] Nenhum arquivo encontrado para '" .. safe_name .. "' dentro de: " .. dir
   end
 
   -- Se a busca for dentro do workspace, simplifica o caminho visualmente
@@ -70,7 +70,7 @@ function M.run(arg, helpers)
   end
 
   local count = select(2, res:gsub("\n", "\n"))
-  return "✅ " .. count .. " arquivo(s) encontrado(s) em " .. dir .. ":\n" .. res
+  return "[OK] " .. count .. " arquivo(s) encontrado(s) em " .. dir .. ":\n" .. res
 end
 
 return M

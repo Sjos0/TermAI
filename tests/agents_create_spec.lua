@@ -24,7 +24,7 @@ write(root .. "/workspace/USER.md", "Samuka: desenvolvedor independente.\n")
 
 local create = require("tools.agents.create")
 
-check(create.create({ id = "pesquisa", identity = "x", functions = "y" }):match("^❌") ~= nil,
+check(create.create({ id = "pesquisa", identity = "x", functions = "y" }):match("^%[FAIL%]") ~= nil,
   "sem confirmed=true é recusado")
 check(create.create({ id = "main", identity = "x", functions = "y", confirmed = true }):match("inválido") ~= nil,
   "id 'main' é reservado")
@@ -35,7 +35,7 @@ check(create.create({ id = "pesquisa", identity = " ", functions = "y", confirme
 
 local ok_msg = create.create({ id = "pesquisa", name = "Pesquisador", identity = "Metódico e direto.",
   functions = "Pesquisar na web e resumir fontes.", confirmed = true })
-check(ok_msg:match("^✓") ~= nil, "criação válida retorna sucesso")
+check(ok_msg:match("^%[OK%]") ~= nil, "criação válida retorna sucesso")
 
 local dir = paths.workspace_abs("pesquisa")
 local identity = read(dir .. "/IDENTITY.md") or ""

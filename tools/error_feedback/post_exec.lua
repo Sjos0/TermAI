@@ -28,8 +28,8 @@ function M.analyze(tool_name, arg, result)
     if result_low:match(entry.pat:lower()) then
       return string.format(
         "[FEEDBACK] Ferramenta '%s' retornou erro.\n"
-        .. "  ❌ %s\n"
-        .. "  💡 %s",
+        .. "  [FAIL] %s\n"
+        .. "  [TIP] %s",
         tool_name,
         resultado.mensagem(result),
         entry.sug
@@ -39,8 +39,8 @@ function M.analyze(tool_name, arg, result)
   -- Feedback generico para erros nao classificados
   return string.format(
     "[FEEDBACK] Ferramenta '%s' retornou erro.\n"
-    .. "  ❌ %s\n"
-    .. "  💡 Revise os argumentos e tente novamente:\n"
+    .. "  [FAIL] %s\n"
+    .. "  [TIP] Revise os argumentos e tente novamente:\n"
     .. "     <tool><name>%s</name><arg>ARGUMENTO</arg></tool>",
     tool_name,
     resultado.mensagem(result),

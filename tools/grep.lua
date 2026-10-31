@@ -31,12 +31,12 @@ function M.register(tools, helpers)
       end
 
       if not opts.pattern or opts.pattern == "" then
-        return "❌ Erro: O parâmetro 'pattern' é obrigatório."
+        return "[FAIL] Erro: O parâmetro 'pattern' é obrigatório."
       end
 
       local res, err = searcher.execute(opts)
       if err then
-        return "❌ Erro na busca: " .. tostring(err)
+        return "[FAIL] Erro na busca: " .. tostring(err)
       end
 
       return formatter.format(res, opts.pattern)

@@ -67,7 +67,7 @@ return function(M, N)
   function M.esperar(args)
     local id = tostring(args.runId or "")
     local r = registry.load(id)
-    if not r then return "❌ run não encontrado: " .. id end
+    if not r then return "[FAIL] run não encontrado: " .. id end
     local secs = math.min(tonumber(args.timeoutSeconds) or 60, M.MAX_WAIT)
     local cfg = require("config").load()
     local deadline = os.time() + secs
@@ -82,7 +82,7 @@ return function(M, N)
       end
       if os.time() >= deadline then
         local p = M.progress(r)
-        return string.format("⏳ %s ainda rodando após %ds (tools=%d; último evento: %s). Espere de novo ou use subagents_info.",
+        return string.format("[WAIT] %s ainda rodando após %ds (tools=%d; último evento: %s). Espere de novo ou use subagents_info.",
           id, secs, p.tools_usadas, p.ultimo_evento)
       end
       M.sleep(1)
@@ -99,7 +99,7 @@ return function(M, N)
 
   function M.matar(args)
     local r = registry.load(args.runId)
-    if not r then return "❌ run não encontrado: " .. tostring(args.runId) end
+    if not r then return "[FAIL] run não encontrado: " .. tostring(args.runId) end
     if scheduler.is_terminal(r) then return "Run já terminado: " .. r.status end
     local children = scheduler.stop_tree(r.runId, "pai morto pelo usuário")
     launcher.kill(r.pid, r.runId)
@@ -108,6 +108,6 @@ return function(M, N)
     r.announce_pending = true
     registry.save(r)
     log.info("run_killed_by_user", { run_id = r.runId })
-    return "✓ " .. r.runId .. " encerrado."
+    return "[OK] " .. r.runId .. " encerrado."
   end
 end

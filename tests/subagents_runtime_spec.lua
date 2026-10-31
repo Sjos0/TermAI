@@ -98,7 +98,7 @@ check(cleanup.sweep() == 0 and registry.load(r1.runId) ~= nil, "padrão retém r
 
 -- Kill.
 local kill_msg = control.matar({ runId = r2.runId })
-check(kill_msg:match("^✓") ~= nil, "subagents_kill encerra o run")
+check(kill_msg:match("^%[OK%]") ~= nil, "subagents_kill encerra o run")
 check(registry.load(r2.runId).status == "killed" and killed[tonumber(registry.load(r2.runId).pid)], "run morto fica com status killed e processo sinalizado")
 
 -- Processo morto sem terminar vira failed/process_exit.

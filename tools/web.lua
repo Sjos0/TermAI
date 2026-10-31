@@ -11,7 +11,7 @@ function M.register(tools)
     function(arg)
       local q = type(arg) == "table" and (arg.query or arg.arg or "") or arg
       if not q or q:match("^%s*$") then
-        return "❌ Forneça um termo de busca."
+        return "[FAIL] Forneça um termo de busca."
       end
 
       local config_mod = require("config")
@@ -34,7 +34,7 @@ function M.register(tools)
         end
       end
 
-      local last_err = "❌ Nenhum provedor de busca disponível."
+      local last_err = "[FAIL] Nenhum provedor de busca disponível."
       for _, p in ipairs(providers_to_try) do
         local ok, search_mod = pcall(require, "providers." .. p)
         if ok and search_mod and search_mod.search then
@@ -52,7 +52,7 @@ function M.register(tools)
             last_err = res
           end
         else
-          last_err = "❌ Erro ao carregar provedor de busca: " .. tostring(p)
+          last_err = "[FAIL] Erro ao carregar provedor de busca: " .. tostring(p)
         end
       end
 

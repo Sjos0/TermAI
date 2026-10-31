@@ -95,12 +95,12 @@ end
 
 function memory.search(query)
   if not query or query:match("^%s*$") then
-    return "❌ memory_search: forneça uma query. Ex: 'erros em Lua' ou 'decisões de arquitetura'."
+    return "[FAIL] memory_search: forneça uma query. Ex: 'erros em Lua' ou 'decisões de arquitetura'."
   end
   local graph, files = get_graph()
   if #files == 0 then
-    return "📭 Nenhum arquivo de memória encontrado em: " .. io_utils.MEMORY_DIR
-      .. "\n💡 Dica: o Memory Flush cria arquivos YYYY-MM-DD.md automaticamente."
+    return "[EMPTY] Nenhum arquivo de memória encontrado em: " .. io_utils.MEMORY_DIR
+      .. "\n[TIP] Dica: o Memory Flush cria arquivos YYYY-MM-DD.md automaticamente."
   end
   return search_engine.search(query, graph, files)
 end

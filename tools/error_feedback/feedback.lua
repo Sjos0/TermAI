@@ -61,17 +61,17 @@ function M.generate(errors)
     if err.type == "unknown_tool" then
       if err.suggestion then
         msg = string.format(
-          "❌ Ferramenta '%s' nao existe.\n"
-          .. "   💡 Voce quis dizer '%s'? Use:\n"
+          "[FAIL] Ferramenta '%s' nao existe.\n"
+          .. "   [TIP] Voce quis dizer '%s'? Use:\n"
           .. "   <tool><name>%s</name><arg>%s</arg></tool>",
           err.tool_name, err.suggestion,
           err.suggestion, get_example(err.suggestion)
         )
       else
         msg = string.format(
-          "❌ Ferramenta '%s' nao existe no sistema.\n"
-          .. "   📋 Disponiveis:\n%s\n"
-          .. "   💡 Formato: <tool><name>NOME</name><arg>ARG</arg></tool>",
+          "[FAIL] Ferramenta '%s' nao existe no sistema.\n"
+          .. "   [LIST] Disponiveis:\n%s\n"
+          .. "   [TIP] Formato: <tool><name>NOME</name><arg>ARG</arg></tool>",
           err.tool_name, wrap_names(available_names())
         )
       end
@@ -79,26 +79,26 @@ function M.generate(errors)
       local ex = get_example(err.tool_name)
       if ex ~= "" then
         msg = string.format(
-          "⚠️  Ferramenta '%s' requer argumento.\n"
-          .. "   💡 Formato: <tool><name>%s</name><arg>%s</arg></tool>",
+          "[WARN]  Ferramenta '%s' requer argumento.\n"
+          .. "   [TIP] Formato: <tool><name>%s</name><arg>%s</arg></tool>",
           err.tool_name, err.tool_name, ex
         )
       end
     elseif err.type == "malformed_outer_tag" then
       msg = string.format(
-        "❌ Tag '%s' invalida. Use '<tool>' para chamar ferramentas:\n"
+        "[FAIL] Tag '%s' invalida. Use '<tool>' para chamar ferramentas:\n"
         .. "   <tool><name>NOME</name><arg>ARG</arg></tool>",
         err.found
       )
     elseif err.type == "malformed_name_tag" then
       msg = string.format(
-        "❌ Tag '%s' invalida. Use '<name>' para o nome da ferramenta:\n"
+        "[FAIL] Tag '%s' invalida. Use '<name>' para o nome da ferramenta:\n"
         .. "   <tool><name>NOME</name><arg>ARG</arg></tool>",
         err.found
       )
     elseif err.type == "malformed_arg_tag" then
       msg = string.format(
-        "❌ Tag '%s' invalida. Use '<arg>' para o argumento:\n"
+        "[FAIL] Tag '%s' invalida. Use '<arg>' para o argumento:\n"
         .. "   <tool><name>NOME</name><arg>ARG</arg></tool>",
         err.found
       )

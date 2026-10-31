@@ -6,22 +6,22 @@ local MAX_SNIPPETS = 2
 
 local function format_results(sorted, query, files, tokens)
   if #sorted == 0 then
-    return "🔍 Nenhuma memória encontrada para: \"" .. query .. "\"\n"
-      .. "💡 Tente termos mais genéricos ou verifique as tags nos arquivos .md."
+    return "[SEARCH] Nenhuma memória encontrada para: \"" .. query .. "\"\n"
+      .. "[TIP] Tente termos mais genéricos ou verifique as tags nos arquivos .md."
   end
 
   -- ── Formatação da resposta ────────────────────────────────────────────────
   -- não é largura de tela (#331): este separador vai para o arquivo .md de memória, não para o terminal
   local sep    = string.rep("─", 44)
-  local result = "🧠 **Memórias relevantes para:** \"" .. query .. "\"\n"
-              .. "📊 " .. #sorted .. " arquivo(s) | Grafo: "
+  local result = "[MEMORY] **Memórias relevantes para:** \"" .. query .. "\"\n"
+              .. "[STATS] " .. #sorted .. " arquivo(s) | Grafo: "
               .. #files .. " nós | " .. #tokens .. " token(s) buscado(s)\n"
               .. sep .. "\n"
 
   for i = 1, math.min(MAX_RESULTS, #sorted) do
     local item = sorted[i]
     result = result
-          .. "\n📅 **" .. item.data.date .. "**"
+          .. "\n[DATE] **" .. item.data.date .. "**"
           .. "  (relevância: " .. item.data.score .. ")\n"
 
     -- Deduplica snippets

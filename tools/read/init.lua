@@ -35,23 +35,23 @@ function M.register(tools, helpers)
       -- Válvula de segurança 0: Impede leitura se for um diretório
       local ok_dir, _, exit_code = os.execute("test -d " .. string.format("%q", file_path))
       if ok_dir == true or ok_dir == 0 or exit_code == 0 then
-        return "❌ Erro: '" .. file_path .. "' é um diretório, não um arquivo."
+        return "[FAIL] Erro: '" .. file_path .. "' é um diretório, não um arquivo."
       end
 
       local f = io.open(file_path, "r")
-      if not f then return "❌ Arquivo não existe: " .. file_path end
+      if not f then return "[FAIL] Arquivo não existe: " .. file_path end
 
       -- Válvula de segurança 1: impede leitura de arquivos maiores que 50KB (padrão OpenClaw)
       local size = f:seek("end")
       f:seek("set", 0)
       if size > 50 * 1024 and parsed.mode == "full" then
         f:close()
-        return string.format("❌ Erro: O arquivo possui %.1f KB, o que excede o limite seguro de leitura completa de 50KB.\n"
+        return string.format("[FAIL] Erro: O arquivo possui %.1f KB, o que excede o limite seguro de leitura completa de 50KB.\n"
           .. "  Para evitar estourar sua janela de contexto e economizar tokens, use a leitura por intervalo (start_line / end_line).", size / 1024)
       end
 
       local content = f:read("*a"); f:close()
-      if not content or content == "" then return "⚠️ O arquivo está vazio." end
+      if not content or content == "" then return "[WARN] O arquivo está vazio." end
 
       -- Válvula de segurança 2: impede leitura de arquivos com mais de 2000 linhas (padrão OpenClaw)
       local lines_count = 0
@@ -59,7 +59,7 @@ function M.register(tools, helpers)
       if content:sub(-1) ~= "\n" then lines_count = lines_count + 1 end
 
       if lines_count > 2000 and parsed.mode == "full" then
-        return string.format("❌ Erro: O arquivo possui %d linhas, o que excede o limite seguro de leitura completa de 2000 linhas.\n"
+        return string.format("[FAIL] Erro: O arquivo possui %d linhas, o que excede o limite seguro de leitura completa de 2000 linhas.\n"
           .. "  Para evitar estourar sua janela de contexto e economizar tokens, use a leitura por intervalo (start_line / end_line).", lines_count)
       end
 

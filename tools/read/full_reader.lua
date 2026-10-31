@@ -12,7 +12,7 @@ function M.read(file_path, content, info)
     end
     out[#out+1] = string.format("%4d │ %s", i, line)
   end
-  return "📄 " .. file_path .. "\n" .. info .. "\n\n" .. table.concat(out, "\n")
+  return "[FILE] " .. file_path .. "\n" .. info .. "\n\n" .. table.concat(out, "\n")
 end
 
 return M
