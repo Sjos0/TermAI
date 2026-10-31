@@ -42,3 +42,7 @@ PATCH se só correção/prova; confirmar VERSION; tag `vX.Y.Z`; notes em portugu
 - PASS sem prova de falha no defeito reintroduzido não vale.
 - grep sozinho não prova comportamento.
 - "Resolvido" só com evidência anexada.
+
+## Prova visual e corpo de PR (2026-10-31)
+- Para qualquer mudança visual, a prova precisa usar o caminho real (replay, ao vivo) com saídas reais de programas, não só a função isolada.
+- O corpo da PR inclui `Closes #n` quando resolve a issue.
