@@ -521,3 +521,12 @@ Listar: comprovado, não comprovado, pendente. Proibido afirmar "resolvido" sem 
 **PRs:** #272 #273 #274 #275 mescladas
 **Versão:** 1.38.0 (MINOR — Block fundo/wrap + blocos tentativa/erro)
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#281 token na memória]
+**Issue:** #281
+**Veredito de validade:** CONFIRMADA (incidente de processo na missão 1.38.0)
+**Contexto:** Ordem v1.38.1 E1 — varredura de credenciais na memória de projeto e no repositório.
+**Ação:** Varredura em project_memory: nenhum valor `ghp_*` / `github_pat_*`. Entrada de autonomia reescrita para proibir persistir credencial (só leitura em runtime de fonte externa). `git grep` no main: sem resultado real.
+**Files Modified:** .grok/grok.md (este registro); memória de projeto (sem valor secreto).
+**Erros cometidos nesta issue e correções:** na missão 1.38.0 o token foi usado em URL de remote em sessão de shell (não commitado); medida: nunca embutir token em remote persistente nem em memória.
+**Author:** Grok (xAI)

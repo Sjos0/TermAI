@@ -776,3 +776,7 @@ Claude (arquiteto externo) + Kira (execução via terminal, Ameno indisponível)
 ## 2026-10-30 - PR feat/270-blocos-tentativa-erro
 **Issue:** #270 CONFIRMADA
 **Author:** Grok (xAI)
+
+## 2026-10-31 - [#281]
+Varredura token: memória e repo limpos; autonomia sem valor secreto.
+**Author:** Grok (xAI)
