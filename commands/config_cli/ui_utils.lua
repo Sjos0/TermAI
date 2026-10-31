@@ -13,7 +13,7 @@ local core = require("ui.core")
 -- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
 -- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
 local function SEP(usado)    return core.regua(45, usado or 2) end
-local function SEP2(prefixo) return core.regua(30, #(prefixo or "")) end
+local function SEP2(prefixo) return core.regua(30, require("ui.largura").colunas(prefixo or "")) end
 
 local function rdl(prompt)
   io.write(CY.."  "..prompt..": "..R); io.flush()
