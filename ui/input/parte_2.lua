@@ -25,6 +25,7 @@ return function(M, N)
     local tw = math.max(core.tw(), core.TW_MIN)
 
     local function redraw()
+      tw = math.max(core.tw(), core.TW_MIN)
       local display = seg.get_display(segments)
       if prev_lines > 0 then
         io.write(string.format("\27[%dA", prev_lines))

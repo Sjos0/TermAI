@@ -743,3 +743,8 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 
 **Correção pós-CI (commit 224c1a3):** o refactor apagou `local prev_lines = 0` em `ui/input/parte_2.lua` (usada nas linhas 30/31/38/112/113) → PTY da CI morria com `attempt to compare number with nil` em `ui/input/parte_2.lua:112`. Declaração restaurada (nenhuma outra linha mudou). PTY: 3 FAIL → 0. CI da PR #332 re-rodada: os dois jobs `lua` = **success**.
 **Suíte local (Termux, mesma bateria da CI):** 126/131 PASS; as 5 falhas são ambientais — `/tmp` é somente-leitura (agente_boot_real, cleanup_startup_pid, ta_pid_por_instancia, tui_rotulo) e o micro-benchmark de performance do depth_tracker estoura 0,1s no ARM. Nenhuma toca código do #331; a CI no Ubuntu passou.
+
+## 2026-10-31 - [#335 releitura largura]
+**Custo stty size:** mediana ~0,92 ms
+**Estratégia:** TTL 1 s em core.tw/th
+**Author:** Grok (xAI)
