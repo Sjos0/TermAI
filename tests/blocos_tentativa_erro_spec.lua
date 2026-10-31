@@ -40,9 +40,9 @@ local j = plain_join()
 local count = 0
 for _ in j:gmatch("Tentativa %d+/%d+") do count = count + 1 end
 -- erase sobe; na string concatenada ainda aparecem tentativas antigas no buffer,
--- mas o último card deve ser 4/5 e ter moldura.
+-- mas o último card deve ser 4/5 e SEM moldura (#327).
 T(j:find("Tentativa 4/5", 1, true) ~= nil, "última tentativa 4/5 presente")
-T(j:find("┌", 1, true) ~= nil and j:find("└", 1, true) ~= nil, "moldura de bloco presente")
+T(j:find("┌", 1, true) == nil and j:find("└", 1, true) == nil, "sem moldura de bloco (#327)")
 T(j:find("48;5;52", 1, true) ~= nil or table.concat(writes):find("48;5;52", 1, true), "fundo bg_error")
 
 -- 2) show_api_error com recover → mesmo bloco
@@ -53,8 +53,9 @@ retry.show_api_error("Falha após 5 tentativas — Sem resposta do servidor",
 local err = plain_join()
 T(err:find("%[recover%]", 1) ~= nil, "recover dentro do bloco")
 T(err:find("%[ERRO%]", 1) ~= nil, "[ERRO] dentro do bloco")
--- buffer de writes guarda frames anteriores; o card de erro final nao repinta Tentativa
-T(err:find("%[ERRO%]", 1) ~= nil and err:find("┌", 1, true) ~= nil, "erro final em moldura")
+-- buffer de writes guarda frames anteriores; o card de erro final nao repinta Tentativa.
+-- #327: o bloco final não tem moldura.
+T(err:find("%[ERRO%]", 1) ~= nil and err:find("┌", 1, true) == nil, "erro final sem moldura (#327)")
 
 -- 3) erro longo quebra (não corta com … no meio da mensagem completa)
 writes = {}

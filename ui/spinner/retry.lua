@@ -1,4 +1,4 @@
--- ui/spinner/retry.lua — Blocos de tentativa e erro via Block (#203–#278).
+-- ui/spinner/retry.lua — Blocos de tentativa e erro via Block (#203–#327).
 local core  = require("ui.core")
 local block = require("ui.widgets.block")
 local c     = core.c
@@ -17,15 +17,18 @@ end
 
 local function paint_block(content_lines)
   local tw = core.tw()
+  local bg = c.bg_error or "\27[48;5;52m"
+  local fg = c.error_fg or "\27[38;5;231m"
+  -- #327: sem moldura; respiro (linha vazia acima/abaixo) dentro da área do bloco,
+  -- herdando o fundo bg_error em todas as células.
+  local content = { "" }
+  for _, ln in ipairs(content_lines or {}) do content[#content + 1] = ln end
+  content[#content + 1] = ""
   local b = block.new({
-    borders = block.BORDERS.ALL,
-    border_type = block.TYPE.PLAIN,
-    border_color = c.frame_error_fg or c.red,
-    frame_bg = c.frame_error or "\27[48;5;203m",
-    frame_fg = c.frame_error_fg or "\27[38;5;52m",
-    bg = c.bg_error or "\27[48;5;52m",
-    fg = c.error_fg or "\27[38;5;231m",
-    content_lines = content_lines,
+    borders = block.BORDERS.NONE,
+    bg = bg,
+    fg = fg,
+    content_lines = content,
   })
   local lines = b:render({ w = tw, h = nil })
   for _, ln in ipairs(lines) do io.write(ln .. "\n") end
