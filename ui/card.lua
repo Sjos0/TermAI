@@ -2,6 +2,7 @@
 -- Largura visual via ui/largura.lua (emoji/CJK = 2 colunas).
 local largura = require("ui.largura")
 local fundo = require("ui.estilo.fundo")
+local sanitize = require("ui.cell.sanitize")
 local M = {}
 
 M.MAX_BODY = 5
@@ -29,7 +30,7 @@ function M.body_rows(lines, tw, max)
   local body_w = math.max(1, tw - 8)
   for i = 1, visible do
     local prefix = (i == visible and #lines <= max) and " └─ " or " │ "
-    local text = largura.expand_tabs(lines[i])
+    local text = select(1, sanitize.sanitize_line(lines[i]))
     rows[#rows + 1] = { prefix = prefix, text = M.cut(text, body_w) }
   end
   if #lines > max then
