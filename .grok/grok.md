@@ -778,3 +778,10 @@ Inclui #305 fundo seletivo + #307 TAB expand.
 **Sensibilidade:** reintroduzido `📭` em `tools/memory.lua:102` -> scanner `tools/` 0 -> 1 linha e `lib_result_spec` **87/88** (FAIL no bloco 8); restaurado -> scanner 0 e spec 88/88.
 **Erro que cometi e correcao:** usei `git checkout -- tools/memory.lua` para desfazer a reintroducao de sensibilidade, mas o trabalho estava NAO COMMITADO: o checkout restaurou a versao do `HEAD` (main, com simbolos) e apagou 3 trocas do lote naquele arquivo (37->36 arquivos, scanner 0->3). Corrigi reaplicando as 3 trocas pelo mapeamento (`❌`->`[FAIL]`, `📭`->`[EMPTY]`, `💡`->`[TIP]`); `tools/memory.lua | 6 +++---` e 37 arquivos de novo, scanner 0. Licao: para provar sensibilidade, copiar o arquivo e restaurar da copia — nunca `git checkout --` com trabalho nao commitado.
 **Author:** Grok (xAI)
+
+## 2026-11-01 - [#356 / PR #357] spec de HR passa a medir a largura da linha (trava #356)
+**Escopo:** so `tests/messages_hr_display_spec.lua` (15 insercoes, 2 remocoes; `luac -p` OK). `ui/messages.lua` NAO mudou — a correcao de `4d7dd46` esta certa.
+**Mudanca:** novo bloco dentro do laco principal: para cada linha do output calcula `largura.colunas(strip_ansi(ln))` e asserta `<= tw`; a mensagem reporta a pior largura e o indice da pior linha. As assercoes atuais foram mantidas.
+**Sensibilidade (o ponto da tarefa):** ANTES do reforco, spec antigo + defeito (`is_hr_line` fora do ramo do `ai_msg`, `ui/messages.lua:74`) -> `ALL OK` (cegueira provada). DEPOIS do reforco + defeito -> `FAILURES: 8` (as 8 combinacoes `ai_msg` x tw{40,50,54,80} x hr{---,***}); larguras 41/51/55/81 (estouram tw por 1); `ai_msg_stream` segue OK (linha 109 intacta). DEPOIS do reforco + correcao -> `ALL OK` com larguras exatas 40/50/54/80.
+**Divergencia de numero (medida, nao copiada):** o orquestrador reportou '42' (tw=40). Com o input do spec (`antes\n---\ndepois`, HR na 2a linha, prefixo de 1 espaco) a pior largura real e **41**. O '42' vem de HR na 1a linha (prefixo `⬤ ` = 2 colunas) — confirmei empiricamente (1a linha->42, 2a->41). Ambos estouram tw e a assercao trava os dois.
+**Author:** Grok (xAI)

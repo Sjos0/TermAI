@@ -964,3 +964,10 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Pendencia de aparelho (nao medida aqui):** virada de tela, texto novo e regua sao para confirmar no celular.
 **Fora desta release:** o renderizador de cards em celulas (#306) sera refeito sobre a main atual.
 **Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
+
+## 2026-11-01 - [PR #357 / #356] reforco do spec de HR (largura da linha)
+**Fonte:** comentario de verificacao na PR #357 (spec cego: passava com o defeito reintroduzido).
+**Mudanca:** apenas `tests/messages_hr_display_spec.lua`; assercao de largura maxima por linha (`largura.colunas` sobre `strip_ansi(linha)`) dentro do laco principal, mantendo as assercoes atuais. `ui/messages.lua` intocado.
+**Evidencia:** spec antigo + defeito -> `ALL OK`; spec reforcado + defeito -> `FAILURES: 8` (41/51/55/81 estouram tw; so o caminho `ai_msg`); spec reforcado + correcao -> `ALL OK` (40/50/54/80 exatos). `git status` limpo de `ui/messages.lua`.
+**Nota:** pior largura medida no defeito com o input do spec = 41 (tw=40), nao 42; o 42 corresponde a HR na 1a linha (prefixo `⬤ `).
+**Author:** Grok (xAI)
