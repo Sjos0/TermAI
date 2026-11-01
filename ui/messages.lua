@@ -10,6 +10,15 @@ local function is_code_card_line(line)
   return type(line) == "string" and line:find("\27[48;5;", 1, true) ~= nil
 end
 
+-- HR renderizado (--- / ***): sequência de ─ com largura visual ≈ tw.
+-- Tratado como linha especial (sem wrap_para, sem prefixo de continuação).
+local function is_hr_line(line)
+  if type(line) ~= "string" then return false end
+  local stripped = core.strip(line)
+  if not stripped:find("─", 1, true) then return false end
+  return core.wlen(stripped) >= (core.tw() - 2)
+end
+
 function M.user_msg(t, pasted_texts)
   if pasted_texts then
     for idx, raw_text in pairs(pasted_texts) do
@@ -62,12 +71,13 @@ function M.ai_msg(t)
   local first_line = true
   local blank_streak = 0
   for para in (t .. "\n"):gmatch("([^\n]*)\n") do
-    if is_code_card_line(para) then
+    if is_code_card_line(para) or is_hr_line(para) then
       blank_streak = 0
       if first_line then
         io.write(c.white .. "⬤\n")
         first_line = false
       end
+      -- HR e code-card: linha inteira, sem wrap nem prefixo de continuação.
       io.write(para .. "\n")
     else
       local trimmed = para:match("^%s*(.-)%s*$")
@@ -96,8 +106,8 @@ function M.ai_msg_stream(t)
   local w = core.tw() - 4
   local first_line = true
   for para in (t .. "\n"):gmatch("([^\n]*)\n") do
-    if is_code_card_line(para) then
-      -- Card de código: escrever a linha inteira (fundo + pad). Sem word-stream.
+    if is_code_card_line(para) or is_hr_line(para) then
+      -- Card de código ou HR: escrever a linha inteira. Sem word-stream.
       if first_line then
         io.write(c.white .. "⬤\n")
         first_line = false
