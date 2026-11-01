@@ -25,6 +25,7 @@ end
 
 local messages = require("ui.messages")
 local core = require("ui.core")
+local largura = require("ui.largura")
 
 local function strip_ansi(s) return (s:gsub("\27%[[0-9;]*m", "")) end
 local function count_glyph(s, g) return select(2, strip_ansi(s):gsub(g, "")) end
@@ -63,6 +64,18 @@ for _, tw in ipairs({ 40, 50, 54, 80 }) do
       local out = join_capture()
       local lines = lines_of(out)
       local hrs = hr_line_indices(lines)
+
+      -- Trava #356: nenhuma linha do output pode exceder tw colunas visuais.
+      -- Sem isto o spec e cego: o HR sai inteiro com tw glifos mesmo com o
+      -- defeito reintroduzido, e o remanescente e artefato do terminal
+      -- pelo overflow, nao ha "─" literal a mais na string.
+      local worst_w, worst_i = 0, 0
+      for i, ln in ipairs(lines) do
+        local wdt = largura.colunas(strip_ansi(ln))
+        if wdt > worst_w then worst_w, worst_i = wdt, i end
+      end
+      T(worst_w <= tw, string.format("[tw=%d %s %s] largura maxima=%d <= tw=%d (pior linha=%d)",
+        tw, md_hr, fn_name, worst_w, tw, worst_i))
 
       T(#hrs == 1, string.format("[tw=%d %s %s] exatamente 1 linha com ─", tw, md_hr, fn_name))
       if #hrs == 1 then
