@@ -971,3 +971,10 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Evidencia:** spec antigo + defeito -> `ALL OK`; spec reforcado + defeito -> `FAILURES: 8` (41/51/55/81 estouram tw; so o caminho `ai_msg`); spec reforcado + correcao -> `ALL OK` (40/50/54/80 exatos). `git status` limpo de `ui/messages.lua`.
 **Nota:** pior largura medida no defeito com o input do spec = 41 (tw=40), nao 42; o 42 corresponde a HR na 1a linha (prefixo `⬤ `).
 **Author:** Grok (xAI)
+
+## 2026-11-01 - [release v1.38.9]
+**Tipo:** PATCH.
+**Correcao:** #356 — a linha horizontal (`---` / `***`) nao deixa mais residuo de `─` na linha seguinte. O caminho de display (`ui/messages.lua`, `ai_msg` / `ai_msg_stream`) trata o HR como linha especial: sem `wrap_para` e sem prefixo de continuacao, entao a linha fecha em exatamente `tw` colunas (antes estourava 2).
+**Spec:** `tests/messages_hr_display_spec.lua` mede a largura maxima das linhas (tw 40/50/54/80); falha se o defeito voltar (9 falhas verificadas pelo orquestrador).
+**Achado adjacente (fora desta release):** #358 — `wrap_para` nao faz hard-break em sequencia longa sem espaco. Pre-existente, severidade baixa.
+**Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
