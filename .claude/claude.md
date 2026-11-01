@@ -954,3 +954,13 @@ Varredura token: memória e repo limpos; autonomia sem valor secreto.
 **Sensibilidade:** `✅` reinjetado em `commands/config/menus/flush.lua` -> scanner 0->1; restaurado -> 0. O instrumento mede de fato.
 **Observacao (fora do escopo, nao corrigida):** em `commands/config_cli/menus/tools.lua:89` e `:109` a mensagem de sucesso ("Todas as tools ...") sai em vermelho (`ui.RE`) — provavelmente cor trocada por engano; mudar seria alteracao de comportamento, entao ficou.
 **Author:** Ameno (orquestrador)
+
+## 2026-10-31 - [release v1.38.8]
+**Tipo:** PATCH.
+**Mensagens de status:** os avisos usam palavras em ingles (`[OK]`, `[FAIL]`, `[WARN]`, `[SEARCH]`) em vez de simbolos, em `ui/`, `channels/`, `providers/`, `agent/`, `tools/` e `commands/`. Helper unico `lib/result.lua`; o formato antigo saiu dos produtores e do contrato.
+**Regua dos menus:** `SEP2` mede o prefixo em colunas (`largura.colunas`), nao em bytes.
+**Contrato:** spec `tests/status_sem_simbolo_spec.lua` trava o criterio A (zero simbolos de status nos sete diretorios de producao).
+**Correcoes incluidas:** #338 (`web_search` volta a fazer fallback com `[FAIL]`), #341 (TTL da largura em `os.time`).
+**Pendencia de aparelho (nao medida aqui):** virada de tela, texto novo e regua sao para confirmar no celular.
+**Fora desta release:** o renderizador de cards em celulas (#306) sera refeito sobre a main atual.
+**Author:** Ameno (orquestrador) / Grok (xAI) (implementacao)
