@@ -5,6 +5,7 @@ local ENDPOINT_MAP = {
   ["openai-completions"]       = function(p, id) return p.baseUrl .. "/chat/completions", "bearer" end,
   ["google-generative-ai"]     = function(p, id) return p.baseUrl .. "/models/" .. id .. ":generateContent?key=" .. (p.apiKey or ""), "none" end,
   ["ollama"]                   = function(p, _)   return p.baseUrl .. "/api/chat", "none" end,
+  ["termai-navegador"]         = function(p, _)   return p.baseUrl .. "/chat/completions", "bearer" end,
   ["openai-codex-responses"]   = function(p, _)   return p.baseUrl .. "/responses", "bearer" end,
 }
 
