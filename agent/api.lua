@@ -18,7 +18,17 @@ M.RETRY_MAX    = 30
 
 -- Re-exports: interface pública delega para submódulos especializados.
 M.pensar_sync     = sync.pensar_sync
-M.pensar_stream   = stream.pensar_stream
+-- Provedor do navegador (ponte do Termavigator): não tem streaming, então usa o caminho
+-- síncrono, que já lê choices[1].message com tool_calls. Os demais provedores não mudam.
+local function pensar_stream_ou_ponte(ctx, txt, role)
+  if ctx.active and ctx.active.api_type == "termai-navegador" then
+    local content, reasoning, tool_calls = sync.pensar_sync(ctx, txt, role)
+    local overflow = type(content) == "string" and content:match("^%[ERRO_OVERFLOW") ~= nil
+    return content, overflow, true, reasoning, tool_calls
+  end
+  return stream.pensar_stream(ctx, txt, role)
+end
+M.pensar_stream   = pensar_stream_ou_ponte
 M.summarizar      = summarizer.summarizar
 M.estimate_tokens = utils.estimate_tokens
 
