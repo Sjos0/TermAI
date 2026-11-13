@@ -1,26 +1,14 @@
--- main_loop.lua — Fachada + Loop principal do agente.
--- Integra State Condensation (OpenHands-style) com resiliência total.
--- flush_msgs_start marca o início das mensagens NOVAS desta execução.
--- Tudo antes deste índice é histórico já arquivado — o flush não o processa.
+-- main_loop.lua — Orquestrador do ciclo principal do agente (fachada).
+-- Delega init de flush, idle/subagentes, handlers e router a módulos em agent/main_loop/.
 -- Interface pública: M.run(ctx)
-local ui          = require("ui")
-local api         = require("agent.api")
-local ag_loop     = require("agent.loop")
+local ui             = require("ui")
+local api            = require("agent.api")
+local ag_loop        = require("agent.loop")
 local harness_gancho = require("agent.harness")
-local input_mod   = require("ui.input")
-local restart_mod = require("agent.restart")
-local session     = require("session")
-local subagents   = require("tools.subagents")
-local scheduler   = require("tools.subagents.scheduler")
-local sub_block   = require("ui.subagent_block")
-
--- Mesmo prompt de ui/input.lua (o bloco reimprime o prompt ao redesenhar).
-local PROMPT_TEXT = "\27[1m\27[38;5;39m❯\27[0m "
-
--- Polling de teclado só faz sentido com terminal; em pipe, nil seria EOF.
-local function is_tty()
-  return os.execute("test -t 0") == true
-end
+local input_mod      = require("ui.input")
+local restart_mod    = require("agent.restart")
+local subagents      = require("tools.subagents")
+local sub_block      = require("ui.subagent_block")
 
 local timestamp    = require("agent.main_loop.timestamp")
 local persistence  = require("agent.main_loop.persistence")
@@ -28,74 +16,56 @@ local compaction_h = require("agent.main_loop.compaction_handler")
 local flush_h      = require("agent.main_loop.flush_handler")
 local commands_r   = require("agent.main_loop.commands_router")
 local overflow_h   = require("agent.main_loop.overflow_handler")
+local flush_init   = require("agent.main_loop.flush_init")
+local idle_poll    = require("agent.main_loop.idle_poll")
+
+-- Mesmo prompt de ui/input.lua (o bloco reimprime o prompt ao redesenhar).
+local PROMPT_TEXT = "\27[1m\27[38;5;39m❯\27[0m "
+
+local function is_tty()
+  return os.execute("test -t 0") == true
+end
 
 local M = {}
 
 function M.run(ctx)
-  -- Lógica de inicialização do Harness Inteligente (com proteção contra sessões legadas)
-  local saved_idx = session.get_flush_index and session.get_flush_index() or nil
-  local flush_msgs_start
-
-  if saved_idx then
-    -- Sessão possui estado de flush salvo (Continua de onde parou)
-    flush_msgs_start = saved_idx + 1
-  elseif #ctx.msgs > 0 then
-    -- Sessão legado (tem mensagens, mas nunca salvou índice).
-    -- Trava contra "Sandbox Blowout": Pega apenas as últimas 15 mensagens para não travar a API.
-    flush_msgs_start = math.max(1, #ctx.msgs - 15)
-  else
-    -- Sessão nova e vazia
-    flush_msgs_start = #ctx.msgs + 1
-  end
+  local flush_msgs_start = flush_init.compute(ctx)
 
   while true do
-
-    -- 1. AUTO-COMPACTION (State Condensation)
     local comp = compaction_h.handle(ctx, flush_msgs_start)
     flush_msgs_start = comp.flush_msgs_start
 
     if restart_mod.check() then goto continue end
 
-    -- 2. LER INPUT DO USUÁRIO (com bloco de subagentes ao vivo; acorda quando um terminar)
-    local last_tick = 0
-    local function on_idle(buffer_empty)
-      if os.time() - last_tick >= 2 then
-        last_tick = os.time()
-        pcall(scheduler.tick, ctx.cfg)
-      end
-      sub_block.flush(ctx.agent_id, buffer_empty, PROMPT_TEXT)
-      return buffer_empty and subagents.has_pending(ctx)
-    end
+    local on_idle = idle_poll.make_on_idle(ctx, PROMPT_TEXT)
     sub_block.flush(ctx.agent_id, true, nil)
     local input, pasted_texts, raw_input, wake =
       input_mod.read(is_tty() and { on_idle = on_idle } or nil)
     if wake then
-      input      = ""
-      raw_input  = "[sistema] Os subagentes terminaram. Leia as mensagens do sistema e continue."
+      input        = ""
+      raw_input    = "[sistema] Os subagentes terminaram. Leia as mensagens do sistema e continue."
       pasted_texts = {}
     end
     if not input then
       local active = subagents.active_count(ctx)
       if active > 0 then
         require("tools.subagents.control").matar_todos(ctx)
-        print(string.format("\n%d subagente(s) encerrado(s) ao sair; o trabalho parcial fica salvo.", active))
+        print(string.format(
+          "\n%d subagente(s) encerrado(s) ao sair; o trabalho parcial fica salvo.", active))
       end
       print("\nSaindo..."); break
     end
     if input == "" and not wake then goto continue end
 
-    -- 3. MEMORY FLUSH PRÉ-INPUT (Contexto Isolado com conteúdo BRUTO)
     local fl = flush_h.handle(ctx, raw_input, flush_msgs_start)
     flush_msgs_start = fl.flush_msgs_start
 
-    -- 4. ROTEAMENTO DE COMANDOS (com a versão placeholder)
     local cmd = commands_r.route(input, ctx, flush_msgs_start)
     local display_input = cmd.input or input
     flush_msgs_start = cmd.flush_msgs_start or flush_msgs_start
     if cmd.action == "continue" then goto continue end
     if cmd.action == "break"    then break end
 
-    -- 5. INPUT NORMAL (Imprime na TUI a versão compacta com metadados)
     ui.user_msg(display_input, pasted_texts)
 
     local ts            = timestamp.capture()
@@ -106,10 +76,8 @@ function M.run(ctx)
       ag_loop.rodar(ctx, stamped_input, "user")
 
     local end_time = timestamp.to_hhmm(timestamp.capture())
-    -- Harness² (Fase 1): gancho depois do turno; sem efeito com a opção desligada
     pcall(harness_gancho.depois_do_turno, { completo = stream_complete ~= false })
 
-    -- Aviso se o stream foi cortado por timeout (resposta incompleta)
     if stream_complete == false and not is_overflow then
       io.write("\n\27[38;5;220m[WARN] Resposta incompleta — o stream foi cortado"
         .. " (timeout de " .. api.CURL_TIMEOUT .. "s).\27[0m\n")
@@ -118,7 +86,6 @@ function M.run(ctx)
       io.flush()
     end
 
-    -- 6. RECUPERAÇÃO DE OVERFLOW COM RESILIÊNCIA
     if is_overflow then
       local ov = overflow_h.handle(ctx, stamped_input, msgs_before, flush_msgs_start)
       msgs_before      = ov.msgs_before
@@ -131,13 +98,12 @@ function M.run(ctx)
       end_time         = ov.end_time
     end
 
-      local save_input = "[" .. ts .. "] " .. input
-      local before = persistence.adjust_before(ctx, msgs_before, stamped_input)
-      persistence.save_exchange(ctx, before, reasoning, save_input, ctx.tokens_fresh, pasted_texts, stream_complete)
+    local save_input = "[" .. ts .. "] " .. input
+    local before = persistence.adjust_before(ctx, msgs_before, stamped_input)
+    persistence.save_exchange(
+      ctx, before, reasoning, save_input, ctx.tokens_fresh, pasted_texts, stream_complete)
     ui.footer(ctx.tokens, ctx.active.context_window, elapsed, end_time)
 
-    -- Verifica restart imediato pós-resposta (ex: agente usou a tool restart nativa)
-    -- Sem isso, o restart só ocorre no próximo ciclo, após o usuário digitar algo.
     restart_mod.check()
     ::continue::
   end
