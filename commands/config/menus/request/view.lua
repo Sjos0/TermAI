@@ -72,6 +72,7 @@ function M.print_options()
   io.write("  "..c.white.."7."..c.reset.."  Reasoning Effort (OpenRouter) "..c.dim.."(6 níveis — só afeta modelos com reasoning_style=openrouter)"..c.reset.."\n")
   io.write("  "..c.white.."8."..c.reset.."  Idioma do Agente      "..c.dim.."(Português / English / Español)"..c.reset.."\n")
   io.write("  "..c.white.."9."..c.reset.."  Thinking Effort (OpenCode Zen) "..c.dim.."(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)"..c.reset.."\n")
+  io.write("  "..c.white.."10."..c.reset.." Fallback (API Keys, modelos e transparência)\n")
   io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
 end
 

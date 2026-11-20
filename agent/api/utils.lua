@@ -35,6 +35,17 @@ local function build_auth(active)
   return ""
 end
 
+local function redact_endpoint(endpoint)
+  return tostring(endpoint or ""):gsub("([?&]key=)[^&]+", "%1[REDACTED]")
+end
+
+local function redact_secret(value, secret)
+  local text = tostring(value or "")
+  if not secret or secret == "" then return text end
+  local pattern = tostring(secret):gsub("([^%w])", "%%%1")
+  return (text:gsub(pattern, "[REDACTED]"))
+end
+
 local function wait_time(attempt, rcfg)
   if rcfg.mode == "static" then
     return rcfg.static
@@ -96,6 +107,8 @@ end
 
 M.get_req_cfg         = get_req_cfg
 M.build_auth          = build_auth
+M.redact_endpoint     = redact_endpoint
+M.redact_secret       = redact_secret
 M.wait_time           = wait_time
 M.is_overflow_error   = is_overflow_error
 M.strip_thinking_tags = strip_thinking_tags

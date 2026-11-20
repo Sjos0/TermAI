@@ -44,6 +44,7 @@ return function(M, N)
       io.write("  "..ui.B.."7."..ui.R.."  Alterar wait timeout       "..ui.DM.."(padrao: 25s | buffer)"..ui.R.."\n")
       io.write("  "..ui.B.."8."..ui.R.."  Reasoning Effort (OpenRouter) "..ui.DM.."(6 níveis — só afeta modelos com reasoning_style=openrouter)"..ui.R.."\n")
       io.write("  "..ui.B.."9."..ui.R.."  Thinking Effort (OpenCode Zen) "..ui.DM.."(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)"..ui.R.."\n")
+      io.write("  "..ui.B.."10."..ui.R.." Fallback (API Keys, modelos e transparência)\n")
       io.write("  "..ui.B.."0."..ui.R.."  Voltar\n\n")
       local ch = ui.rdl("Escolha")
       if ui.cancel(ch) then break end
@@ -87,6 +88,8 @@ return function(M, N)
         sub.reasoning_effort(config_mod, ui)
       elseif ch == "9" then
         sub.thinking_effort(config_mod, ui)
+      elseif ch == "10" then
+        require("commands.config_cli.menus.request.fallback").run(config_mod, ui)
       end
     end
   end

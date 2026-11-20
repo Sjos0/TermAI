@@ -25,6 +25,7 @@ function M.run(ctx)
     elseif ch == "7" then actions.change_reasoning_effort(ctx)
     elseif ch == "8" then actions.change_language(ctx)
     elseif ch == "9" then actions.change_thinking_effort(ctx)
+    elseif ch == "10" then actions.fallback(ctx)
     end
   end
 end

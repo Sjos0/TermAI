@@ -45,7 +45,9 @@ function M.add_provider(data)
   if not data.id then return false, "ID do provedor obrigatório" end
   d.providers[data.id] = {
     baseUrl = data.baseUrl,
-    apiKey  = data.apiKey,
+    apiKey  = data.apiKey or "",
+    apiKeys = data.apiKeys or (data.apiKey and data.apiKey ~= "" and {{ key = data.apiKey }} or {}),
+    activeKeyIndex = 1,
     api     = data.api,
     models  = data.models or {},
   }
@@ -65,9 +67,24 @@ function M.remove_provider(provider_id)
 end
 
 function M.update_api_key(provider_id, key)
-  local d = store.data()
-  local provider = d.providers[provider_id]
+  local provider = store.data().providers[provider_id]
   if not provider then return false, "Provedor não encontrado" end
+  if type(key) ~= "string" or key:match("^%s*$") then
+    return false, "API Key não pode ficar vazia"
+  end
+  key = key:match("^%s*(.-)%s*$")
+  local safe, invalid_char = require("agent.security").is_safe(key)
+  if not safe then
+    return false, "API Key contém caractere não permitido: " .. tostring(invalid_char)
+  end
+  store.normalize_provider(provider)
+  local keys, active = provider.apiKeys, provider.activeKeyIndex
+  for i, item in ipairs(keys) do
+    if i ~= active and item.key == key then
+      return false, "Esta API Key já está cadastrada em outra posição"
+    end
+  end
+  keys[active] = { key = key }
   provider.apiKey = key
   return store.save()
 end

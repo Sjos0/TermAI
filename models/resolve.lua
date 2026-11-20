@@ -1,4 +1,5 @@
 local store = require("models.store")
+local keys = require("models.keys")
 local M = {}
 
 local ENDPOINT_MAP = {
@@ -66,6 +67,10 @@ function M.resolve(ref)
   local api_type = model.api or provider.api or "openai-completions"
   local builder = ENDPOINT_MAP[api_type] or ENDPOINT_MAP["openai-completions"]
   local endpoint, auth_style = builder(provider, model_id)
+  local api_key, api_key_index, api_key_count = keys.active(provider_id)
+  if api_type == "google-generative-ai" then
+    endpoint = provider.baseUrl .. "/models/" .. model_id .. ":generateContent?key=" .. (api_key or "")
+  end
 
   -- Prioridade do reasoning_style: 1) o que está salvo no modelo (inclusive
   -- herdado do catálogo curado pelo merge acima), 2) o padrão do PROVEDOR
@@ -80,7 +85,9 @@ function M.resolve(ref)
     model_id         = model_id,
     name             = model.name or model_id,
     endpoint         = endpoint,
-    api_key          = provider.apiKey or "",
+    api_key          = api_key or provider.apiKey or "",
+    api_key_index    = api_key_index or 1,
+    api_key_count    = api_key_count or 0,
     api_type         = api_type,
     auth_style       = auth_style,
     max_tokens       = model.maxTokens or 4096,

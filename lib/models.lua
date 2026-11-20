@@ -1,7 +1,8 @@
-local store  = require("models.store")
+local store   = require("models.store")
 local resolve = require("models.resolve")
-local list   = require("models.list")
-local crud   = require("models.crud")
+local list    = require("models.list")
+local crud    = require("models.crud")
+local keys    = require("models.keys")
 local M = {}
 
 M.load            = store.load
@@ -17,5 +18,13 @@ M.add_provider    = crud.add_provider
 M.remove_provider = crud.remove_provider
 M.update_api_key  = crud.update_api_key
 M.update_model    = crud.update_model
+M.list_api_keys   = keys.list
+M.active_api_key  = keys.active
+M.add_api_key     = keys.add
+M.remove_api_key  = keys.remove
+M.set_active_api_key = keys.set_active
+M.rotate_api_key  = keys.rotate
+M.record_api_key  = keys.record
+M.replace_api_keys = keys.replace
 
 return M
