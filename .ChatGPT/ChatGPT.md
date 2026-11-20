@@ -32,7 +32,8 @@ Versão canônica mantida: `1.39.0` (sem bump nesta feature PR)
 
 - Issue: #368 — Multi-API-key por provedor + Micro Fallback
 - Branch: `feature/368-multi-api-key-micro-fallback`
-- Pull Request: a registrar após abertura
+- Pull Request: [#369](https://github.com/Sjos0/TermAI/pull/369)
+- Commit de implementação: `783d0e4`
 - Fonte canônica da versão: `VERSION`
 
 ### Escopo
