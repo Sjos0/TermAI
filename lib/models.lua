@@ -23,7 +23,8 @@ M.active_api_key  = keys.active
 M.add_api_key     = keys.add
 M.remove_api_key  = keys.remove
 M.set_active_api_key = keys.set_active
-M.rotate_api_key  = keys.rotate
+M.preview_api_key_rotation = keys.preview_rotation
+M.commit_api_key_rotation = keys.commit_rotation
 M.record_api_key  = keys.record
 M.replace_api_keys = keys.replace
 

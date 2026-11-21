@@ -31,7 +31,7 @@ local function find_builtin_provider(provider_id)
   return providers_mod.get(provider_id)
 end
 
-function M.resolve(ref)
+function M.resolve(ref, api_key_index)
   local d = store.data()
   ref = ref or d.active
   if not ref or ref == "" then return nil, "Nenhum modelo ativo" end
@@ -67,7 +67,10 @@ function M.resolve(ref)
   local api_type = model.api or provider.api or "openai-completions"
   local builder = ENDPOINT_MAP[api_type] or ENDPOINT_MAP["openai-completions"]
   local endpoint, auth_style = builder(provider, model_id)
-  local api_key, api_key_index, api_key_count = keys.active(provider_id)
+  local api_key, resolved_key_index, api_key_count = keys.active(provider_id, api_key_index)
+  if api_key_index ~= nil and not api_key then
+    return nil, "Índice de API Key inválido para o provedor"
+  end
   if api_type == "google-generative-ai" then
     endpoint = provider.baseUrl .. "/models/" .. model_id .. ":generateContent?key=" .. (api_key or "")
   end
@@ -86,7 +89,7 @@ function M.resolve(ref)
     name             = model.name or model_id,
     endpoint         = endpoint,
     api_key          = api_key or provider.apiKey or "",
-    api_key_index    = api_key_index or 1,
+    api_key_index    = resolved_key_index or 1,
     api_key_count    = api_key_count or 0,
     api_type         = api_type,
     auth_style       = auth_style,

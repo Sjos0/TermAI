@@ -59,3 +59,11 @@ A revisão da PR #369 não encontrou defeito funcional bloqueante confirmado. Os
 Validação local: 143 specs Lua passaram, além do teste PTY, sintaxe de todos os arquivos Lua e `git diff --check`. O benchmark `tests/benchmark_bolt.lua` foi omitido da rodada local por custo de CPU; permanece incluído no workflow do GitHub Actions.
 
 Estado: PR #369 aberta, sem merge; `VERSION` continua `1.39.0`, sem bump de feature.
+
+---
+
+## Atualização pós Code Review — consistência da rotação (#369)
+
+O residual apontado pelo Code Review foi corrigido na mesma branch/PR. A rotação agora é transacional em duas fases: `models.keys.rotation.preview` calcula a próxima chave sem persistir/mutar o índice ativo; `models.resolve(ref, candidate_index)` resolve endpoint e credenciais usando essa chave candidata; somente após resolução bem-sucedida `commit_rotation` persiste o novo índice. Se a resolução falhar, não há commit nem mudança no estado ativo. Se o save falhar, o estado em memória é restaurado; se outra operação tiver mudado o índice ativo desde a prévia, o commit obsoleto é recusado.
+
+Testes acrescentados/ajustados em `models_keys_spec`, `key_rotation_spec` e `request_sync_key_rotation_spec`, cobrindo preview sem mutação, resolução inválida, commit bem-sucedido, falha de persistência, proteção contra commit obsoleto, Google query endpoint e caminho síncrono.

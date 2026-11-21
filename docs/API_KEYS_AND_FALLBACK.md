@@ -5,6 +5,7 @@
 Cada provedor em `~/.TermAI/agents/main/agent/models.json` aceita `apiKeys`, uma lista ordenada de objetos `{ key, last_ok, last_error_at }`, além de `activeKeyIndex`. O campo legado `apiKey` continua sendo mantido como espelho da chave ativa para compatibilidade com integrações antigas. Na primeira carga, uma configuração que tenha somente `apiKey` é normalizada para uma lista de uma chave e gravada novamente. Chaves vazias e duplicadas são descartadas durante a normalização.
 
 A ordem da lista determina a ordem de rotação. A chave ativa e os timestamps mínimos de sucesso/falha são persistidos; metadados de saúde só são gravados quando o estado muda ou, em estado contínuo, no máximo uma vez por dia por chave, evitando escrita em disco a cada requisição. O arquivo de provedores é salvo por substituição atômica para evitar JSON parcialmente gravado em processos concorrentes. Segredos nunca são impressos, e a interface mostra apenas os últimos quatro caracteres.
+A rotação usa duas fases: `preview_api_key_rotation` calcula a próxima chave sem alterar o índice ativo; `models.resolve(ref, candidate_index)` resolve o modelo/endpoint usando explicitamente essa chave candidata; somente depois `commit_api_key_rotation` persiste o novo índice. Se a resolução falhar, o estado ativo permanece intacto; se a gravação falhar ou o índice ativo tiver mudado desde a prévia, a troca é recusada e o contexto da requisição não avança.
 
 ## Ordem de recuperação
 

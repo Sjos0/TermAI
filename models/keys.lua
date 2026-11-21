@@ -1,4 +1,5 @@
 local store = require("models.store")
+local rotation = require("models.keys.rotation")
 local M = {}
 
 local function provider_for(provider_id)
@@ -24,10 +25,15 @@ function M.list(provider_id)
   return result
 end
 
-function M.active(provider_id)
+function M.active(provider_id, requested_index)
   local provider = provider_for(provider_id)
   if not provider then return nil, nil, 0 end
-  local keys, index = normalize(provider)
+  local keys, active_index = normalize(provider)
+  local index = active_index
+  if requested_index ~= nil then index = tonumber(requested_index) end
+  if not index or index % 1 ~= 0 or index < 1 or index > #keys then
+    return nil, nil, #keys
+  end
   local item = keys[index]
   return item and item.key or "", index, #keys
 end
@@ -92,18 +98,8 @@ function M.set_active(provider_id, index)
   return store.save()
 end
 
-function M.rotate(provider_id, current_index)
-  local provider = provider_for(provider_id)
-  if not provider then return nil, nil, 0 end
-  local keys, active_index = normalize(provider)
-  if #keys < 2 then return nil, active_index, #keys end
-  local current = tonumber(current_index) or active_index
-  local next_index = (current % #keys) + 1
-  provider.activeKeyIndex = next_index
-  provider.apiKey = keys[next_index].key
-  if not store.save() then return nil, nil, #keys end
-  return provider.apiKey, next_index, #keys
-end
+M.preview_rotation = rotation.preview
+M.commit_rotation = rotation.commit
 
 function M.record(provider_id, index, success)
   local provider = provider_for(provider_id)

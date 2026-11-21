@@ -5,6 +5,7 @@ local response_index = 0
 local writes = {}
 local records = {}
 local error_records = 0
+local rotation_events = {}
 
 package.loaded.json = {
   decode = function(body)
@@ -38,13 +39,20 @@ package.loaded.models = {
   record_api_key = function(provider, index, success)
     records[#records + 1] = { provider = provider, index = index, success = success }
   end,
-  rotate_api_key = function(provider, index)
+  preview_api_key_rotation = function(provider, index)
     assert(provider == "provider-a" and index == 1)
-    return "key-two", 2, 2
+    rotation_events[#rotation_events + 1] = "preview"
+    return "key-two", 2, 2, 1
   end,
-  resolve = function(ref)
+  resolve = function(ref, key_index)
+    rotation_events[#rotation_events + 1] = "resolve"
+    assert(key_index == 2, "resolve must build the candidate using the preview key")
     return { ref = ref, provider = "provider-a", api_key = "key-two",
       api_key_index = 2, api_key_count = 2, endpoint = "https://example.invalid", auth_style = "bearer" }
+  end,
+  commit_api_key_rotation = function(provider, index, previous)
+    rotation_events[#rotation_events + 1] = "commit"
+    return provider == "provider-a" and index == 2 and previous == 1
   end,
 }
 
@@ -77,5 +85,7 @@ assert(ctx.active.api_key_index == 2 and ctx.active.api_key == "key-two", "conte
 assert(#records == 2 and records[1].success == false and records[2].success == true,
   "failure and success health metadata should be recorded")
 assert(error_records == 1, "failed key attempt should be recorded")
+assert(table.concat(rotation_events, ",") == "preview,resolve,commit",
+  "sync recovery must resolve the candidate before persisting the active key")
 assert(#writes == 2, "payload should be sent once for each key")
-print("REQUEST SYNC KEY ROTATION: 6 assertions passed")
+print("REQUEST SYNC KEY ROTATION: 7 assertions passed")

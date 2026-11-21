@@ -33,16 +33,47 @@ T("second key is added", second == true and #models.list_api_keys("spec-provider
 local resolved = models.resolve("spec-provider/spec-model")
 T("model resolution exposes active key and count", resolved.api_key == "key-one-123"
   and resolved.api_key_index == 1 and resolved.api_key_count == 2)
+T("candidate resolution rejects invalid key indices",
+  models.resolve("spec-provider/spec-model", 99) == nil)
 local unsafe = models.add_api_key("spec-provider", "bad\"; rm -rf /")
 T("unsafe key input is rejected", unsafe == false)
 
-local rotated, index, total = models.rotate_api_key("spec-provider", 1)
-T("rotation advances to next key", rotated == "key-two-456" and index == 2 and total == 2)
+local rotated, index, total, previous_index = models.preview_api_key_rotation("spec-provider", 1)
+T("rotation previews next key without mutating active state",
+  rotated == "key-two-456" and index == 2 and total == 2 and previous_index == 1)
 local active, active_index = models.active_api_key("spec-provider")
-T("rotation persists active key", active == "key-two-456" and active_index == 2)
+T("preview leaves persisted active key unchanged", active == "key-one-123" and active_index == 1)
+local preview = models.resolve("spec-provider/spec-model", index)
+T("model resolution can preview the next key", preview.api_key == "key-two-456"
+  and preview.api_key_index == 2)
+local invalid_preview = models.resolve("spec-provider/missing-model", index)
+local unchanged_key, unchanged_index = models.active_api_key("spec-provider")
+T("failed candidate resolution leaves active key unchanged",
+  invalid_preview == nil and unchanged_key == "key-one-123" and unchanged_index == 1)
+T("rotation commit succeeds after resolution",
+  models.commit_api_key_rotation("spec-provider", index, previous_index) == true)
+active, active_index = models.active_api_key("spec-provider")
+T("committed rotation persists active key", active == "key-two-456" and active_index == 2)
 resolved = models.resolve("spec-provider/spec-model")
-T("model resolution follows rotated key", resolved.api_key == "key-two-456"
+T("model resolution follows committed key", resolved.api_key == "key-two-456"
   and resolved.api_key_index == 2)
+local failed_preview, failed_index, _, failed_previous = models.preview_api_key_rotation("spec-provider", 2)
+local save_before_failure = store.save
+store.save = function() return false end
+local commit_failed = models.commit_api_key_rotation("spec-provider", failed_index, failed_previous)
+store.save = save_before_failure
+active, active_index = models.active_api_key("spec-provider")
+T("failed rotation persistence restores in-memory active key",
+  failed_preview == "key-one-123" and commit_failed == false
+  and active == "key-two-456" and active_index == 2)
+local stale_preview, stale_index, _, stale_previous = models.preview_api_key_rotation("spec-provider", 2)
+models.set_active_api_key("spec-provider", 1)
+local stale_commit = models.commit_api_key_rotation("spec-provider", stale_index, stale_previous)
+active, active_index = models.active_api_key("spec-provider")
+T("stale rotation cannot overwrite a newer active-key selection",
+  stale_preview == "key-one-123" and stale_commit == false
+  and active == "key-one-123" and active_index == 1)
+models.set_active_api_key("spec-provider", 2)
 
 models.record_api_key("spec-provider", 2, true)
 keys = models.list_api_keys("spec-provider")
@@ -114,9 +145,14 @@ local google_added = models.add_provider({
 models.add_api_key("google", "google-key-two")
 local google_active = models.resolve("google/gemini-test")
 T("Google endpoint uses active key", google_added and google_active.endpoint:find("key=google-key-one", 1, true) ~= nil)
-models.rotate_api_key("google", 1)
+local google_next, google_index, _, google_previous = models.preview_api_key_rotation("google", 1)
+local google_preview = models.resolve("google/gemini-test", google_index)
+T("Google endpoint previews the next key", google_next == "google-key-two"
+  and google_preview.endpoint:find("key=google-key-two", 1, true) ~= nil)
+T("Google rotation commits only after preview resolution",
+  models.commit_api_key_rotation("google", google_index, google_previous) == true)
 google_active = models.resolve("google/gemini-test")
-T("Google endpoint updates after rotation", google_active.endpoint:find("key=google-key-two", 1, true) ~= nil)
+T("Google endpoint updates after committed rotation", google_active.endpoint:find("key=google-key-two", 1, true) ~= nil)
 
 os.remove(store.PATH)
 os.execute("rmdir " .. dir .. " 2>/dev/null")

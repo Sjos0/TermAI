@@ -41,11 +41,14 @@ end
 
 function M.rotate(models_mod, ctx)
   local active = ctx.active
-  local key, index, total = models_mod.rotate_api_key(
+  local key, index, total, previous_index = models_mod.preview_api_key_rotation(
     active.provider, active.api_key_index)
   if not key then return false end
-  local resolved = models_mod.resolve(active.ref)
+  local resolved = models_mod.resolve(active.ref, index)
   if not resolved then return false end
+  local committed = models_mod.commit_api_key_rotation(
+    active.provider, index, previous_index)
+  if not committed then return false end
   ctx.active = resolved
   if transparency_enabled(ctx) then
     local ok, spinner = pcall(require, "ui.spinner")

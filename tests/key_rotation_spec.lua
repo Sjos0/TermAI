@@ -31,15 +31,19 @@ T("record skips nil active", recorded == "untouched")
 -- --- rotate ---
 local rotated = false
 local models_rotate = {
-  rotate_api_key = function(provider, index)
+  preview_api_key_rotation = function(provider, index)
     rotated = provider == "provider-a" and index == 1
-    return "second-secret", 2, 2
+    return "second-secret", 2, 2, 1
   end,
-  resolve = function(ref)
+  resolve = function(ref, key_index)
+    T("candidate resolution receives preview key index", key_index == 2)
     return {
       ref = ref, provider = "provider-a", api_key = "second-secret",
       api_key_index = 2, api_key_count = 2,
     }
+  end,
+  commit_api_key_rotation = function(provider, index, previous)
+    return provider == "provider-a" and index == 2 and previous == 1
   end,
 }
 local ctx = {
@@ -54,18 +58,41 @@ T("context switches to next key", rotated
   and ctx.active.api_key == "second-secret" and ctx.active.api_key_index == 2)
 
 local models_no_next = {
-  rotate_api_key = function() return nil, 1, 1 end,
+  preview_api_key_rotation = function() return nil, 1, 1 end,
   resolve = function() return { api_key = "only" } end,
+  commit_api_key_rotation = function() return true end,
 }
 ctx.active = { ref = "p/m", provider = "p", api_key_index = 1, api_key_count = 1 }
 T("rotate returns false when no next key", rotation.rotate(models_no_next, ctx) == false)
 
+local resolve_commit_called, resolve_failed_index = false, nil
 local models_resolve_nil = {
-  rotate_api_key = function() return "k", 2, 2 end,
-  resolve = function() return nil end,
+  preview_api_key_rotation = function() return "k", 2, 2, 1 end,
+  resolve = function(_, key_index) resolve_failed_index = key_index; return nil end,
+  commit_api_key_rotation = function()
+    resolve_commit_called = true
+    return true
+  end,
 }
 ctx.active = { ref = "p/m", provider = "p", api_key_index = 1, api_key_count = 2 }
 T("rotate returns false when resolve fails", rotation.rotate(models_resolve_nil, ctx) == false)
+T("resolve failure uses the preview index", resolve_failed_index == 2)
+T("resolve failure never commits the active-key index", resolve_commit_called == false)
+
+local persistence_commit_called = false
+local models_commit_failure = {
+  preview_api_key_rotation = function() return "k", 2, 2, 1 end,
+  resolve = function() return { api_key = "k", api_key_index = 2 } end,
+  commit_api_key_rotation = function()
+    persistence_commit_called = true
+    return false
+  end,
+}
+ctx.active = { ref = "p/m", provider = "p", api_key_index = 1, api_key_count = 2 }
+T("rotate returns false when persistence fails",
+  rotation.rotate(models_commit_failure, ctx) == false)
+T("failed commit does not switch request context",
+  persistence_commit_called and ctx.active.api_key_index == 1)
 
 -- transparency message is routed through the shared spinner UI
 local notice = nil
@@ -75,9 +102,12 @@ package.loaded["ui.spinner"] = {
   end,
 }
 local models_t = {
-  rotate_api_key = function() return "k2", 2, 3 end,
-  resolve = function(ref)
-    return { ref = ref, provider = "prov", api_key = "k2", api_key_index = 2, api_key_count = 3 }
+  preview_api_key_rotation = function() return "k2", 2, 3, 1 end,
+  resolve = function(ref, key_index)
+    return { ref = ref, provider = "prov", api_key = "k2", api_key_index = key_index, api_key_count = 3 }
+  end,
+  commit_api_key_rotation = function(provider, index, previous)
+    return provider == "prov" and index == 2 and previous == 1
   end,
 }
 ctx = {
