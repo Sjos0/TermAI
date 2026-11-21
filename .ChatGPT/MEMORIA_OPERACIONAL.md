@@ -72,3 +72,17 @@ O TermAI já adotou a primeira fatia desses padrões: execução headless e isol
 - Executar verificações de sintaxe e testes relevantes antes de commit.
 - Commits convencionais, focados e com documentação correspondente.
 - Manter mudanças operacionais em scripts/automation/, não em arquivos soltos fora do repositório.
+
+## Multi-API-key e fallback em camadas (Issue #368)
+
+- Cada provedor suporta `apiKeys` (lista ordenada), `activeKeyIndex` e metadados de último sucesso/falha; `apiKey` singular permanece como espelho compatível.
+- A migração ocorre automaticamente na carga de `models.json`, preservando configurações legadas.
+- O micro fallback percorre as chaves do mesmo provedor usando `agents.defaults.request.max_retries` e os intervalos já existentes; falhas não retryable não repetem a chave, mas ainda podem avançar para a próxima. O caminho síncrono de recuperação aplica a mesma política e, esgotadas as chaves, chama o macro fallback.
+- Somente após esgotar as chaves, o macro fallback percorre `agents.defaults.model.fallbacks` na ordem configurada, inclusive referências para outros provedores. Ao esgotar a lista, mantém-se o fluxo de erro final da TUI.
+- A gestão está em `/config` → Requisições → Fallback (opção 10), na TUI e na CLI: CRUD, teste sequencial, lista de modelos fallback e transparência de rotação.
+- Diagnósticos mascaram chaves e removem o parâmetro `key` de endpoints Google antes de registrar logs. Testes específicos em `tests/models_keys_spec.lua`, `tests/key_rotation_spec.lua` e `tests/micro_fallback_security_spec.lua`.
+- Documento técnico: `docs/API_KEYS_AND_FALLBACK.md`. A versão de release não é incrementada em feature PRs; o bump fica em PR de release dedicada, conforme histórico de PRs.
+- Revisão do Bugs Hunter na PR #369 (2026-11-21): aviso de rotação integrado ao bloco compartilhado de status/spinner; timestamps de saúde compactados para `DD/MM/AAAA HH:MM UTC`; mensagens de teste de conexão sanitizadas contra controles ANSI/terminal e com redaction da chave aplicada após sanitização. Provedores sem credencial preservam uma única rodada sem autenticação.
+- Validação pós-correção: 143 specs Lua, teste PTY, sintaxe Lua e `git diff --check` passaram localmente. `tests/benchmark_bolt.lua` não foi executado na rodada local por custo de CPU e continua coberto pelo workflow CI.
+
+- Code Review residual da PR #369 (2026-11-21) corrigido: rotação em duas fases (preview sem mutação → resolve com índice candidato → commit persistido). Falha de resolução não avança `activeKeyIndex`; falha de save restaura estado em memória; commit obsoleto não sobrescreve alteração concorrente. Testes cobrem esses caminhos, incluindo endpoint Google e recuperação síncrona.

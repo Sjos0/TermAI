@@ -10,5 +10,6 @@ return function(M)
   N.api = api
   N.saver = saver
   N.c = c
+  M.fallback = require("commands.config.menus.request.fallback").run
   return N
 end

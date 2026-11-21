@@ -32,14 +32,14 @@ local function update_key(models_mod)
     io.write("  4. Copie seu Token de Acesso (Bearer Token)\n\n")
   end
 
-  local new_key = ui.prompt_read("Nova API Key/Token")
+  local new_key = ui.prompt_read("Nova API Key/Token (substitui a ativa e preserva as demais)")
   if ui.is_cancel(new_key) or new_key == "" then
     io.write(c.gray .. "  Cancelado.\n" .. c.reset); return
   end
 
   local ok, err = models_mod.update_api_key(provider.id, new_key)
   if ok then
-    io.write(c.green .. "  [OK] API Key/Token atualizada.\n" .. c.reset)
+    io.write(c.green .. "  [OK] Chave ativa atualizada; as demais foram preservadas.\n" .. c.reset)
     test_connection.test_and_confirm(models_mod, provider.id)
   else
     io.write(c.red .. "  Erro: " .. tostring(err) .. "\n" .. c.reset)

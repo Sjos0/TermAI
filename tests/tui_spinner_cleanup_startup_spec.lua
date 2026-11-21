@@ -26,13 +26,16 @@ end
 -- 1. Flags e payloads legados (sem pid no nome) são removidos.
 write_file(dir .. "/ta_inject.flag", "1")
 write_file(dir .. "/termai_stream.flag", "1")
-write_file(dir .. "/ta_payload_123_1", "{}") -- owner 123 morto
+local payload_owner = 999990
+while alive(payload_owner) do payload_owner = payload_owner + 1 end
+local payload_path = dir .. "/ta_payload_" .. payload_owner .. "_1"
+write_file(payload_path, "{}") -- owner comprovadamente morto neste runner
 write_file(dir .. "/ta_spin.sh", "#!/bin/sh\n")
 
 launch.cleanup_startup()
 check(not exists(dir .. "/ta_inject.flag"), "cleanup_startup remove ta_inject.flag")
 check(not exists(dir .. "/termai_stream.flag"), "cleanup_startup remove termai_stream.flag")
-check(not exists(dir .. "/ta_payload_123_1"), "cleanup_startup remove payload de dono morto")
+check(not exists(payload_path), "cleanup_startup remove payload de dono morto")
 
 -- 2. Spinner de dono morto (ta_pid_<dead>): cleanup mata.
 local dead = "999990"

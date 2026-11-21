@@ -110,7 +110,7 @@ Hoje `ui/input.lua` lê com `io.read(1)` bloqueante. Enquanto o usuário não di
 
 | Situação | Comportamento |
 |---|---|
-| Requisição falha | O filho tenta com a configuração do usuário (`max_retries`, modo e espera) e usa os fallbacks de modelo, como o agente principal. Cada tentativa que falha vira um evento `retry` em `subagents_log`. |
+| Requisição falha | O filho usa a configuração do usuário (`max_retries`, modo e espera), tenta as API Keys do mesmo provedor em sequência (Micro Fallback) e só depois percorre os fallbacks de modelo/provedor, como o agente principal. Cada tentativa que falha vira um evento `retry` em `subagents_log`. |
 | Tentativas esgotadas | O run vira `failed` com o motivo (por exemplo `[ERRO] Falha apos 5 tentativas - ...`). Nunca vira `completed`. |
 | Stream cortado | O run vira `failed` com `partial=true`; o texto parcial fica em `result.txt` e o pai recebe o motivo e o parcial. |
 | Contexto estourou, resposta vazia | `failed` com o motivo. |
@@ -122,6 +122,10 @@ Hoje `ui/input.lua` lê com `io.read(1)` bloqueante. Enquanto o usuário não di
 | O pai recebe uma falha | O anúncio diz o motivo, inclui o parcial e orienta: tentar de novo (no máximo uma vez), assumir a tarefa ou avisar o usuário. |
 
 Cobertura: `tests/subagents_failures_spec.lua`.
+
+### Micro Fallback de API Keys (Issue #368)
+
+Subagentes e agente principal resolvem o mesmo pool de `apiKeys` por provedor em `models.json`. Cada processo aplica `agents.defaults.request.max_retries` e os intervalos existentes por chave; erros não retryable avançam para a próxima chave sem repetir a atual. O macro fallback (`agents.defaults.model.fallbacks`, refs `provider/model`) só é tentado depois que todas as chaves do provedor atual falham. O caminho de recuperação síncrona também aplica essa ordem. Nenhuma chave é copiada para o workspace do subagente, e mensagens/logs de rotação exibem apenas o índice da chave, nunca o segredo. O pool usa gravação atômica e metadados de saúde só são persistidos em transições de estado ou no máximo uma vez por dia por chave, reduzindo contenção entre processos filhos. Detalhes: `docs/API_KEYS_AND_FALLBACK.md`.
 
 ## Exibição na TUI (issue #88)
 

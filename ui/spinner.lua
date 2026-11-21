@@ -20,6 +20,7 @@ M.restart_spinner               = compact.restart_spinner
 M.stop_thinking_and_print_compact = compact.stop_thinking_and_print_compact
 M.stop_thinking                 = compact.stop_thinking
 M.show_retry                    = retry.show_retry
+M.show_key_rotation             = retry.show_key_rotation
 M.clear_retry_lines             = retry.clear_retry_lines
 M.show_api_error                = retry.show_api_error
 

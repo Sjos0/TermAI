@@ -49,7 +49,11 @@ return function(M)
     local ui = require("ui")
     if ui.clear_retry_lines then ui.clear_retry_lines() end
     local recover_line = recovery.recover_tool_seq(ctx.msgs)
-    local msg = "Falha após " .. rcfg.max_retries .. " tentativas — " .. tostring(last_error or "")
+    local attempts = rcfg.keys_total and rcfg.keys_total > 1
+      and (tostring(rcfg.max_retries) .. " tentativas por chave ("
+        .. tostring(rcfg.keys_total) .. " chaves)")
+      or (tostring(rcfg.max_retries) .. " tentativas")
+    local msg = "Falha após " .. attempts .. " — " .. tostring(last_error or "")
     if ui.show_api_error then
       ui.show_api_error(msg, recover_line)
     end

@@ -4,7 +4,7 @@
 >
 > **O que ele NÃO é:** não faz parte do TermAI. Nenhum código o lê, não é system prompt, não é configuração e não é memória do agente. Pode ser editado ou apagado sem afetar o programa.
 >
-> Atualizado em 2026-10-25 (versão `1.27.10.2026`). Se este arquivo divergir do código, o código vence.
+> Atualizado em 2026-11-20 (implementação da Issue #368; versão de release permanece em `VERSION`). Se este arquivo divergir do código, o código vence.
 
 ## O que é
 
@@ -25,7 +25,7 @@ TermAI é um agente de IA local com interface de terminal (TUI), escrito em Lua 
 | `tools/` | Ferramentas e execução de comandos. Inclui `tools/subagents/`, `tools/agents/` e `tools/exec/permissions/` |
 | `ui/` | TUI: entrada, renderização, bloco de subagentes |
 | `commands/` | Comandos da TUI (`/compact`, `/subagents`…) e da CLI |
-| `providers/`, `models/` | Provedores de chat e busca, catálogo e resolução de modelos |
+| `providers/`, `models/` | Provedores de chat e busca, catálogo, resolução de modelos e rotação de API Keys |
 | `session/` | Persistência de sessões (JSONL) |
 | `config/` | Configuração e migração |
 | `memoryflush/` | Memória de longo prazo (flush e arquivamento) |
@@ -48,6 +48,14 @@ TermAI é um agente de IA local com interface de terminal (TUI), escrito em Lua 
 
 Permissões ficam em `tools/exec/permissions/`. Ferramentas que não são `Exec` pedem diálogo, exceto `sessions_spawn`, `subagents_list`, `subagents_info` e `subagents_log`, que são internas e liberadas. `subagents_kill` e `agents_create` continuam pedindo confirmação.
 
+## Multi-API-key e fallback
+
+- `models.json` aceita `apiKeys` por provedor; o campo `apiKey` singular é migrado automaticamente e mantido como espelho da chave ativa.
+- A rotação usa `agents.defaults.request.max_retries` e os intervalos já existentes. Não há um limite paralelo de erros.
+- O micro fallback esgota as chaves do provedor atual antes de percorrer `agents.defaults.model.fallbacks` (referências `provedor/modelo`) na ordem configurada.
+- A gestão de chaves, teste sequencial, lista de modelos fallback e transparência fica em `/config` → Requisições → Fallback (opção 10), disponível na TUI e na CLI.
+- Detalhes e comportamento: `docs/API_KEYS_AND_FALLBACK.md`.
+
 ## Subagentes
 
 O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. Cada subagente roda em um processo próprio (`TermAI run --worker <runId>`), com fila (`maxConcurrent`, `maxChildrenPerAgent`) e timeout (`runTimeoutSeconds`). O resultado entra no contexto do pai no próximo ponto seguro. A TUI mostra um bloco ao vivo e o comando `/subagents` controla as execuções. Por padrão (`agents.defaults.subagents.maxSpawnDepth = 1`) um subagente não cria outros subagentes; com `maxSpawnDepth = 2`, um subagente de nível 1 pode criar filhos de nível 2 (ver `docs/SUBAGENTS.md`). Falhas e recuperação (requisição esgotada, stream cortado, prazo, pid reaproveitado, pai que morre) estão em `docs/SUBAGENTS.md`.
@@ -69,7 +77,7 @@ O orquestrador chama `sessions_spawn`, que responde `accepted` com um `runId`. C
 
 - `VERSION` segue `1.<dia>.<mês>.<ano>` (exemplo: `1.21.10.2026`).
 - `TermAI update` atualiza para a última release (tag verificada: precisa estar no `main`). `--main` segue a branch; `--rollback` volta ao commit anterior.
-- Release atual: `v1.28.10.2026`. Anteriores: `v1.27.10.2026`, `v1.26.10.2026`, `v1.25.10.2026`, `v1.24.10.2026`, `v1.23.10.2026`, `v1.22.10.2026`.
+- Release atual: `v1.39.0`. Anteriores: `v1.27.10.2026`, `v1.26.10.2026`, `v1.25.10.2026`, `v1.24.10.2026`, `v1.23.10.2026`, `v1.22.10.2026`.
 
 ## Registros de contribuição
 

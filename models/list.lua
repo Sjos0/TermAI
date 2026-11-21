@@ -31,6 +31,7 @@ function M.list_providers()
       id          = pid,
       base_url    = prov.baseUrl,
       model_count = #(prov.models or {}),
+      key_count = #(prov.apiKeys or (prov.apiKey and prov.apiKey ~= "" and { prov.apiKey } or {})),
     }
   end
   return result
