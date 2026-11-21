@@ -62,6 +62,29 @@ function M.show_retry(attempt, max, reason, wait)
   _active = true
 end
 
+function M.show_key_rotation(provider, failed_index, next_index, total)
+  erase()
+  local line = string.format("[chave] %s: chave %d falhou; usando chave %d/%d.",
+    tostring(provider or "provedor"), tonumber(failed_index) or 0,
+    tonumber(next_index) or 0, tonumber(total) or 0)
+  line = select(1, require("ui.cell.sanitize").sanitize_line(line))
+  line = line:gsub("\27%[[%d;:]*m", "")
+  local largura = require("ui.largura")
+  local tw = core.tw()
+  if largura.colunas(line) > tw then line = largura.cortar(line, math.max(4, tw - 2)) end
+  local notice = block.new({
+    borders = block.BORDERS.NONE,
+    bg = c.bg,
+    fg = c.yellow,
+    content_lines = { "", line, "" },
+  })
+  local lines = notice:render({ w = tw, h = nil })
+  for _, rendered in ipairs(lines) do io.write(rendered .. "\n") end
+  io.flush()
+  _retry_lines = #lines
+  _active = true
+end
+
 function M.show_api_error(msg, recover_line)
   erase()
   msg = tostring(msg or "Erro de API")

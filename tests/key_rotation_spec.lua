@@ -67,11 +67,13 @@ local models_resolve_nil = {
 ctx.active = { ref = "p/m", provider = "p", api_key_index = 1, api_key_count = 2 }
 T("rotate returns false when resolve fails", rotation.rotate(models_resolve_nil, ctx) == false)
 
--- transparency message (enabled by default when not false)
-local written = {}
-local old_write, old_flush = io.write, io.flush
-io.write = function(s) written[#written + 1] = s end
-io.flush = function() end
+-- transparency message is routed through the shared spinner UI
+local notice = nil
+package.loaded["ui.spinner"] = {
+  show_key_rotation = function(provider, failed, next_index, total)
+    notice = { provider, failed, next_index, total }
+  end,
+}
 local models_t = {
   rotate_api_key = function() return "k2", 2, 3 end,
   resolve = function(ref)
@@ -83,20 +85,18 @@ ctx = {
   cfg = { agents = { defaults = { request = {} } } }, -- default transparency on
 }
 T("transparency emits message by default", rotation.rotate(models_t, ctx) == true)
-local joined = table.concat(written, "")
-T("transparency mentions key indices, not secrets",
-  joined:find("chave 1 falhou", 1, true) ~= nil
-  and joined:find("chave 2/3", 1, true) ~= nil
-  and joined:find("k2", 1, true) == nil)
+T("transparency uses shared UI notice without passing secrets",
+  notice and notice[1] == "prov" and notice[2] == 1
+  and notice[3] == 2 and notice[4] == 3)
 
-written = {}
+notice = nil
 ctx = {
   active = { ref = "prov/m", provider = "prov", api_key_index = 1, api_key_count = 3 },
   cfg = { agents = { defaults = { request = { fallback_transparency = false } } } },
 }
 rotation.rotate(models_t, ctx)
-T("transparency can be disabled", #written == 0)
-io.write, io.flush = old_write, old_flush
+T("transparency can be disabled", notice == nil)
+package.loaded["ui.spinner"] = nil
 
 -- --- endpoint_label ---
 local utils_full = {

@@ -48,10 +48,11 @@ function M.rotate(models_mod, ctx)
   if not resolved then return false end
   ctx.active = resolved
   if transparency_enabled(ctx) then
-    io.write("\n\27[38;5;220m[chave] " .. tostring(active.provider)
-      .. ": chave " .. tostring(active.api_key_index) .. " falhou; usando chave "
-      .. tostring(index) .. "/" .. tostring(total) .. ".\27[0m\n")
-    io.flush()
+    local ok, spinner = pcall(require, "ui.spinner")
+    if ok and spinner and spinner.show_key_rotation then
+      pcall(spinner.show_key_rotation, active.provider,
+        active.api_key_index, index, total)
+    end
   end
   return true
 end

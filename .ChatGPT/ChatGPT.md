@@ -44,3 +44,18 @@ Versão canônica mantida: `1.39.0` (sem bump nesta feature PR)
 - Testes e documentação técnica adicionados.
 
 A versão não foi incrementada porque o histórico do repositório separa feature PRs das PRs dedicadas de release; não houve publicação de release nesta mudança.
+
+---
+
+## Atualização pós revisão do Bugs Hunter — 2026-11-21
+
+A revisão da PR #369 não encontrou defeito funcional bloqueante confirmado. Os apontamentos de UX/diagnóstico foram tratados na mesma branch e PR:
+
+- Mensagem de rotação de chave passou a usar o bloco compartilhado de status da TUI, com limpeza integrada ao fluxo de retry.
+- Saúde das chaves passou a exibir data/hora compacta e explicitamente UTC.
+- Erros dos testes de conexão continuam disponíveis para diagnóstico, mas são achatados em uma linha, removem sequências de controle ANSI/terminal e têm a API key redigida após a sanitização.
+- A semântica de uma tentativa sem credencial para provedores sem chave foi documentada e preservada.
+
+Validação local: 143 specs Lua passaram, além do teste PTY, sintaxe de todos os arquivos Lua e `git diff --check`. O benchmark `tests/benchmark_bolt.lua` foi omitido da rodada local por custo de CPU; permanece incluído no workflow do GitHub Actions.
+
+Estado: PR #369 aberta, sem merge; `VERSION` continua `1.39.0`, sem bump de feature.

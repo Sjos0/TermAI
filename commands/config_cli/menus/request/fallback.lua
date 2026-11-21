@@ -1,6 +1,7 @@
 local models = require("models")
 local validate = require("models.validate")
 local M = {}
+local health = require("commands.config.fallback_health")
 
 local function mask(key)
   if #key <= 4 then return string.rep("*", math.max(4, #key)) end
@@ -38,9 +39,7 @@ local function test_all(ui, provider_id)
       local called, result, detail = pcall(validate.test_connection, active)
       ok, message = called and result or false, called and detail or result
     else ok, message = false, "Modelo não resolvido" end
-    if type(message) == "string" and item.key ~= "" then
-      message = message:gsub(item.key:gsub("([^%w])", "%%%1"), "[REDACTED]")
-    end
+    message = health.error_message(message, item.key)
     io.write("  Chave " .. i .. " (" .. mask(item.key) .. "): "
       .. (ok and ui.G .. "OK" or ui.RE .. "FALHOU") .. ui.R
       .. (not ok and (" — " .. tostring(message)) or "") .. "\n")
@@ -61,10 +60,8 @@ local function manage_keys(ui)
     local keys = models.list_api_keys(provider_id) or {}
     ui.hdr("Fallback › API Keys › " .. provider_id)
     for i, item in ipairs(keys) do
-      local health = item.last_error_at and ("  [última falha: " .. item.last_error_at .. "]")
-        or item.last_ok and ("  [último OK: " .. item.last_ok .. "]") or "  [sem teste]"
       io.write("  " .. i .. ". " .. mask(item.key)
-        .. (item.active and "  [ATIVA]" or "") .. health .. "\n")
+        .. (item.active and "  [ATIVA]" or "") .. health.label(item) .. "\n")
     end
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n  3. Testar todas as chaves\n  4. Definir chave ativa\n  0. Voltar\n\n")
     local choice = ui.rdl("Escolha")

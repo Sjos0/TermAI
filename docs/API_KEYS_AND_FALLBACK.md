@@ -15,6 +15,7 @@ A ordem da lista determina a ordem de rotação. A chave ativa e os timestamps m
 5. Quando todos os modelos de fallback também falham, a TUI recebe o erro final pelo fluxo já existente. Não há tentativas adicionais fora da lista configurada.
 
 Erros classificados como não retryable continuam respeitando `agent/api/request_stream/error_log.lua`: a chave atual não é repetida, mas o TermAI ainda pode tentar a próxima chave do provedor antes do macro fallback.
+Provedores sem chave cadastrada mantêm uma rodada de request sem credencial (`key_rounds` tem piso 1), preservando provedores que não exigem autenticação. Essa compatibilidade é intencional; a rotação entre chaves só ocorre quando há mais de uma chave cadastrada.
 
 ## Configuração pela interface
 
@@ -24,7 +25,8 @@ Em `/config` → **Requisições** → **Fallback** (opção 10), tanto na TUI q
 - Chaves repetidas são recusadas.
 - **Testar todas as chaves** executa testes sequenciais no primeiro modelo disponível do provedor, restaura a chave ativa anterior e sugere revisar/remover índices inválidos sem removê-los automaticamente.
 - Gerencie a lista ordenada de modelos/provedores de fallback.
-- Ative/desative mensagens de transparência da rotação. A opção vem ativada por padrão.
+- Ative/desative mensagens de transparência da rotação. A opção vem ativada por padrão; o aviso usa o mesmo bloco de status da TUI e é limpo junto com a linha de retry quando a próxima resposta começa.
+- O estado de saúde exibe timestamps compactos (`DD/MM/AAAA HH:MM UTC`) em vez do ISO bruto.
 
 A quantidade de tentativas por chave vem exclusivamente de **Max tentativas** na mesma aba Requisições. Os modos e intervalos de espera existentes continuam sendo usados sem criar uma configuração concorrente.
 
@@ -32,6 +34,6 @@ A quantidade de tentativas por chave vem exclusivamente de **Max tentativas** na
 
 - A interface mascara as chaves e não as inclui em mensagens de rotação.
 - Endpoints Google que carregam a chave na query string são redigidos antes de entrar no log de diagnóstico.
-- Testes de conexão são sequenciais para evitar rajadas de chamadas ao provedor.
+- Testes de conexão são sequenciais para evitar rajadas de chamadas ao provedor; mensagens do provedor permanecem disponíveis para diagnóstico, mas são achatadas em uma linha e têm controles ANSI/terminal removidos.
 - O fallback síncrono chamado quando o streaming termina sem conteúdo também percorre as chaves e aciona o macro fallback depois de esgotá-las.
 - Remover uma chave é uma ação explícita; o teste em lote apenas apresenta sugestões.
