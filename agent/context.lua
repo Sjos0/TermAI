@@ -29,15 +29,43 @@ function M.build(opts)
     os.exit(1)
   end
 
-  -- Ciclo de topo no boot: testa chaves anteriores e sobe para a 1ª saudável.
+  -- Ciclo de topo no boot: testa anteriores (orcamento + progresso em TTY).
   if not opts.is_subagent then
+    local function is_tty()
+      local ok, r = pcall(function()
+        return io.type(io.stdout) == "file" and io.stdout.isatty and io.stdout:isatty()
+      end)
+      return ok and r == true
+    end
+    local tty = is_tty()
     local recovered, recovered_index = models_mod.prefer_top_api_key_on_boot(
-      active.ref, { connect_timeout = 1, max_time = 3, speed_time = 2 })
+      active.ref, {
+        connect_timeout = 1, max_time = 3, speed_time = 2,
+        max_previous = 3, max_wall_seconds = 9,
+        on_progress = tty and function(event, payload)
+          if event == "start" then
+            io.write(string.format(
+              "[KEY] Verificando chaves 1..%d (ativa %d)...\n",
+              payload.to, payload.current))
+            io.flush()
+          elseif event == "probe" then
+            io.write(string.format(
+              "[KEY] Probe %d/%d...\n", payload.index, payload.total))
+            io.flush()
+          elseif event == "budget" then
+            io.write("[KEY] Orçamento de boot esgotado; mantendo chave ativa.\n")
+            io.flush()
+          end
+        end or nil,
+      })
     if recovered then
       active = models_mod.resolve(active.ref)
-      print(string.format(
-        "\27[38;5;82m[KEY] Chave do topo recuperada: %d/%d.\27[0m",
-        recovered_index, active.api_key_count))
+      if tty then
+        io.write(string.format(
+          "[KEY] Chave do topo recuperada: %d/%d.\n",
+          recovered_index, active.api_key_count))
+        io.flush()
+      end
     end
   end
 
