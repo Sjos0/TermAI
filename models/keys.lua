@@ -1,5 +1,6 @@
 local store = require("models.store")
 local rotation = require("models.keys.rotation")
+local probe = require("models.keys.probe")
 local M = {}
 
 local function provider_for(provider_id)
@@ -100,6 +101,8 @@ end
 
 M.preview_rotation = rotation.preview
 M.commit_rotation = rotation.commit
+M.test = probe.test
+M.prefer_top_on_boot = probe.prefer_top_on_boot
 
 function M.record(provider_id, index, success)
   local provider = provider_for(provider_id)

@@ -20,12 +20,25 @@ function M.build(opts)
   local cfg = config_mod.load()
   models_mod.load()
 
-  local active = models_mod.resolve(opts.model or cfg.agents.defaults.model.primary)
+  local active_ref = opts.model or cfg.agents.defaults.model.primary
+  local active = models_mod.resolve(active_ref)
   if not active then
     print("\27[38;5;220m[WARN] Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
     print("Depois defina:  \27[1mTermAI models set <provider>/<modelo>\27[0m")
     os.exit(1)
+  end
+
+  -- Recupera uma chave anterior saudável sem atrasar com tentativas paralelas.
+  if not opts.is_subagent then
+    local recovered, recovered_index = models_mod.prefer_top_api_key_on_boot(
+      active.ref, { connect_timeout = 1, max_time = 3, speed_time = 2 })
+    if recovered then
+      active = models_mod.resolve(active.ref)
+      print(string.format(
+        "\27[38;5;82m[KEY] Chave preferida recuperada: %d/%d.\27[0m",
+        recovered_index, active.api_key_count))
+    end
   end
 
   security.validate(active.endpoint, active.api_key)

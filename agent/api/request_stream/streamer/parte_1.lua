@@ -1,9 +1,9 @@
 return function(M, N)
   local fb = require("agent.api.request_stream.streamer.fallback")(M)
-  local key_rotation = require("agent.api.request_stream.streamer.key_rotation")
+  local key_rotation = require("agent.api.request_stream.streamer.key_rotation"); local key_attempts = require("agent.api.request_stream.streamer.key_attempts")
   local json, ui, thinking_parser, utils, payload_mod, sync_mod, tool_parser, recovery, tokens_mod, error_log = N.json, N.ui, N.thinking_parser, N.utils, N.payload_mod, N.sync_mod, N.tool_parser, N.recovery, N.tokens_mod, N.error_log
   function M.pensar_stream(ctx, txt, role)
-    local rcfg = utils.get_req_cfg(ctx)
+    local rcfg = utils.get_req_cfg(ctx); key_attempts.begin(ctx)
     local pl   = payload_mod.build_payload(ctx, txt, role, true)
     if not pl then
       if txt ~= nil then table.remove(ctx.msgs) end
@@ -15,8 +15,8 @@ return function(M, N)
     local models_mod = require("models")
     local key_rounds = math.max(1, tonumber(ctx.active.api_key_count) or 0)
     rcfg.keys_total = key_rounds
-    for key_round = 1, key_rounds do
-      for attempt = 1, rcfg.max_retries do
+    for key_round = 1, key_rounds do key_attempts.start_key(ctx, key_round)
+      for attempt = 1, rcfg.max_retries do key_attempts.start_attempt(ctx, attempt)
         local auth = utils.build_auth(ctx.active)
         local tmp_path = utils.make_tmp_path()
         local tmp = io.open(tmp_path, "w"); tmp:write(pl); tmp:close()
@@ -85,7 +85,7 @@ return function(M, N)
             local stream_reasoning = reasoning
             if txt ~= nil then table.remove(ctx.msgs) end
             local sync_r, _, sync_tc = sync_mod.pensar_sync(ctx, txt, role)
-            utils.ensure_tokens(ctx)
+            utils.ensure_tokens(ctx); key_attempts.end_key(ctx); key_attempts.finish(ctx, key_rounds)
             if ctx.tokens_fresh == nil then ctx.tokens_fresh = stream_fresh end
             return key_rotation.handle_sync_result(
               fb, ctx, role, sync_r, rcfg, stream_reasoning, sync_tc)
@@ -137,14 +137,14 @@ return function(M, N)
           if ui.clear_retry_lines then ui.clear_retry_lines() end
         end
         end
+      key_attempts.end_key(ctx)
       key_rotation.record(models_mod, ctx.active, false)
       if key_round < key_rounds then
         if not key_rotation.rotate(models_mod, ctx) then break end
       end
     end
-    local fb_res, fb_err = fb.tentar_fallbacks(ctx, role, last_error, rcfg)
-    if fb_res then return table.unpack(fb_res, 1, fb_res.n) end
-    last_error = fb_err
+    key_attempts.finish(ctx, key_rounds); local fb_res, fb_err = fb.tentar_fallbacks(ctx, role, last_error, rcfg)
+    if fb_res then return table.unpack(fb_res, 1, fb_res.n) end; last_error = fb_err
     return fb.falha_final(ctx, rcfg, last_error)
   end
 end

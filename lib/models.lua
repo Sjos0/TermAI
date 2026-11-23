@@ -27,5 +27,7 @@ M.preview_api_key_rotation = keys.preview_rotation
 M.commit_api_key_rotation = keys.commit_rotation
 M.record_api_key  = keys.record
 M.replace_api_keys = keys.replace
+M.test_api_key = keys.test
+M.prefer_top_api_key_on_boot = keys.prefer_top_on_boot
 
 return M

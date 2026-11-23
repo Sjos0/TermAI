@@ -11,7 +11,12 @@ M.tmp_dir = function()
 end
 
 
-function M.test_connection(active)
+function M.test_connection(active, options)
+  options = type(options) == "table" and options or {}
+  local connect_timeout = math.max(1, math.min(tonumber(options.connect_timeout) or 5, 30))
+  local max_time = math.max(connect_timeout, math.min(tonumber(options.max_time) or 30, 180))
+  local speed_time = math.max(1, math.min(tonumber(options.speed_time) or 10, max_time))
+  local speed_limit = math.max(1, tonumber(options.speed_limit) or 1)
   -- Validação de segurança prévia para mitigar injeção de comandos
   if active.endpoint then
     local safe, char = security.is_safe(active.endpoint)
@@ -71,8 +76,8 @@ function M.test_connection(active)
   tmp:close()
 
   local cmd = string.format(
-    'curl -s -w "\\n%%{http_code}" -X POST "%s"%s -H "Content-Type: application/json" -d @%s 2>/dev/null',
-    active.endpoint, auth, tmp_path)
+    'curl -s --connect-timeout %d --max-time %d --speed-time %d --speed-limit %d -w "\\n%%{http_code}" -X POST "%s"%s -H "Content-Type: application/json" -d @%s 2>/dev/null',
+    connect_timeout, max_time, speed_time, speed_limit, active.endpoint, auth, tmp_path)
   local h = io.popen(cmd)
   local r = h:read("*a")
   h:close()
