@@ -11,7 +11,7 @@ local function update_key(models_mod)
     return
   end
 
-  ui.header("Atualizar API Key")
+  ui.header("Atualizar API Key (só a chave ativa; demais preservadas)")
   for i, p in ipairs(providers) do
     io.write("  " .. c.white .. i .. ". " .. c.reset .. p.id .. "\n")
   end

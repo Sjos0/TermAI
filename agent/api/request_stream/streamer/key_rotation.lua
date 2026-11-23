@@ -48,7 +48,13 @@ function M.rotate(models_mod, ctx)
   if not resolved then return false end
   local committed = models_mod.commit_api_key_rotation(
     active.provider, index, previous_index)
-  if not committed then return false end
+  if not committed then
+    -- Corrida rara: outro processo mudou activeKeyIndex entre preview e commit.
+    io.stderr:write(string.format(
+      "[KEY] Rotação recusada (índice %s -> %s); ativo mudou durante o commit.\n",
+      tostring(previous_index), tostring(index)))
+    return false
+  end
   ctx.active = resolved
   if transparency_enabled(ctx) then
     local ok, spinner = pcall(require, "ui.spinner")

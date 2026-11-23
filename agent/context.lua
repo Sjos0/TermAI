@@ -20,12 +20,53 @@ function M.build(opts)
   local cfg = config_mod.load()
   models_mod.load()
 
-  local active = models_mod.resolve(opts.model or cfg.agents.defaults.model.primary)
+  local active_ref = opts.model or cfg.agents.defaults.model.primary
+  local active = models_mod.resolve(active_ref)
   if not active then
     print("\27[38;5;220m[WARN] Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
     print("Depois defina:  \27[1mTermAI models set <provider>/<modelo>\27[0m")
     os.exit(1)
+  end
+
+  -- Ciclo de topo no boot: testa anteriores (orcamento + progresso em TTY).
+  if not opts.is_subagent then
+    local function is_tty()
+      local ok, r = pcall(function()
+        return io.type(io.stdout) == "file" and io.stdout.isatty and io.stdout:isatty()
+      end)
+      return ok and r == true
+    end
+    local tty = is_tty()
+    local recovered, recovered_index = models_mod.prefer_top_api_key_on_boot(
+      active.ref, {
+        connect_timeout = 1, max_time = 3, speed_time = 2,
+        max_previous = 3, max_wall_seconds = 9,
+        on_progress = tty and function(event, payload)
+          if event == "start" then
+            io.write(string.format(
+              "[KEY] Verificando chaves 1..%d (ativa %d)...\n",
+              payload.to, payload.current))
+            io.flush()
+          elseif event == "probe" then
+            io.write(string.format(
+              "[KEY] Probe %d/%d...\n", payload.index, payload.total))
+            io.flush()
+          elseif event == "budget" then
+            io.write("[KEY] Orçamento de boot esgotado; mantendo chave ativa.\n")
+            io.flush()
+          end
+        end or nil,
+      })
+    if recovered then
+      active = models_mod.resolve(active.ref)
+      if tty then
+        io.write(string.format(
+          "[KEY] Chave do topo recuperada: %d/%d.\n",
+          recovered_index, active.api_key_count))
+        io.flush()
+      end
+    end
   end
 
   security.validate(active.endpoint, active.api_key)

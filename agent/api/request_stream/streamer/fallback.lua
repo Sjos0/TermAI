@@ -54,6 +54,19 @@ return function(M)
         .. tostring(rcfg.keys_total) .. " chaves)")
       or (tostring(rcfg.max_retries) .. " tentativas")
     local msg = "Falha após " .. attempts .. " — " .. tostring(last_error or "")
+    local summaries = {}
+    for _, model in ipairs(ctx._key_attempt_summaries or {}) do
+      local keys = {}
+      for _, item in ipairs(model.keys or {}) do
+        keys[#keys + 1] = string.format("%d/%d (%d tent.)",
+          item.index or 0, model.total or 0, item.attempts or 0)
+      end
+      summaries[#summaries + 1] = tostring(model.model) .. ": "
+        .. (#keys > 0 and table.concat(keys, ", ") or "sem tentativa")
+    end
+    if #summaries > 0 then
+      msg = msg .. " · chaves: " .. table.concat(summaries, " | ")
+    end
     if ui.show_api_error then
       ui.show_api_error(msg, recover_line)
     end
