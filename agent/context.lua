@@ -29,14 +29,14 @@ function M.build(opts)
     os.exit(1)
   end
 
-  -- Recupera uma chave anterior saudável sem atrasar com tentativas paralelas.
+  -- Ciclo de topo no boot: testa chaves anteriores e sobe para a 1ª saudável.
   if not opts.is_subagent then
     local recovered, recovered_index = models_mod.prefer_top_api_key_on_boot(
       active.ref, { connect_timeout = 1, max_time = 3, speed_time = 2 })
     if recovered then
       active = models_mod.resolve(active.ref)
       print(string.format(
-        "\27[38;5;82m[KEY] Chave preferida recuperada: %d/%d.\27[0m",
+        "\27[38;5;82m[KEY] Chave do topo recuperada: %d/%d.\27[0m",
         recovered_index, active.api_key_count))
     end
   end

@@ -33,7 +33,7 @@ Em `/config` → **Requisições** → **Fallback** (opção 10), tanto na TUI q
 
 A quantidade de tentativas por chave vem exclusivamente de **Max tentativas** na mesma aba Requisições. Os modos e intervalos de espera existentes continuam sendo usados sem criar uma configuração concorrente.
 
-No boot de uma sessão principal, o TermAI revalida a chave preferida salva com limites curtos de conexão/tempo total. Se falhar, testa sequencialmente as demais chaves na ordem configurada e ativa a primeira saudável antes de iniciar a conversa. Se nenhuma responder, mantém a seleção salva. Provedores sem API Keys não disparam probes. Subagentes não repetem a verificação de boot.
+No boot de uma sessão principal, o TermAI tenta recuperar o topo da lista de chaves: com a chave ativa em N, testa sequencialmente as chaves anteriores (1 .. N-1) com limites curtos de conexão/tempo total e ativa a primeira saudável (preferência pelo topo). Se todas as anteriores falharem, permanece na chave ativa atual sem re-testá-la. Já no índice 1 ou em provedores sem API Keys não há probes. Subagentes não repetem a verificação de boot.
 
 ## Segurança e operação
 

@@ -31,7 +31,11 @@ function M.test(provider_id, ref, index, options)
   return success, message, active
 end
 
--- Revalida a chave preferida e, se falhar, percorre as demais na ordem configurada.
+-- Ciclo de topo no boot (Issue #370 item B):
+-- com a ativa em N, testa sequencialmente as chaves anteriores (1 .. N-1).
+-- A primeira saudável (mais próxima do topo) vira a ativa.
+-- Se todas as anteriores falharem, permanece na ativa atual sem re-testá-la.
+-- Já no topo (índice 1) ou sem chaves: não dispara probes.
 function M.prefer_top_on_boot(ref, options)
   local resolver = require("models.resolve")
   local active, err = resolver.resolve(ref)
@@ -41,21 +45,16 @@ function M.prefer_top_on_boot(ref, options)
   local provider_id = active.provider
   local current_index = active.api_key_index or 1
   local keys = models.list_api_keys(provider_id) or {}
-  if #keys == 0 then return false, current_index end
+  if #keys == 0 or current_index <= 1 then
+    return false, current_index
+  end
 
-  -- Revalida primeiro a chave preferida já salva.
-  local preferred_ok = M.test(provider_id, ref, current_index, options)
-  if preferred_ok then return false, current_index end
-
-  -- Se ela falhar, procura a primeira saudável pela ordem configurada.
-  for index = 1, #keys do
-    if index ~= current_index then
-      local ok = M.test(provider_id, ref, index, options)
-      if ok then
-        local saved, save_error = models.set_active_api_key(provider_id, index)
-        if not saved then return false, current_index, save_error end
-        return true, index
-      end
+  for index = 1, current_index - 1 do
+    local ok = M.test(provider_id, ref, index, options)
+    if ok then
+      local saved, save_error = models.set_active_api_key(provider_id, index)
+      if not saved then return false, current_index, save_error end
+      return true, index
     end
   end
   return false, current_index

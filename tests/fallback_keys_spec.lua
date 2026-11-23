@@ -52,26 +52,34 @@ T("test-all preserves the active key", active_index == 3)
 T("key tests use bounded connection timeouts",
   calls[1].options.connect_timeout == 2 and calls[1].options.max_time == 6)
 
--- B) Ciclo de boot: preferida falha → primeira saudável na ordem
+-- B) Ciclo de topo no boot (Issue #370):
+-- ativa em 3; key1 ruim, key2 OK → recupera para 2 (mais próxima do topo saudável)
+local before_boot = #calls
 local recovered, recovered_index = models.prefer_top_api_key_on_boot("fallback-spec/model", {
   connect_timeout = 1, max_time = 3,
 })
 local active_key
 active_key, active_index = models.active_api_key("fallback-spec")
-T("boot selects first healthy key after preferred fails",
-  recovered and recovered_index == 2 and active_index == 2 and active_key == "key-two")
+T("boot recovers nearest healthy top when previous keys include a good one",
+  recovered and recovered_index == 2 and active_index == 2 and active_key == "key-two"
+  and #calls == before_boot + 2)
 
-local calls_before_preferred_recheck = #calls
-local kept_preferred = models.prefer_top_api_key_on_boot("fallback-spec/model", {
+-- ativa em 2; key1 OK → deve subir para o topo mesmo com preferida atual saudável
+validate.test_connection = function(active, options)
+  calls[#calls + 1] = { key = active.api_key, options = options }
+  return active.api_key == "key-one", "OK"
+end
+models.set_active_api_key("fallback-spec", 2)
+local before_prefer_top = #calls
+local moved_to_top, top_index = models.prefer_top_api_key_on_boot("fallback-spec/model", {
   connect_timeout = 1, max_time = 3,
 })
-_, active_index = models.active_api_key("fallback-spec")
-T("boot keeps preferred key when it is healthy",
-  not kept_preferred and active_index == 2
-  and #calls == calls_before_preferred_recheck + 1)
+active_key, active_index = models.active_api_key("fallback-spec")
+T("boot prefers top even when current preferred key is still healthy",
+  moved_to_top and top_index == 1 and active_index == 1 and active_key == "key-one"
+  and #calls == before_prefer_top + 1)
 
--- Preferida saudável no índice 1: só 1 probe, sem scan das demais
-models.set_active_api_key("fallback-spec", 1)
+-- Já no topo: zero probes (nada anterior para recuperar)
 validate.test_connection = function(active, options)
   calls[#calls + 1] = { key = active.api_key, options = options }
   return true, "OK"
@@ -81,10 +89,10 @@ local moved = models.prefer_top_api_key_on_boot("fallback-spec/model", {
   connect_timeout = 1, max_time = 3,
 })
 _, active_index = models.active_api_key("fallback-spec")
-T("boot with healthy top key does not rotate",
-  not moved and active_index == 1 and #calls == before_top + 1)
+T("boot at top index does not probe",
+  not moved and active_index == 1 and #calls == before_top)
 
--- Todas as chaves falham → mantém ativa atual
+-- Ativa em 3; todas as anteriores ruins → mantém 3 e só testa 1..2 (não re-testa a atual)
 models.set_active_api_key("fallback-spec", 3)
 validate.test_connection = function(active, options)
   calls[#calls + 1] = { key = active.api_key, options = options }
@@ -95,8 +103,8 @@ local recovered_none = models.prefer_top_api_key_on_boot("fallback-spec/model", 
   connect_timeout = 1, max_time = 3,
 })
 _, active_index = models.active_api_key("fallback-spec")
-T("boot keeps current key when every key fails",
-  not recovered_none and active_index == 3 and #calls == before_all_fail + 3)
+T("boot keeps current key when all previous keys fail",
+  not recovered_none and active_index == 3 and #calls == before_all_fail + 2)
 
 -- F) Dashboard
 validate.test_connection = function(active, options)
