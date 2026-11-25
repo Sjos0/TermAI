@@ -26,6 +26,11 @@ function M.build(opts)
   end)
   local active = active_ref and models_mod.resolve(active_ref) or nil
   if not active then
+    local msg = "nenhum modelo resolvível (spawn/list/subagents/global)"
+    if opts.is_subagent then
+      -- Worker captura via pcall e grava status=failed; os.exit deixaria o run órfão.
+      error(msg, 0)
+    end
     print("\27[38;5;220m[WARN] Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
     print("Depois defina:  \27[1mTermAI models set <provider>/<modelo>\27[0m")

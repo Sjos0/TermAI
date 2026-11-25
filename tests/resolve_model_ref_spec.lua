@@ -37,11 +37,18 @@ do
   check(fb[1] == "sub/fb1", "fallbacks próprios do subagente")
 end
 
--- 2) agent list quando sem spawn
+-- 2) agent list quando sem spawn e kind==agente
 do
   local ref, src = R.resolve(
-    { is_subagent = true, model = nil, agent_id = "researcher" }, cfg, always_ok)
-  check(ref == "agent/specialist" and src == "agent_list", "agents.list[].model.primary ativo")
+    { is_subagent = true, model = nil, agent_id = "researcher", kind = "agente" }, cfg, always_ok)
+  check(ref == "agent/specialist" and src == "agent_list", "agents.list[].model.primary ativo (kind=agente)")
+end
+
+-- 2b) clone NÃO usa list[].model.primary do pai
+do
+  local ref, src = R.resolve(
+    { is_subagent = true, model = nil, agent_id = "researcher", kind = "clone" }, cfg, always_ok)
+  check(ref == "sub/fast" and src == "subagents_default", "clone ignora list primary do pai")
 end
 
 -- 3) subagents default quando list sem primary
@@ -79,7 +86,7 @@ end
 -- 6) candidato inválido pula para o próximo
 do
   local ref, src = R.resolve(
-    { is_subagent = true, model = "spawn/bad", agent_id = "researcher" },
+    { is_subagent = true, model = "spawn/bad", agent_id = "researcher", kind = "agente" },
     cfg, only({ "agent/specialist", "sub/fast", "global/strong" }))
   check(ref == "agent/specialist" and src == "agent_list", "skip inválido do spawn")
 end

@@ -38,11 +38,17 @@ function M.execute(run_id)
     local context = require("agent.context")
     local loop    = require("agent.loop")
     local ctx = context.build({ agent_id = rec.agentId, model = rec.model,
-                                is_subagent = true, run_id = run_id })
+                                is_subagent = true, run_id = run_id,
+                                kind = rec.kind })
     ctx.depth = rec.depth or 0
-    log.info("worker_model", { run_id = run_id,
-      ref = ctx.active and ctx.active.ref,
-      source = ctx.model_source or "unknown" })
+    local resolved_ref = ctx.active and ctx.active.ref
+    local resolved_src = ctx.model_source or "unknown"
+    log.info("worker_model", { run_id = run_id, ref = resolved_ref, source = resolved_src })
+    -- Persiste ref efetivo para o card subagents_info (transparência #373).
+    local cur = registry.load(run_id) or rec
+    cur.resolved_model = resolved_ref
+    cur.model_source = resolved_src
+    registry.save(cur)
     events.append(run_id, "start", rec.task)
     local resp, _, _, overflow, complete = loop.rodar(ctx, rec.task, "user", ctx.MAX_ITER)
     run_usage = ctx.usage_acc

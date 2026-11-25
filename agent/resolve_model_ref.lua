@@ -33,9 +33,10 @@ function M.resolve(opts, cfg, resolve_fn)
       candidates[#candidates + 1] = { ref = spawn_ref, source = "spawn" }
     end
 
-    -- Prioridade 2: agents.list[agentId].model.primary (ativa dead config).
+    -- Prioridade 2: agents.list[agentId].model.primary só para kind=="agente"
+    -- (clones herdam subagents.model / global, não o primary do pai — #373).
     local agent_id = opts.agent_id
-    if type(agent_id) == "string" and agent_id ~= "" then
+    if opts.kind == "agente" and type(agent_id) == "string" and agent_id ~= "" then
       local list = (cfg.agents and cfg.agents.list) or {}
       for _, entry in ipairs(list) do
         if entry.id == agent_id then
@@ -80,16 +81,24 @@ function M.resolve(opts, cfg, resolve_fn)
   end
 
   -- Fallbacks: subagente usa lista própria se não-vazia; senão herda global.
+  -- Cópia rasa para não mutar a config carregada se o streamer alterar a lista.
+  local function copy_list(t)
+    local out = {}
+    if type(t) == "table" then
+      for i, v in ipairs(t) do out[i] = v end
+    end
+    return out
+  end
   local fallbacks
   if opts.is_subagent then
     local sub_fb = sub_model.fallbacks
     if type(sub_fb) == "table" and #sub_fb > 0 then
-      fallbacks = sub_fb
+      fallbacks = copy_list(sub_fb)
     else
-      fallbacks = global_model.fallbacks or {}
+      fallbacks = copy_list(global_model.fallbacks)
     end
   else
-    fallbacks = global_model.fallbacks or {}
+    fallbacks = copy_list(global_model.fallbacks)
   end
 
   return chosen_ref, chosen_source, fallbacks
