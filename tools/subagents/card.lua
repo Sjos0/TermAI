@@ -41,6 +41,17 @@ function M.build(rec, extra)
   lines[#lines + 1] = "Subagente " .. tostring(rec.runId)
   add("Status", STATUS[rec.status] or tostring(rec.status or "unknown"))
   add("Agente", string.format("%s (pai: %s)", tostring(rec.agentId or "main"), tostring(rec.parent_agent or "main")))
+  local model_label
+  if type(rec.resolved_model) == "string" and rec.resolved_model ~= "" then
+    local src = rec.model_source
+    model_label = rec.resolved_model
+      .. (type(src) == "string" and src ~= "" and (" (" .. src .. ")") or "")
+  elseif type(rec.model) == "string" and rec.model ~= "" then
+    model_label = rec.model .. " (spawn)"
+  else
+    model_label = "(ainda não resolvido)"
+  end
+  add("Modelo", model_label)
   add("Tarefa", (cut(redact.clean(tostring(rec.task or "")), M.TASK_CHARS)))
   add("Tempo", string.format("criado %s · iniciado %s · terminado %s · duração %s",
     clock(rec.created_at), clock(rec.started_at), clock(rec.finished_at), duration(rec)))

@@ -147,6 +147,21 @@ Cobertura: `tests/subagent_block_spec.lua`.
 - **Limites de desenho:** a cascata encerra filhos que ainda rodam quando o pai termina; ela não espera os filhos concluírem. Quem precisa do resultado dos netos deve esperá-los com `subagents_wait` antes de encerrar.
 - Cobertura: `tests/subagents_depth_cascade_spec.lua` (15 checagens). Mutação na cascata do `matar` faz a spec falhar.
 
+### Modelo default dos subagentes (Issue #373)
+
+Subagentes **não** herdam às cegas o primary do chat. Resolução em camadas:
+
+1. `model` no `sessions_spawn` (override pontual; `""` é ignorado)
+2. `agents.list[agentId].model.primary` (se preenchido)
+3. `agents.defaults.subagents.model.primary` (**novo** default de produto)
+4. `agents.defaults.model.primary` (compatibilidade)
+
+Fallbacks de modelo no filho: usa `agents.defaults.subagents.model.fallbacks` se não-vazia; senão herda a lista global. Micro-fallback de API keys continua no provedor do modelo já resolvido.
+
+CRUD em `/config` → **9. Subagentes** (TUI) e `TermAI config` → **9. Subagentes** (CLI): definir/limpar primary e gerenciar fallbacks. Limpar primary restaura herança do chat.
+
+
+
 ## Cards e Ctrl+O (TUI)
 
 - Cada tool é um card: cabeçalho numa linha, cortado por colunas (UTF-8); corpo recolhido em 5 linhas com `... (N linhas)`.

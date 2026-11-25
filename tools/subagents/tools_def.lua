@@ -13,7 +13,7 @@ function M.register(tools, get_parent)
         task = { type = "string", description = "Task for the subagent. Required." },
         agentId = { type = "string", description = "Existing independent agent to run. Omit it to clone this agent." },
         label = { type = "string", description = "Short label shown in listings." },
-        model = { type = "string", description = "Model as provider/id. Optional." },
+        model = { type = "string", description = "Model as provider/id. Optional override; empty uses agents.defaults.subagents.model then global primary." },
         cleanup = { type = "string", description = "retain (default: kept for 7 days or 50 runs), delete (removed right after the result is delivered), or keep (no limit)." },
         runTimeoutSeconds = { type = "number", description = "Maximum run time in seconds (default 600)." },
       }, required = { "task" } })

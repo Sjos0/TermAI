@@ -75,7 +75,7 @@ Legenda: **Feito** · **Parcial** · **Falta** · **N/A** (depende de infraestru
 | Item | Status | Observação |
 |---|---|---|
 | Consumo por subagente (cartão) | **Feito neste lote** | acumulado por chamada em `agent/api/usage.lua`; gravado em rec.usage |
-| Modelo mais barato para subagentes (`agents.defaults.subagents.model`) | Falta | |
+| Modelo mais barato para subagentes (`agents.defaults.subagents.model`) | Feito | Issue #373: primary + fallbacks próprios, resolução em camadas, CRUD /config |
 | Thinking padrão para subagentes | Falta | |
 
 ## 6. Anúncio (announce)

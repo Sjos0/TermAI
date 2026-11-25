@@ -51,7 +51,7 @@ function M.spawn(args, parent)
     agentId          = agent_id,
     task             = args.task,
     label            = args.label,
-    model            = args.model,
+    model            = (type(args.model) == "string" and args.model:match("%S")) and args.model or nil,
     cleanup          = args.cleanup == "keep" and "keep" or (args.cleanup == "delete" and "delete" or "retain"),
     timeout_seconds  = tonumber(args.runTimeoutSeconds) or lim.runTimeoutSeconds,
     status           = "queued",

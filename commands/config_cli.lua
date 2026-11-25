@@ -21,6 +21,7 @@ while true do
   io.write("  "..ui.B.."6."..ui.R.."  Pesquisa Web     "..ui.DM.."(busca na web via Google)"..ui.R.."\n")
   io.write("  "..ui.B.."7."..ui.R.."  Conectores       "..ui.DM.."(MCP Server, Claude.ai)"..ui.R.."\n")
   io.write("  "..ui.B.."8."..ui.R.."  Tools            "..ui.DM.."(ativar/desativar por agente)"..ui.R.."\n")
+  io.write("  "..ui.B.."9."..ui.R.."  Subagentes       "..ui.DM.."(modelo default e fallbacks)"..ui.R.."\n")
   io.write("  "..ui.B.."0."..ui.R.."  Sair\n\n")
 
   local ch = ui.rdl("Escolha")
@@ -36,5 +37,6 @@ while true do
   elseif ch == "6" then load_menu("web_tools").run(config_mod, ui)
   elseif ch == "7" then load_menu("connectors").run(config_mod, ui)
   elseif ch == "8" then load_menu("tools").run(config_mod, ui)
+  elseif ch == "9" then load_menu("subagents").run(config_mod, ui)
   end
 end

@@ -72,6 +72,20 @@ check(last.input == "verificar parâmetros" and last.role == "user", "loop receb
 check(last.max == 3, "loop usa o MAX_ITER do contexto")
 check(last.opts and last.opts.agent_id == "pesquisa" and last.opts.is_subagent == true
   and last.opts.run_id == r5, "contexto do filho recebe agente, flag de subagente e runId")
+check(last.opts.model == nil, "contexto do filho: model nil quando spawn sem override (#373)")
+
+-- Caso 5b: model explícito no rec chega ao context.build (#373).
+reply, overflow = "ok-model", false
+local r5b = new_run("com model")
+do
+  local rec = registry.load(r5b)
+  rec.model = "provider/explicit"
+  registry.save(rec)
+end
+last = {}
+worker.execute(r5b)
+check(last.opts and last.opts.model == "provider/explicit" and last.opts.is_subagent == true,
+  "contexto do filho: model explícito do spawn chega ao build (#373)")
 
 -- Caso 6: run inexistente.
 local ok6, err6 = worker.execute("sub-naoexiste")

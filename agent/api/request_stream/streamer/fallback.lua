@@ -8,9 +8,12 @@ return function(M)
   -- ou (nil, last_error) quando nenhum fallback responde.
   function M_.tentar_fallbacks(ctx, role, last_error, rcfg)
     if ctx._fallback_suppress then return nil, last_error end
-        local model_cfg = ctx.cfg and ctx.cfg.agents and ctx.cfg.agents.defaults
-                          and ctx.cfg.agents.defaults.model or {}
-        local fallbacks = model_cfg.fallbacks or {}
+        local fallbacks = ctx.model_fallbacks
+        if type(fallbacks) ~= "table" then
+          local model_cfg = ctx.cfg and ctx.cfg.agents and ctx.cfg.agents.defaults
+                            and ctx.cfg.agents.defaults.model or {}
+          fallbacks = model_cfg.fallbacks or {}
+        end
         local original_active = ctx.active
         for _, ref in ipairs(fallbacks) do
           if type(ref) == "string" and ref ~= "" and ref ~= original_active.ref then
