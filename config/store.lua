@@ -13,6 +13,13 @@ local function defaults()
     agents = {
       defaults = {
         model = { primary = "", fallbacks = {} },
+        subagents = {
+          maxConcurrent = 5,
+          maxChildrenPerAgent = 5,
+          maxSpawnDepth = 1,
+          runTimeoutSeconds = 600,
+          model = { primary = "", fallbacks = {} },
+        },
         thinking = true,
         thinkingEffort = "high",
         temperature = 0.7,

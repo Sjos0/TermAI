@@ -40,6 +40,9 @@ function M.execute(run_id)
     local ctx = context.build({ agent_id = rec.agentId, model = rec.model,
                                 is_subagent = true, run_id = run_id })
     ctx.depth = rec.depth or 0
+    log.info("worker_model", { run_id = run_id,
+      ref = ctx.active and ctx.active.ref,
+      source = ctx.model_source or "unknown" })
     events.append(run_id, "start", rec.task)
     local resp, _, _, overflow, complete = loop.rodar(ctx, rec.task, "user", ctx.MAX_ITER)
     run_usage = ctx.usage_acc

@@ -41,6 +41,11 @@ function M.build(rec, extra)
   lines[#lines + 1] = "Subagente " .. tostring(rec.runId)
   add("Status", STATUS[rec.status] or tostring(rec.status or "unknown"))
   add("Agente", string.format("%s (pai: %s)", tostring(rec.agentId or "main"), tostring(rec.parent_agent or "main")))
+  local model_label = rec.model
+  if type(model_label) ~= "string" or model_label == "" then
+    model_label = "(default resolvido no worker)"
+  end
+  add("Modelo", model_label)
   add("Tarefa", (cut(redact.clean(tostring(rec.task or "")), M.TASK_CHARS)))
   add("Tempo", string.format("criado %s · iniciado %s · terminado %s · duração %s",
     clock(rec.created_at), clock(rec.started_at), clock(rec.finished_at), duration(rec)))

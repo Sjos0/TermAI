@@ -20,8 +20,11 @@ function M.build(opts)
   local cfg = config_mod.load()
   models_mod.load()
 
-  local active_ref = opts.model or cfg.agents.defaults.model.primary
-  local active = models_mod.resolve(active_ref)
+  local resolve_model_ref = require("agent.resolve_model_ref")
+  local active_ref, model_source, model_fallbacks = resolve_model_ref.resolve(opts, cfg, function(ref)
+    return models_mod.resolve(ref) ~= nil
+  end)
+  local active = active_ref and models_mod.resolve(active_ref) or nil
   if not active then
     print("\27[38;5;220m[WARN] Nenhum modelo configurado ainda.\27[0m")
     print("Rode primeiro:  \27[1mTermAI models add-provider\27[0m")
@@ -122,6 +125,8 @@ function M.build(opts)
     disabled_tools  = disabled_set,
     is_subagent     = opts.is_subagent == true,
     run_id          = opts.run_id,
+    model_source    = model_source,
+    model_fallbacks = model_fallbacks,
   }
 
   session.set_model(active.ref)
