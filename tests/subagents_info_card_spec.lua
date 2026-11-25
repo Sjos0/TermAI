@@ -25,7 +25,8 @@ local function run(id, o)
     status = o.status, created_at = os.time() - 60, started_at = os.time() - 50,
     finished_at = o.status ~= "running" and os.time() - 5 or nil,
     parent_agent = "main", cleanup = o.cleanup or "retain", announce_consumed = o.consumed or false,
-    error = o.error, error_class = o.error_class, partial = o.partial, timeout_seconds = 600 })
+    error = o.error, error_class = o.error_class, partial = o.partial, timeout_seconds = 600,
+    model = o.model })
   if o.result then registry.write_result(id, o.result) end
   if o.events then
     local f = io.open(registry.dir(id) .. "/events.jsonl", "w")
@@ -91,6 +92,22 @@ check(j:find('"runId"', 1, true) ~= nil and not j:find("SECRET7", 1, true), "for
 -- (10) Função pura: o cartão não depende do disco.
 check(card.build({ runId = "sub-p1", status = "completed", task = "t", agentId = "main", parent_agent = "main",
   cleanup = "retain" }, { result = "x" }):find("Subagente sub-p1", 1, true) ~= nil, "card.build é puro e funciona sem disco")
+
+-- (11) Transparência #373: cartão mostra Modelo (override ou default resolvido no worker).
+local pure_m = card.build({ runId = "sub-pm", status = "completed", task = "t", agentId = "main",
+  parent_agent = "main", cleanup = "retain", model = "provider/fast" }, { result = "z" })
+check(pure_m:find("Modelo:", 1, true) ~= nil and pure_m:find("provider/fast", 1, true) ~= nil,
+  "card.build: Modelo com override do spawn")
+local pure_d = card.build({ runId = "sub-pd", status = "completed", task = "t", agentId = "main",
+  parent_agent = "main", cleanup = "retain" }, { result = "z" })
+check(pure_d:find("Modelo:", 1, true) ~= nil
+  and pure_d:find("default resolvido no worker", 1, true) ~= nil,
+  "card.build: Modelo default quando spawn sem model")
+-- runId precisa casar ^sub%-%x+$ do registry.load (só hex após o prefixo).
+run("sub-a11", { status = "completed", result = "ok", model = "provider/fast" })
+local cm1 = info({ runId = "sub-a11" })
+check(cm1:find("Modelo:", 1, true) ~= nil and cm1:find("provider/fast", 1, true) ~= nil,
+  "cartão via info: Modelo com override do spawn")
 
 os.execute("rm -rf '" .. root .. "'")
 print(failures == 0 and "ALL OK" or ("FAILURES: " .. failures))
