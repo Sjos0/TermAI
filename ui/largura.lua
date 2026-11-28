@@ -63,8 +63,11 @@ function M.colunas(s)
   return colunas_plain(M.visivel(s))
 end
 
---- Expande TAB em espaços até a próxima parada de 8 colunas (linha lógica).
---- Não interpreta SGR; só texto visível + TABs.
+local largura_wrap = require("ui.largura_wrap")
+function M.quebrar(texto, limite)
+  return largura_wrap.quebrar(texto, limite, M.colunas)
+end
+
 function M.expand_tabs(s)
   s = tostring(s or "")
   local out, col = {}, 0

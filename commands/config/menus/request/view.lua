@@ -6,6 +6,7 @@ local c = ui.c
 local M = {}
 
 local core = require("ui.core")
+local largura = require("ui.largura")
 -- Réguas responsivas (#331): função, não valor — core.tw() é lido a cada uso,
 -- então girar o celular já muda o separador. `prefixo`/`usado` é o que já
 -- ocupou a linha; a régua encolhe o quanto precisar para não estourar tw.
@@ -14,8 +15,38 @@ local function SEP2(prefixo) return core.regua(30, require("ui.largura").colunas
 
 local function row(label, value, color)
   color = color or c.white
-  io.write(string.format("  %s%-22s%s %s%s%s\n",
-    c.gray, label, c.reset, color, tostring(value), c.reset))
+  local limite = math.max(12, core.tw() - 4)
+  local prefixo = "  " .. tostring(label) .. " "
+  local texto = color .. tostring(value) .. c.reset
+  local disponivel = limite - largura.colunas(prefixo)
+  if disponivel >= 8 then
+    local linhas = largura.quebrar(texto, disponivel)
+    io.write(c.gray .. prefixo .. c.reset .. (linhas[1] or "") .. "\n")
+    for i = 2, #linhas do
+      io.write(string.rep(" ", largura.colunas(prefixo)) .. linhas[i] .. "\n")
+    end
+    return
+  end
+
+  local rotulo = largura.quebrar(tostring(label), math.max(1, limite - 2))
+  for _, linha in ipairs(rotulo) do
+    io.write(c.gray .. "  " .. linha .. c.reset .. "\n")
+  end
+  local linhas = largura.quebrar(texto, math.max(8, limite - 4))
+  for _, linha in ipairs(linhas) do io.write("    " .. linha .. "\n") end
+end
+
+local function option(number, title, description)
+  local prefixo = "  " .. tostring(number) .. ". "
+  local limite = math.max(12, core.tw() - 4)
+  local linhas = largura.quebrar(title, math.max(8, limite - largura.colunas(prefixo)))
+  io.write(prefixo .. (linhas[1] or "") .. "\n")
+  for i = 2, #linhas do io.write("     " .. linhas[i] .. "\n") end
+  if not description or description == "" then return end
+  local descricao = largura.quebrar(description, math.max(8, limite - 6))
+  for _, linha in ipairs(descricao) do
+    io.write("      " .. c.dim .. linha .. c.reset .. "\n")
+  end
 end
 
 function M.print_header()
@@ -63,17 +94,18 @@ end
 
 function M.print_options()
   io.write("\n"..c.gray.."  ── Opções "..SEP2("  ── Opções ")..c.reset.."\n")
-  io.write("  "..c.white.."1."..c.reset.."  Alterar timeout  "..c.dim.."(padrão: 120s)"..c.reset.."\n")
-  io.write("  "..c.white.."2."..c.reset.."  Alterar max tentativas  "..c.dim.."(padrão: 10)"..c.reset.."\n")
-  io.write("  "..c.white.."3."..c.reset.."  Modo retry  "..c.dim.."(exponential / static)"..c.reset.."\n")
-  io.write("  "..c.white.."4."..c.reset.."  Restaurar padrões\n")
-  io.write("  "..c.white.."5."..c.reset.."  Alterar wait timeout  "..c.dim.."(padrão: 25s)"..c.reset.."\n")
-  io.write("  "..c.white.."6."..c.reset.."  Modo de Requisicao    "..c.dim.."(stream / buffer)"..c.reset.."\n")
-  io.write("  "..c.white.."7."..c.reset.."  Reasoning Effort (OpenRouter) "..c.dim.."(6 níveis — só afeta modelos com reasoning_style=openrouter)"..c.reset.."\n")
-  io.write("  "..c.white.."8."..c.reset.."  Idioma do Agente      "..c.dim.."(Português / English / Español)"..c.reset.."\n")
-  io.write("  "..c.white.."9."..c.reset.."  Thinking Effort (OpenCode Zen) "..c.dim.."(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)"..c.reset.."\n")
-  io.write("  "..c.white.."10."..c.reset.." Fallback (API Keys, modelos e transparência)\n")
-  io.write("  "..c.white.."0."..c.reset.."  Voltar\n\n")
+  option("1", "Alterar timeout", "(padrão: 120s)")
+  option("2", "Alterar max tentativas", "(padrão: 10)")
+  option("3", "Modo retry", "(exponential / static)")
+  option("4", "Restaurar padrões")
+  option("5", "Alterar wait timeout", "(padrão: 25s)")
+  option("6", "Modo de Requisicao", "(stream / buffer)")
+  option("7", "Reasoning Effort (OpenRouter)", "(6 níveis — só afeta modelos com reasoning_style=openrouter)")
+  option("8", "Idioma do Agente", "(Português / English / Español)")
+  option("9", "Thinking Effort (OpenCode Zen)", "(3 níveis — afeta hy3-free e outros com reasoning_style=reasoning_effort)")
+  option("10", "Fallback (API Keys, modelos e transparência)")
+  option("0", "Voltar")
+  io.write("\n")
 end
 
 return M
