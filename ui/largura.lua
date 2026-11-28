@@ -63,8 +63,57 @@ function M.colunas(s)
   return colunas_plain(M.visivel(s))
 end
 
---- Expande TAB em espaços até a próxima parada de 8 colunas (linha lógica).
---- Não interpreta SGR; só texto visível + TABs.
+--- Divide texto em linhas pela largura visual, preservando sequências ANSI.
+--- Palavras longas são divididas por caractere UTF-8; nenhum conteúdo é truncado.
+local function dividir_palavra(palavra, max)
+  local partes, atual, col, i = {}, "", 0, 1
+  while i <= #palavra do
+    local seq = palavra:sub(i):match("^\27%[[0-9;:?]*[A-Za-z]")
+    if seq then
+      atual = atual .. seq
+      i = i + #seq
+    else
+      local proximo = utf8.offset(palavra, 2, i)
+      local fim = proximo and (proximo - 1) or #palavra
+      local caractere = palavra:sub(i, fim)
+      local peso = M.colunas(caractere)
+      if col + peso > max and atual ~= "" then
+        partes[#partes + 1] = atual
+        atual, col = "", 0
+      end
+      atual = atual .. caractere
+      col = col + peso
+      i = fim + 1
+    end
+  end
+  if atual ~= "" then partes[#partes + 1] = atual end
+  return partes
+end
+
+function M.quebrar(s, max)
+  s = tostring(s or "")
+  max = math.max(1, math.floor(tonumber(max) or 1))
+  local linhas, atual, largura_atual = {}, "", 0
+
+  for palavra in s:gmatch("%S+") do
+    for _, parte in ipairs(dividir_palavra(palavra, max)) do
+      local largura_parte = M.colunas(parte)
+      if atual == "" then
+        atual, largura_atual = parte, largura_parte
+      elseif largura_atual + 1 + largura_parte <= max then
+        atual = atual .. " " .. parte
+        largura_atual = largura_atual + 1 + largura_parte
+      else
+        linhas[#linhas + 1] = atual
+        atual, largura_atual = parte, largura_parte
+      end
+    end
+  end
+
+  if atual ~= "" then linhas[#linhas + 1] = atual end
+  return linhas
+end
+
 function M.expand_tabs(s)
   s = tostring(s or "")
   local out, col = {}, 0
