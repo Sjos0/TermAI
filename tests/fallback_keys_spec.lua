@@ -146,6 +146,19 @@ T("dashboard exposes health and active state",
   #rows == 3 and rows[2].state == "OK" and rows[2].active)
 T("dashboard key masks stay compact on narrow terminals", #rows[2].masked <= 12)
 
+-- G) A listagem principal mantém identidade e saúde em linhas distintas.
+local cli_fallback = assert(io.open("commands/config_cli/menus/request/fallback.lua", "r")):read("*a")
+local tui_fallback = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a")
+T("CLI fallback renders structured dashboard rows",
+  cli_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
+  and cli_fallback:find("item.last", 1, true) ~= nil)
+T("TUI fallback renders structured dashboard rows",
+  tui_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
+  and tui_fallback:find("item.last", 1, true) ~= nil)
+T("fallback health metadata is no longer concatenated into key identity",
+  not cli_fallback:find("health%.label%(item%)")
+  and not tui_fallback:find("health%.label%(item%)"))
+
 -- Provedor sem chaves: zero probes
 models.add_provider({
   id = "no-key-spec", baseUrl = "https://example.invalid/v1",

@@ -2,7 +2,6 @@ local ui = require("commands.models.ui")
 local models = require("models")
 local c = ui.c
 local M = {}
-local health = require("commands.config.fallback_health")
 local keys = require("commands.config.fallback_keys")
 local saver = require("commands.config.menus.request.saver")
 
@@ -69,10 +68,13 @@ local function manage_keys()
     local items = models.list_api_keys(provider_id) or {}
     ui.header("API Keys › " .. provider_id)
     if #items == 0 then io.write(c.gray .. "  Nenhuma chave cadastrada.\n" .. c.reset) end
-    for i, item in ipairs(items) do
-      io.write("  " .. i .. ". " .. keys.mask(item.key)
-        .. (item.active and (c.green .. "  [ATIVA]" .. c.reset) or "")
-        .. health.label(item) .. "\n")
+    for _, item in ipairs(keys.dashboard(provider_id)) do
+      local state = item.state == "OK" and c.green .. item.state .. c.reset
+        or item.state == "FALHA" and c.red .. item.state .. c.reset
+        or c.yellow .. item.state .. c.reset
+      io.write(string.format("  %d. %s  %s%s\n",
+        item.index, item.masked, state, item.active and " [ATIVA]" or ""))
+      io.write("     " .. item.last .. "\n")
     end
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n"
       .. "  3. Testar uma chave\n  4. Testar todas as chaves\n"

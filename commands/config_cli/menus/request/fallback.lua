@@ -1,6 +1,5 @@
 local models = require("models")
 local M = {}
-local health = require("commands.config.fallback_health")
 local keys = require("commands.config.fallback_keys")
 
 local function choose_provider(ui)
@@ -55,9 +54,13 @@ local function manage_keys(ui, provider_id)
     local items = models.list_api_keys(provider_id) or {}
     ui.hdr("Fallback › API Keys › " .. provider_id)
     if #items == 0 then io.write(ui.YL .. "  Nenhuma chave cadastrada.\n" .. ui.R) end
-    for i, item in ipairs(items) do
-      io.write("  " .. i .. ". " .. keys.mask(item.key)
-        .. (item.active and "  [ATIVA]" or "") .. health.label(item) .. "\n")
+    for _, item in ipairs(keys.dashboard(provider_id)) do
+      local state = item.state == "OK" and ui.G .. item.state .. ui.R
+        or item.state == "FALHA" and ui.RE .. item.state .. ui.R
+        or ui.YL .. item.state .. ui.R
+      io.write(string.format("  %d. %s  %s%s\n",
+        item.index, item.masked, state, item.active and " [ATIVA]" or ""))
+      io.write("     " .. item.last .. "\n")
     end
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n"
       .. "  3. Testar uma chave\n  4. Testar todas as chaves\n"
