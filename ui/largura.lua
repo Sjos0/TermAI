@@ -63,13 +63,6 @@ function M.colunas(s)
   return colunas_plain(M.visivel(s))
 end
 
--- API compartilhada de wrapping: o helper é independente deste módulo e
--- recebe o medidor visual por injeção, sem criar ciclo de require.
-local largura_wrap = require("ui.largura_wrap")
-function M.quebrar(texto, limite)
-  return largura_wrap.quebrar(texto, limite, M.colunas)
-end
-
 --- Expande TAB em espaços até a próxima parada de 8 colunas (linha lógica).
 --- Não interpreta SGR; só texto visível + TABs.
 function M.expand_tabs(s)
