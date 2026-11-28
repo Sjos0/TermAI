@@ -155,6 +155,35 @@ do
   T(out:find("fim", 1, true) ~= nil, "row preserves full value text (no silent truncation)")
 end
 
+-- ---------------------------------------------------------------------------
+-- D) Fallback de rótulos longos também respeita terminais de 20–31 colunas.
+-- A largura útil mínima não pode fazer o rótulo ser emitido sem wrapping.
+for width = 20, 31 do
+  core.tw = function() return width end
+  local cli_output = capture(function()
+    cli.row("Reasoning Effort (OpenRouter):", "medium")
+  end)
+  T(max_width(cli_output) <= width, "CLI long row label fits " .. width .. " columns")
+  T(cli_output:find("Reasoning", 1, true) ~= nil
+    and cli_output:find("OpenRouter", 1, true) ~= nil
+    and cli_output:find("medium", 1, true) ~= nil,
+    "CLI keeps complete label and value at " .. width .. " columns")
+
+  local tui_output = capture(function()
+    view.print_status({
+      timeout = 180, max_retries = 10, retry_mode = "exponential",
+      retry_max = 30, wait_timeout = 25, mode = "buffer",
+      reasoning_effort = "medium",
+      language = "Português",
+    }, { thinkingEffort = "high" })
+  end)
+  T(max_width(tui_output) <= width, "TUI long row labels fit " .. width .. " columns")
+  T(tui_output:find("Reasoning", 1, true) ~= nil
+    and tui_output:find("OpenRouter", 1, true) ~= nil
+    and tui_output:find("medium", 1, true) ~= nil,
+    "TUI keeps complete label and value at " .. width .. " columns")
+end
+
 -- option sem descrição não deve explodir nem imprimir lixo
 do
   core.tw = function() return 50 end

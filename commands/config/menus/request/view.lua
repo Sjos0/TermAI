@@ -28,7 +28,10 @@ local function row(label, value, color)
     return
   end
 
-  io.write(c.gray .. "  " .. tostring(label) .. c.reset .. "\n")
+  local rotulo = largura.quebrar(tostring(label), math.max(1, limite - 2))
+  for _, linha in ipairs(rotulo) do
+    io.write(c.gray .. "  " .. linha .. c.reset .. "\n")
+  end
   local linhas = largura.quebrar(texto, math.max(8, limite - 4))
   for _, linha in ipairs(linhas) do io.write("    " .. linha .. "\n") end
 end
