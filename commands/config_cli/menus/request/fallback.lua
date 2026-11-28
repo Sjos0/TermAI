@@ -40,10 +40,12 @@ local function test_all(ui, provider_id)
 end
 
 local function render_health_rows(rows, width)
+  local terminal_width = tonumber(width) or core.tw()
   for _, row in ipairs(rows) do
-    io.write(string.format("  %d. %s  %s%s\n",
-      row.index, row.masked, row.state, row.active and " [ATIVA]" or ""))
-    for _, line in ipairs(keys_view.format_last(row.last, width or core.tw())) do
+    for _, line in ipairs(keys_view.format_identity(row, terminal_width)) do
+      io.write(line .. "\n")
+    end
+    for _, line in ipairs(keys_view.format_last(row.last, terminal_width)) do
       io.write(line .. "\n")
     end
   end

@@ -97,12 +97,10 @@ local function capture(fn)
   return table.concat(chunks)
 end
 
-local function output_fits(output, width, only_indented)
+local function output_fits(output, width)
   if not output then return false end
   for line in output:gmatch("([^\n]+)") do
-    if not only_indented or line:sub(1, 5) == "     " or line:sub(1, 6) == "      " then
-      if largura.colunas(line) > width then return false end
-    end
+    if largura.colunas(line) > width then return false end
   end
   return true
 end
@@ -112,25 +110,40 @@ local cli_keys_ok, cli_keys = pcall(require, "commands.config_cli.menus.request.
 local tui_keys_ok, tui_keys = pcall(require, "commands.config.menus.request.fallback")
 if cli_keys_ok and type(cli_keys.render_health_rows) == "function"
     and tui_keys_ok and type(tui_keys.render_health_rows) == "function" then
-  local row = { { index = 1, masked = "****mnop", state = "FALHA", active = true,
-    last = "[última falha: 2026-11-28T07:41:00Z]" } }
+  local masked = "****" .. string.rep("K", 24) .. "mnop"
+  local last = "[última falha: 2026-11-28T07:41:00.123456789Z motivo=timeout_"
+    .. string.rep("X", 42) .. " recurso=界界界]"
+  local row = { { index = 1, masked = masked, state = "\27[31mFALHA\27[0m",
+    active = true, last = last } }
   for _, width in ipairs({20, 31, 40, 50, 80}) do
     terminal_width = width
-    local cli_out = capture(function() cli_keys.render_health_rows(row, width) end)
-    local tui_out = capture(function() tui_keys.render_health_rows(row, width) end)
-    T(output_fits(cli_out, width, true), "real API Keys CLI renderer fits " .. width)
-    T(output_fits(tui_out, width, true), "real API Keys TUI renderer fits " .. width)
-    local function metadata_text(output)
-      local parts = {}
-      for line in (output or ""):gmatch("([^\n]+)") do
-        if line:sub(1, 5) == "     " then parts[#parts + 1] = line:sub(6) end
-      end
-      return table.concat(parts, " ")
+    local cli_out = capture(function() cli_keys.render_health_rows(row) end)
+    local tui_out = capture(function() tui_keys.render_health_rows(row) end)
+    T(output_fits(cli_out, width), "all real API Keys CLI lines fit " .. width)
+    T(output_fits(tui_out, width), "all real API Keys TUI lines fit " .. width)
+    local expected_identity = ("1." .. masked .. "FALHA[ATIVA]")
+    local expected_last = largura.visivel(last):gsub("%s+", "")
+    local function normalized(output)
+      return largura.visivel(output or ""):gsub("%s+", "")
     end
-    T(metadata_text(cli_out):gsub("%s+", ""):find("2026-11-28T07:41:00Z", 1, true) ~= nil,
-      "real API Keys CLI renderer preserves timestamp at " .. width)
-    T(metadata_text(tui_out):gsub("%s+", ""):find("2026-11-28T07:41:00Z", 1, true) ~= nil,
-      "real API Keys TUI renderer preserves timestamp at " .. width)
+    T(normalized(cli_out):find(expected_identity, 1, true) ~= nil,
+      "real API Keys CLI preserves long identity, state and active marker at " .. width)
+    T(normalized(tui_out):find(expected_identity, 1, true) ~= nil,
+      "real API Keys TUI preserves long identity, state and active marker at " .. width)
+    T(normalized(cli_out):find(expected_last, 1, true) ~= nil,
+      "real API Keys CLI preserves full failure metadata at " .. width)
+    T(normalized(tui_out):find(expected_last, 1, true) ~= nil,
+      "real API Keys TUI preserves full failure metadata at " .. width)
+    local function continuations_indented(output)
+      local count = 0
+      for line in (output or ""):gmatch("([^\n]+)") do
+        if line:sub(1, 5) == "     " then count = count + 1 end
+        if line:sub(1, 2) ~= "  " then return false end
+      end
+      return count >= 2
+    end
+    T(continuations_indented(cli_out), "real API Keys CLI keeps continuation indentation at " .. width)
+    T(continuations_indented(tui_out), "real API Keys TUI keeps continuation indentation at " .. width)
   end
 else
   print("SKIP API Keys renderer integration: PR #377 consumer not present in this branch")
@@ -174,8 +187,8 @@ if cli_utils_ok and responsive_cli and tui_view_ok and responsive_tui then
         language = "Português" }, { thinkingEffort = "high" })
       tui_view.print_options()
     end)
-    T(output_fits(cli_out, width, false), "real request-menu CLI renderer fits " .. width)
-    T(output_fits(tui_out, width, false), "real request-menu TUI renderer fits " .. width)
+    T(output_fits(cli_out, width), "real request-menu CLI renderer fits " .. width)
+    T(output_fits(tui_out, width), "real request-menu TUI renderer fits " .. width)
     T(cli_out and cli_out:find("OpenRouter", 1, true) ~= nil,
       "real request-menu CLI renderer preserves label at " .. width)
     T(tui_out and largura.visivel(tui_out):gsub("%s+", ""):find("reasoning_style=openrouter", 1, true) ~= nil,

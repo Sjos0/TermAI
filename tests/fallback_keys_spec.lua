@@ -211,10 +211,15 @@ do
     tui = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a"),
   }
   for surface, source in pairs(renderers) do
-    T(surface .. " renderer delegates rows to its real health renderer",
-      source:find("render_health_rows", 1, true) ~= nil
-      and source:find("keys_view.format_last(row.last, width or core.tw())", 1, true) ~= nil)
+    T(surface .. " renderer wraps identity and metadata using the terminal width",
+      source:find("keys_view.format_identity(row, terminal_width)", 1, true) ~= nil
+      and source:find("keys_view.format_last(row.last, terminal_width)", 1, true) ~= nil
+      and source:find("tonumber(width) or core.tw()", 1, true) ~= nil)
   end
+  local formatter_source = assert(io.open("commands/config/fallback_keys_view.lua", "r")):read("*a")
+  T("fallback view has no duplicate terminal-width default",
+    not formatter_source:find("LARGURA_TERMINAL_PADRAO", 1, true)
+    and not formatter_source:find("or 80", 1, true))
   -- Exercita os métodos reais dos renderizadores CLI/TUI, não buffers paralelos.
   local terminal_width = 80
   local core = { tw = function() return terminal_width end }
@@ -230,7 +235,8 @@ do
   local tui_renderer = require("commands.config.menus.request.fallback")
   local original_write = io.write
   local render_row = {
-    { index = 1, masked = "****mnop", state = "FALHA", active = true, last = failure_label },
+    { index = 1, masked = "****mnop", state = "\27[31mFALHA\27[0m",
+      active = true, last = failure_label },
   }
   for _, width in ipairs({ 20, 31, 40, 50, 80 }) do
     terminal_width = width
@@ -241,28 +247,30 @@ do
       end end
       local ok_render, render_err
       if surface == "CLI" then
-        ok_render, render_err = pcall(cli_renderer.render_health_rows, render_row, width)
+        ok_render, render_err = pcall(cli_renderer.render_health_rows, render_row)
       else
-        ok_render, render_err = pcall(tui_renderer.render_health_rows, render_row, width)
+        ok_render, render_err = pcall(tui_renderer.render_health_rows, render_row)
       end
       io.write = original_write
       local output = table.concat(chunks)
-      local fits, indent_ok, timestamp_ok = ok_render, true, true
-      local metadata = {}
+      local fits, indent_ok = ok_render, true
+      local continuations = 0
       for line in output:gmatch("([^\n]+)") do
-        if line:sub(1, 5) == "     " then
-          if largura.colunas(line) > width then fits = false end
-          metadata[#metadata + 1] = line:sub(6)
-        elseif line:match("^%s*%d+%.") then
-          -- A linha de identidade não pertence ao formatter de metadados.
-        else indent_ok = false end
+        if largura.colunas(line) > width then fits = false end
+        if line:sub(1, 2) ~= "  " then indent_ok = false end
+        if line:sub(1, 5) == "     " then continuations = continuations + 1 end
       end
-      if #metadata == 0 then indent_ok = false end
-      timestamp_ok = table.concat(metadata, " ") == failure_label
-      T(surface .. " real renderer fits " .. width .. " columns", fits)
-      T(surface .. " real renderer keeps continuation indentation at " .. width,
-        indent_ok)
-      T(surface .. " real renderer preserves timestamp at " .. width, timestamp_ok)
+      local normalized = largura.visivel(output):gsub("%s+", "")
+      local identity_ok = normalized:find("1.****mnopFALHA[ATIVA]", 1, true) ~= nil
+      local timestamp_ok = normalized:find(
+        largura.visivel(failure_label):gsub("%s+", ""), 1, true) ~= nil
+      T(surface .. " real renderer checks every line at " .. width .. " columns", fits)
+      local has_expected_continuations = width > 40 or continuations >= 1
+      T(surface .. " real renderer keeps identity and metadata continuations indented at " .. width,
+        indent_ok and has_expected_continuations)
+      T(surface .. " real renderer preserves key identity, state and active marker at " .. width,
+        identity_ok)
+      T(surface .. " real renderer preserves full failure timestamp at " .. width, timestamp_ok)
       if not ok_render then print("    renderer error: " .. tostring(render_err)) end
     end
   end
