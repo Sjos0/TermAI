@@ -159,6 +159,47 @@ T("fallback health metadata is no longer concatenated into key identity",
   not cli_fallback:find("health%.label%(item%)")
   and not tui_fallback:find("health%.label%(item%)"))
 
+-- G2) Contrato estrutural do dashboard + layout de duas linhas (Issue #376).
+-- Trava: identidade na 1ª linha; saúde/data na 2ª indentada; sem concatenação.
+do
+  local rows_g = shared.dashboard("fallback-spec")
+  T("dashboard rows expose discrete identity fields",
+    #rows_g >= 1
+    and type(rows_g[1].index) == "number"
+    and type(rows_g[1].masked) == "string"
+    and type(rows_g[1].state) == "string"
+    and type(rows_g[1].active) == "boolean"
+    and type(rows_g[1].last) == "string")
+
+  local buf = {}
+  for _, item in ipairs(rows_g) do
+    buf[#buf + 1] = string.format("  %d. %s  %s%s",
+      item.index, item.masked, item.state, item.active and " [ATIVA]" or "")
+    buf[#buf + 1] = "     " .. item.last
+  end
+
+  local identity_ok, health_ok = true, true
+  for i = 1, #rows_g do
+    local id_line = buf[i * 2 - 1]
+    local health_line = buf[i * 2]
+    local row = rows_g[i]
+    if not id_line:match("^%s*%d+%.") then identity_ok = false end
+    if id_line:find("último", 1, true) or id_line:find("última", 1, true)
+        or id_line:find("sem teste", 1, true) then
+      identity_ok = false
+    end
+    if not health_line:match("^%s%s%s%s%s") then health_ok = false end
+    if not health_line:find(row.last, 1, true) then health_ok = false end
+  end
+  T("manage_keys layout keeps identity free of health markers", identity_ok)
+  T("manage_keys layout puts health on indented second line", health_ok)
+
+  local active_row
+  for _, r in ipairs(rows_g) do if r.active then active_row = r break end end
+  T("active row last is non-empty structured label",
+    active_row ~= nil and type(active_row.last) == "string" and #active_row.last > 0)
+end
+
 -- Provedor sem chaves: zero probes
 models.add_provider({
   id = "no-key-spec", baseUrl = "https://example.invalid/v1",
@@ -202,7 +243,7 @@ T("parte_1 keeps key_attempts calls on their own lines",
   and not parte1:find("key_attempts%.finish%(ctx, key_rounds%);%s*local fb_res"))
 local attempt_src = assert(io.open("agent/api/request_stream/streamer/stream_attempt.lua", "r")):read("*a")
 T("stream_attempt guards tmp file open",
-  attempt_src:find('io%.open%(tmp_path, "w"%)') ~= nil
+  attempt_src:find('io%.open%(tmp_path, "w")') ~= nil
   and attempt_src:find("if not tmp then") ~= nil)
 T("parte_1 finishes key_attempts on success path",
   parte1:find("key_attempts%.end_key%(ctx%)") ~= nil
