@@ -4,6 +4,7 @@ local models = require("models")
 local store = require("models.store")
 local validate = require("models.validate")
 local shared = require("commands.config.fallback_keys")
+local keys_view = require("commands.config.fallback_keys_view")
 local pass, fail = 0, 0
 local function T(name, ok)
   if ok then pass = pass + 1; print("  PASS " .. name)
@@ -198,6 +199,52 @@ do
   for _, r in ipairs(rows_g) do if r.active then active_row = r break end end
   T("active row last is non-empty structured label",
     active_row ~= nil and type(active_row.last) == "string" and #active_row.last > 0)
+
+  -- O mesmo formatter usado pelos renderizadores deve caber em terminais reais.
+  local health = require("commands.config.fallback_health")
+  local failure_label = health.label({
+    last_error_at = "2026-11-28T07:41:00Z",
+  }):gsub("^%s+", "")
+  local largura = require("ui.largura")
+  local renderers = {
+    cli = assert(io.open("commands/config_cli/menus/request/fallback.lua", "r")):read("*a"),
+    tui = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a"),
+  }
+  for surface, source in pairs(renderers) do
+    T(surface .. " renderer delegates last metadata to shared formatter",
+      source:find("keys_view.format_last(item.last, core.tw())", 1, true) ~= nil
+      and source:find("keys_view.format_last(row.last, core.tw())", 1, true) ~= nil)
+  end
+  for _, width in ipairs({ 40, 50, 80 }) do
+    local lines = keys_view.format_last(failure_label, width)
+    local fits, indented = true, true
+    local recovered = {}
+    for _, line in ipairs(lines) do
+      if largura.colunas(line) > width then fits = false end
+      if line:sub(1, 5) ~= "     " then indented = false end
+      recovered[#recovered + 1] = line:sub(6)
+    end
+    T("last-failure metadata fits " .. width .. " columns", fits)
+    T("last-failure continuations stay indented at " .. width .. " columns", indented)
+    T("last-failure timestamp is preserved at " .. width .. " columns",
+      table.concat(recovered, " ") == failure_label)
+  end
+  local long_value = "[última falha: " .. string.rep("X", 60) .. "]"
+  local long_lines = keys_view.format_last(long_value, 40)
+  local long_fits = #long_lines > 1
+  for _, line in ipairs(long_lines) do
+    if largura.colunas(line) > 40 then long_fits = false end
+  end
+  T("long health tokens hard-wrap without overflow", long_fits)
+  local invalid_utf8_ok, invalid_utf8_lines = pcall(keys_view.format_last,
+    string.char(255) .. string.rep("X", 50), 40)
+  local invalid_utf8_fits = invalid_utf8_ok and #invalid_utf8_lines > 1
+  if invalid_utf8_ok then
+    for _, line in ipairs(invalid_utf8_lines) do
+      if largura.colunas(line) > 40 then invalid_utf8_fits = false end
+    end
+  end
+  T("unknown invalid UTF-8 metadata cannot crash wrapping", invalid_utf8_fits)
 end
 
 -- Provedor sem chaves: zero probes

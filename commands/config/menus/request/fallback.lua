@@ -3,6 +3,8 @@ local models = require("models")
 local c = ui.c
 local M = {}
 local keys = require("commands.config.fallback_keys")
+local keys_view = require("commands.config.fallback_keys_view")
+local core = require("ui.core")
 local saver = require("commands.config.menus.request.saver")
 
 local function choose_provider()
@@ -56,7 +58,9 @@ local function dashboard(provider_id)
   for _, row in ipairs(rows) do
     io.write(string.format("  %d. %s  %s%s\n",
       row.index, row.masked, row.state, row.active and " [ATIVA]" or ""))
-    io.write("     " .. row.last .. "\n")
+    for _, line in ipairs(keys_view.format_last(row.last, core.tw())) do
+      io.write(line .. "\n")
+    end
   end
   io.write("\n  O teste individual e o teste geral não alteram a chave ativa.\n")
 end
@@ -74,7 +78,9 @@ local function manage_keys()
         or c.yellow .. item.state .. c.reset
       io.write(string.format("  %d. %s  %s%s\n",
         item.index, item.masked, state, item.active and " [ATIVA]" or ""))
-      io.write("     " .. item.last .. "\n")
+      for _, line in ipairs(keys_view.format_last(item.last, core.tw())) do
+        io.write(line .. "\n")
+      end
     end
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n"
       .. "  3. Testar uma chave\n  4. Testar todas as chaves\n"
