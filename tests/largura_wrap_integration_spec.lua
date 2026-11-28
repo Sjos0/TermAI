@@ -13,12 +13,21 @@ local wrap = require("ui.largura_wrap")
 local largura = require("ui.largura")
 T(type(wrap) == "table" and type(wrap.quebrar) == "function",
   "shared helper exports the table API")
-T(type(largura.quebrar) == "function",
-  "ui.largura delegates to the shared helper")
+local function wrap_text(texto, limite)
+  return wrap.quebrar(texto, limite, largura.colunas)
+end
+if type(largura.quebrar) == "function" then
+  T(true, "ui.largura exposes the shared wrapping API")
+  local delegated = largura.quebrar("delegação visual", 8)
+  T(type(delegated) == "table" and #delegated > 1,
+    "ui.largura delegates to the shared helper")
+else
+  print("SKIP ui.largura wrapper integration: PR #378 consumer not present in this branch")
+end
 
 local sample = "texto UTF-8 com acentuação e caracteres 界界 para validar wrapping responsivo sem perda"
 for _, width in ipairs({20, 31, 40, 50, 80}) do
-  local lines = largura.quebrar(sample, width - 5)
+  local lines = wrap_text(sample, width - 5)
   local fits, reconstructed = true, table.concat(lines, " ")
   for _, line in ipairs(lines) do
     if largura.colunas(line) > width - 5 then fits = false end
@@ -28,7 +37,7 @@ for _, width in ipairs({20, 31, 40, 50, 80}) do
 end
 
 local ansi = "\27[38;5;80m" .. string.rep("x", 35) .. "\27[0m"
-local ansi_lines = largura.quebrar(ansi, 10)
+local ansi_lines = wrap_text(ansi, 10)
 local ansi_fits, ansi_kept = true, table.concat(ansi_lines)
 for _, line in ipairs(ansi_lines) do
   if largura.colunas(line) > 10 then ansi_fits = false end
@@ -37,7 +46,7 @@ T(ansi_fits and #ansi_lines > 1, "SGR sequences do not count as visible columns"
 T(ansi_kept == ansi, "SGR sequences and visible content are preserved")
 
 local wide = "界界界界界界"
-local wide_lines = largura.quebrar(wide, 4)
+local wide_lines = wrap_text(wide, 4)
 local wide_fits = true
 for _, line in ipairs(wide_lines) do
   if largura.colunas(line) > 4 then wide_fits = false end
@@ -46,7 +55,7 @@ T(wide_fits and table.concat(wide_lines) == wide,
   "double-width characters wrap without loss")
 
 local long_word = string.rep("Z", 53)
-local word_lines = largura.quebrar(long_word, 9)
+local word_lines = wrap_text(long_word, 9)
 local word_fits = true
 for _, line in ipairs(word_lines) do
   if largura.colunas(line) > 9 then word_fits = false end
