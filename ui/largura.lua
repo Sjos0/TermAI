@@ -63,7 +63,10 @@ function M.colunas(s)
   return colunas_plain(M.visivel(s))
 end
 
-M.quebrar = require("ui.largura_wrap")(M.colunas)
+local largura_wrap = require("ui.largura_wrap")
+function M.quebrar(texto, limite)
+  return largura_wrap.quebrar(texto, limite, M.colunas)
+end
 
 function M.expand_tabs(s)
   s = tostring(s or "")
