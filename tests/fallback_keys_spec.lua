@@ -152,10 +152,10 @@ local cli_fallback = assert(io.open("commands/config_cli/menus/request/fallback.
 local tui_fallback = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a")
 T("CLI fallback renders structured dashboard rows",
   cli_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
-  and cli_fallback:find("item.last", 1, true) ~= nil)
+  and cli_fallback:find("render_health_rows(key_rows)", 1, true) ~= nil)
 T("TUI fallback renders structured dashboard rows",
   tui_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
-  and tui_fallback:find("item.last", 1, true) ~= nil)
+  and tui_fallback:find("render_health_rows(key_rows)", 1, true) ~= nil)
 T("fallback health metadata is no longer concatenated into key identity",
   not cli_fallback:find("health%.label%(item%)")
   and not tui_fallback:find("health%.label%(item%)"))
@@ -211,11 +211,63 @@ do
     tui = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a"),
   }
   for surface, source in pairs(renderers) do
-    T(surface .. " renderer delegates last metadata to shared formatter",
-      source:find("keys_view.format_last(item.last, core.tw())", 1, true) ~= nil
-      and source:find("keys_view.format_last(row.last, core.tw())", 1, true) ~= nil)
+    T(surface .. " renderer delegates rows to its real health renderer",
+      source:find("render_health_rows", 1, true) ~= nil
+      and source:find("keys_view.format_last(row.last, width or core.tw())", 1, true) ~= nil)
   end
-  for _, width in ipairs({ 40, 50, 80 }) do
+  -- Exercita os métodos reais dos renderizadores CLI/TUI, não buffers paralelos.
+  local terminal_width = 80
+  local core = { tw = function() return terminal_width end }
+  package.loaded["ui.core"] = core
+  package.loaded["commands.models.ui"] = {
+    c = { yellow = "", reset = "", white = "", gray = "", green = "", red = "" },
+    header = function() end,
+  }
+  package.loaded["commands.config.menus.request.saver"] = { save_req = function() end }
+  package.loaded["commands.config.menus.request.fallback.models"] = function() end
+  package.loaded["commands.config_cli.menus.request.fallback.models"] = function() end
+  local cli_renderer = require("commands.config_cli.menus.request.fallback")
+  local tui_renderer = require("commands.config.menus.request.fallback")
+  local original_write = io.write
+  local render_row = {
+    { index = 1, masked = "****mnop", state = "FALHA", active = true, last = failure_label },
+  }
+  for _, width in ipairs({ 20, 31, 40, 50, 80 }) do
+    terminal_width = width
+    for _, surface in ipairs({ "CLI", "TUI" }) do
+      local chunks = {}
+      io.write = function(...) for i = 1, select("#", ...) do
+        chunks[#chunks + 1] = tostring(select(i, ...))
+      end end
+      local ok_render, render_err
+      if surface == "CLI" then
+        ok_render, render_err = pcall(cli_renderer.render_health_rows, render_row, width)
+      else
+        ok_render, render_err = pcall(tui_renderer.render_health_rows, render_row, width)
+      end
+      io.write = original_write
+      local output = table.concat(chunks)
+      local fits, indent_ok, timestamp_ok = ok_render, true, true
+      local metadata = {}
+      for line in output:gmatch("([^\n]+)") do
+        if line:sub(1, 5) == "     " then
+          if largura.colunas(line) > width then fits = false end
+          metadata[#metadata + 1] = line:sub(6)
+        elseif line:match("^%s*%d+%.") then
+          -- A linha de identidade não pertence ao formatter de metadados.
+        else indent_ok = false end
+      end
+      if #metadata == 0 then indent_ok = false end
+      timestamp_ok = table.concat(metadata, " ") == failure_label
+      T(surface .. " real renderer fits " .. width .. " columns", fits)
+      T(surface .. " real renderer keeps continuation indentation at " .. width,
+        indent_ok)
+      T(surface .. " real renderer preserves timestamp at " .. width, timestamp_ok)
+      if not ok_render then print("    renderer error: " .. tostring(render_err)) end
+    end
+  end
+  io.write = original_write
+  for _, width in ipairs({ 20, 31, 40, 50, 80 }) do
     local lines = keys_view.format_last(failure_label, width)
     local fits, indented = true, true
     local recovered = {}

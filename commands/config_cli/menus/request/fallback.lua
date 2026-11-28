@@ -39,17 +39,23 @@ local function test_all(ui, provider_id)
   end
 end
 
+local function render_health_rows(rows, width)
+  for _, row in ipairs(rows) do
+    io.write(string.format("  %d. %s  %s%s\n",
+      row.index, row.masked, row.state, row.active and " [ATIVA]" or ""))
+    for _, line in ipairs(keys_view.format_last(row.last, width or core.tw())) do
+      io.write(line .. "\n")
+    end
+  end
+end
+
+M.render_health_rows = render_health_rows
+
 local function dashboard(ui, provider_id)
   ui.hdr("Saúde das API Keys › " .. provider_id)
   local rows = keys.dashboard(provider_id)
   if #rows == 0 then io.write(ui.YL .. "  Nenhuma chave cadastrada.\n" .. ui.R); return end
-  for _, row in ipairs(rows) do
-    io.write(string.format("  %d. %s  %s%s\n",
-      row.index, row.masked, row.state, row.active and " [ATIVA]" or ""))
-    for _, line in ipairs(keys_view.format_last(row.last, core.tw())) do
-      io.write(line .. "\n")
-    end
-  end
+  render_health_rows(rows)
   io.write("\n  O teste individual e o teste geral não alteram a chave ativa.\n")
 end
 
@@ -58,16 +64,13 @@ local function manage_keys(ui, provider_id)
     local items = models.list_api_keys(provider_id) or {}
     ui.hdr("Fallback › API Keys › " .. provider_id)
     if #items == 0 then io.write(ui.YL .. "  Nenhuma chave cadastrada.\n" .. ui.R) end
-    for _, item in ipairs(keys.dashboard(provider_id)) do
-      local state = item.state == "OK" and ui.G .. item.state .. ui.R
+    local key_rows = keys.dashboard(provider_id)
+    for _, item in ipairs(key_rows) do
+      item.state = item.state == "OK" and ui.G .. item.state .. ui.R
         or item.state == "FALHA" and ui.RE .. item.state .. ui.R
         or ui.YL .. item.state .. ui.R
-      io.write(string.format("  %d. %s  %s%s\n",
-        item.index, item.masked, state, item.active and " [ATIVA]" or ""))
-      for _, line in ipairs(keys_view.format_last(item.last, core.tw())) do
-        io.write(line .. "\n")
-      end
     end
+    render_health_rows(key_rows)
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n"
       .. "  3. Testar uma chave\n  4. Testar todas as chaves\n"
       .. "  5. Definir chave ativa\n  6. Painel de saúde\n  0. Voltar\n\n")
