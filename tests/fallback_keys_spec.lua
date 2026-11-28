@@ -243,7 +243,7 @@ T("parte_1 keeps key_attempts calls on their own lines",
   and not parte1:find("key_attempts%.finish%(ctx, key_rounds%);%s*local fb_res"))
 local attempt_src = assert(io.open("agent/api/request_stream/streamer/stream_attempt.lua", "r")):read("*a")
 T("stream_attempt guards tmp file open",
-  attempt_src:find('io%.open%(tmp_path, "w")') ~= nil
+  attempt_src:find('io%.open%(tmp_path, "w"%)') ~= nil
   and attempt_src:find("if not tmp then") ~= nil)
 T("parte_1 finishes key_attempts on success path",
   parte1:find("key_attempts%.end_key%(ctx%)") ~= nil
