@@ -4,6 +4,7 @@ local models = require("models")
 local store = require("models.store")
 local validate = require("models.validate")
 local shared = require("commands.config.fallback_keys")
+local keys_view = require("commands.config.fallback_keys_view")
 local pass, fail = 0, 0
 local function T(name, ok)
   if ok then pass = pass + 1; print("  PASS " .. name)
@@ -145,6 +146,166 @@ local rows = shared.dashboard("fallback-spec")
 T("dashboard exposes health and active state",
   #rows == 3 and rows[2].state == "OK" and rows[2].active)
 T("dashboard key masks stay compact on narrow terminals", #rows[2].masked <= 12)
+
+-- G) A listagem principal mantém identidade e saúde em linhas distintas.
+local cli_fallback = assert(io.open("commands/config_cli/menus/request/fallback.lua", "r")):read("*a")
+local tui_fallback = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a")
+T("CLI fallback renders structured dashboard rows",
+  cli_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
+  and cli_fallback:find("render_health_rows(key_rows)", 1, true) ~= nil)
+T("TUI fallback renders structured dashboard rows",
+  tui_fallback:find("keys.dashboard(provider_id)", 1, true) ~= nil
+  and tui_fallback:find("render_health_rows(key_rows)", 1, true) ~= nil)
+T("fallback health metadata is no longer concatenated into key identity",
+  not cli_fallback:find("health%.label%(item%)")
+  and not tui_fallback:find("health%.label%(item%)"))
+
+-- G2) Contrato estrutural do dashboard + layout de duas linhas (Issue #376).
+-- Trava: identidade na 1ª linha; saúde/data na 2ª indentada; sem concatenação.
+do
+  local rows_g = shared.dashboard("fallback-spec")
+  T("dashboard rows expose discrete identity fields",
+    #rows_g >= 1
+    and type(rows_g[1].index) == "number"
+    and type(rows_g[1].masked) == "string"
+    and type(rows_g[1].state) == "string"
+    and type(rows_g[1].active) == "boolean"
+    and type(rows_g[1].last) == "string")
+
+  local buf = {}
+  for _, item in ipairs(rows_g) do
+    buf[#buf + 1] = string.format("  %d. %s  %s%s",
+      item.index, item.masked, item.state, item.active and " [ATIVA]" or "")
+    buf[#buf + 1] = "     " .. item.last
+  end
+
+  local identity_ok, health_ok = true, true
+  for i = 1, #rows_g do
+    local id_line = buf[i * 2 - 1]
+    local health_line = buf[i * 2]
+    local row = rows_g[i]
+    if not id_line:match("^%s*%d+%.") then identity_ok = false end
+    if id_line:find("último", 1, true) or id_line:find("última", 1, true)
+        or id_line:find("sem teste", 1, true) then
+      identity_ok = false
+    end
+    if not health_line:match("^%s%s%s%s%s") then health_ok = false end
+    if not health_line:find(row.last, 1, true) then health_ok = false end
+  end
+  T("manage_keys layout keeps identity free of health markers", identity_ok)
+  T("manage_keys layout puts health on indented second line", health_ok)
+
+  local active_row
+  for _, r in ipairs(rows_g) do if r.active then active_row = r break end end
+  T("active row last is non-empty structured label",
+    active_row ~= nil and type(active_row.last) == "string" and #active_row.last > 0)
+
+  -- O mesmo formatter usado pelos renderizadores deve caber em terminais reais.
+  local health = require("commands.config.fallback_health")
+  local failure_label = health.label({
+    last_error_at = "2026-11-28T07:41:00Z",
+  }):gsub("^%s+", "")
+  local largura = require("ui.largura")
+  local renderers = {
+    cli = assert(io.open("commands/config_cli/menus/request/fallback.lua", "r")):read("*a"),
+    tui = assert(io.open("commands/config/menus/request/fallback.lua", "r")):read("*a"),
+  }
+  for surface, source in pairs(renderers) do
+    T(surface .. " renderer wraps identity and metadata using the terminal width",
+      source:find("keys_view.format_identity(row, terminal_width)", 1, true) ~= nil
+      and source:find("keys_view.format_last(row.last, terminal_width)", 1, true) ~= nil
+      and source:find("tonumber(width) or core.tw()", 1, true) ~= nil)
+  end
+  local formatter_source = assert(io.open("commands/config/fallback_keys_view.lua", "r")):read("*a")
+  T("fallback view has no duplicate terminal-width default",
+    not formatter_source:find("LARGURA_TERMINAL_PADRAO", 1, true)
+    and not formatter_source:find("or 80", 1, true))
+  -- Exercita os métodos reais dos renderizadores CLI/TUI, não buffers paralelos.
+  local terminal_width = 80
+  local core = { tw = function() return terminal_width end }
+  package.loaded["ui.core"] = core
+  package.loaded["commands.models.ui"] = {
+    c = { yellow = "", reset = "", white = "", gray = "", green = "", red = "" },
+    header = function() end,
+  }
+  package.loaded["commands.config.menus.request.saver"] = { save_req = function() end }
+  package.loaded["commands.config.menus.request.fallback.models"] = function() end
+  package.loaded["commands.config_cli.menus.request.fallback.models"] = function() end
+  local cli_renderer = require("commands.config_cli.menus.request.fallback")
+  local tui_renderer = require("commands.config.menus.request.fallback")
+  local original_write = io.write
+  local render_row = {
+    { index = 1, masked = "****mnop", state = "\27[31mFALHA\27[0m",
+      active = true, last = failure_label },
+  }
+  for _, width in ipairs({ 20, 31, 40, 50, 80 }) do
+    terminal_width = width
+    for _, surface in ipairs({ "CLI", "TUI" }) do
+      local chunks = {}
+      io.write = function(...) for i = 1, select("#", ...) do
+        chunks[#chunks + 1] = tostring(select(i, ...))
+      end end
+      local ok_render, render_err
+      if surface == "CLI" then
+        ok_render, render_err = pcall(cli_renderer.render_health_rows, render_row)
+      else
+        ok_render, render_err = pcall(tui_renderer.render_health_rows, render_row)
+      end
+      io.write = original_write
+      local output = table.concat(chunks)
+      local fits, indent_ok = ok_render, true
+      local continuations = 0
+      for line in output:gmatch("([^\n]+)") do
+        if largura.colunas(line) > width then fits = false end
+        if line:sub(1, 2) ~= "  " then indent_ok = false end
+        if line:sub(1, 5) == "     " then continuations = continuations + 1 end
+      end
+      local normalized = largura.visivel(output):gsub("%s+", "")
+      local identity_ok = normalized:find("1.****mnopFALHA[ATIVA]", 1, true) ~= nil
+      local timestamp_ok = normalized:find(
+        largura.visivel(failure_label):gsub("%s+", ""), 1, true) ~= nil
+      T(surface .. " real renderer checks every line at " .. width .. " columns", fits)
+      local has_expected_continuations = width > 40 or continuations >= 1
+      T(surface .. " real renderer keeps identity and metadata continuations indented at " .. width,
+        indent_ok and has_expected_continuations)
+      T(surface .. " real renderer preserves key identity, state and active marker at " .. width,
+        identity_ok)
+      T(surface .. " real renderer preserves full failure timestamp at " .. width, timestamp_ok)
+      if not ok_render then print("    renderer error: " .. tostring(render_err)) end
+    end
+  end
+  io.write = original_write
+  for _, width in ipairs({ 20, 31, 40, 50, 80 }) do
+    local lines = keys_view.format_last(failure_label, width)
+    local fits, indented = true, true
+    local recovered = {}
+    for _, line in ipairs(lines) do
+      if largura.colunas(line) > width then fits = false end
+      if line:sub(1, 5) ~= "     " then indented = false end
+      recovered[#recovered + 1] = line:sub(6)
+    end
+    T("last-failure metadata fits " .. width .. " columns", fits)
+    T("last-failure continuations stay indented at " .. width .. " columns", indented)
+    T("last-failure timestamp is preserved at " .. width .. " columns",
+      table.concat(recovered, " ") == failure_label)
+  end
+  local long_value = "[última falha: " .. string.rep("X", 60) .. "]"
+  local long_lines = keys_view.format_last(long_value, 40)
+  local long_fits = #long_lines > 1
+  for _, line in ipairs(long_lines) do
+    if largura.colunas(line) > 40 then long_fits = false end
+  end
+  T("long health tokens hard-wrap without overflow", long_fits)
+  local invalid_utf8_ok, invalid_utf8_lines = pcall(keys_view.format_last,
+    string.char(255) .. string.rep("X", 50), 40)
+  local invalid_utf8_fits = invalid_utf8_ok and #invalid_utf8_lines > 1
+  if invalid_utf8_ok then
+    for _, line in ipairs(invalid_utf8_lines) do
+      if largura.colunas(line) > 40 then invalid_utf8_fits = false end
+    end
+  end
+  T("unknown invalid UTF-8 metadata cannot crash wrapping", invalid_utf8_fits)
+end
 
 -- Provedor sem chaves: zero probes
 models.add_provider({

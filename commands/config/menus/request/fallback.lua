@@ -2,8 +2,9 @@ local ui = require("commands.models.ui")
 local models = require("models")
 local c = ui.c
 local M = {}
-local health = require("commands.config.fallback_health")
 local keys = require("commands.config.fallback_keys")
+local keys_view = require("commands.config.fallback_keys_view")
+local core = require("ui.core")
 local saver = require("commands.config.menus.request.saver")
 
 local function choose_provider()
@@ -47,6 +48,20 @@ local function test_all(provider_id)
   end
 end
 
+local function render_health_rows(rows, width)
+  local terminal_width = tonumber(width) or core.tw()
+  for _, row in ipairs(rows) do
+    for _, line in ipairs(keys_view.format_identity(row, terminal_width)) do
+      io.write(line .. "\n")
+    end
+    for _, line in ipairs(keys_view.format_last(row.last, terminal_width)) do
+      io.write(line .. "\n")
+    end
+  end
+end
+
+M.render_health_rows = render_health_rows
+
 local function dashboard(provider_id)
   ui.header("Saúde das API Keys › " .. provider_id)
   local rows = keys.dashboard(provider_id)
@@ -54,11 +69,7 @@ local function dashboard(provider_id)
     io.write(c.gray .. "  Nenhuma chave cadastrada.\n" .. c.reset)
     return
   end
-  for _, row in ipairs(rows) do
-    io.write(string.format("  %d. %s  %s%s\n",
-      row.index, row.masked, row.state, row.active and " [ATIVA]" or ""))
-    io.write("     " .. row.last .. "\n")
-  end
+  render_health_rows(rows)
   io.write("\n  O teste individual e o teste geral não alteram a chave ativa.\n")
 end
 
@@ -69,11 +80,13 @@ local function manage_keys()
     local items = models.list_api_keys(provider_id) or {}
     ui.header("API Keys › " .. provider_id)
     if #items == 0 then io.write(c.gray .. "  Nenhuma chave cadastrada.\n" .. c.reset) end
-    for i, item in ipairs(items) do
-      io.write("  " .. i .. ". " .. keys.mask(item.key)
-        .. (item.active and (c.green .. "  [ATIVA]" .. c.reset) or "")
-        .. health.label(item) .. "\n")
+    local key_rows = keys.dashboard(provider_id)
+    for _, item in ipairs(key_rows) do
+      item.state = item.state == "OK" and c.green .. item.state .. c.reset
+        or item.state == "FALHA" and c.red .. item.state .. c.reset
+        or c.yellow .. item.state .. c.reset
     end
+    render_health_rows(key_rows)
     io.write("\n  1. Adicionar chave\n  2. Remover chave\n"
       .. "  3. Testar uma chave\n  4. Testar todas as chaves\n"
       .. "  5. Definir chave ativa\n  6. Painel de saúde\n  0. Voltar\n\n")
