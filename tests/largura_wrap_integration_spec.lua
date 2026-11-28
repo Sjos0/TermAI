@@ -59,7 +59,7 @@ T(word_fits and table.concat(word_lines) == long_word,
 local terminal_width = 80
 local core = {
   tw = function() return terminal_width end,
-  regua = function() return string.rep("─", math.max(0, terminal_width - 4)) end,
+  regua = function(maximo, usado) return string.rep("─", math.max(0, math.min(maximo, terminal_width - (usado or 2)))) end,
 }
 package.loaded["ui.core"] = core
 package.loaded["commands.models.ui"] = {
@@ -137,10 +137,27 @@ local responsive_tui = tui_source:find("largura.quebrar", 1, true) ~= nil
 if cli_utils_ok and responsive_cli and tui_view_ok and responsive_tui then
   for _, width in ipairs({20, 31, 40, 50, 80}) do
     terminal_width = width
+    package.loaded["commands.config_cli.menus.request.submenus"] = {}
+    local install_request_menu = require("commands.config_cli.menus.request.parte_1")
+    local request_menu = {}
+    install_request_menu(request_menu)
+    local menu_ui = {
+      get_cfg = function() return { agents = { defaults = {
+        request = { timeout = 180, idle_timeout = 30, max_retries = 10,
+          retry_mode = "exponential", retry_static = 5, retry_max = 30,
+          wait_timeout = 25, mode = "buffer", reasoning_effort = "medium" },
+        thinkingEffort = "high",
+      } } } end,
+      hdr = function() end,
+      SEP2 = function(prefixo) return core.regua(30, largura.colunas(prefixo or "")) end,
+      row = cli_utils.row,
+      option = cli_utils.option,
+      rdl = function() return "0" end,
+      cancel = function(value) return not value or value == "" or value == "0" end,
+      GR = "", R = "", G = "", DM = "", RE = "", CY = "",
+    }
     local cli_out, cli_err = capture(function()
-      cli_utils.row("Reasoning Effort (OpenRouter):", "medium")
-      cli_utils.option("8", "Reasoning Effort (OpenRouter)",
-        "(6 níveis — só afeta modelos com reasoning_style=openrouter)")
+      request_menu.run({ set = function() end }, menu_ui)
     end)
     local tui_out, tui_err = capture(function()
       tui_view.print_status({ timeout = 180, max_retries = 10, retry_mode = "exponential",
@@ -152,7 +169,7 @@ if cli_utils_ok and responsive_cli and tui_view_ok and responsive_tui then
     T(output_fits(tui_out, width, false), "real request-menu TUI renderer fits " .. width)
     T(cli_out and cli_out:find("OpenRouter", 1, true) ~= nil,
       "real request-menu CLI renderer preserves label at " .. width)
-    T(tui_out and tui_out:find("reasoning_style=openrouter", 1, true) ~= nil,
+    T(tui_out and largura.visivel(tui_out):gsub("%s+", ""):find("reasoning_style=openrouter", 1, true) ~= nil,
       "real request-menu TUI renderer preserves description at " .. width)
     if not cli_out then print(cli_err) end
     if not tui_out then print(tui_err) end
